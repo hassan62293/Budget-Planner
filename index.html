@@ -2106,6 +2106,17 @@ function renderAll(){
 /* ---------- language ---------- */
 const PLANNER_SHARE_URL = 'https://hassan62293.github.io/Budget-Planner/';
 
+// Records a custom GoatCounter event (e.g. a share-button click) separately from
+// ordinary page-view counting. Safe to call even if GoatCounter didn't load
+// (blocked by a network/ad blocker) — it just silently does nothing in that case.
+function trackEvent(path, title){
+  try{
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({ path, title, event: true });
+    }
+  }catch(e){}
+}
+
 function shareLinkTexts(){
   const url = PLANNER_SHARE_URL;
   if(lang==='ar'){
@@ -2207,9 +2218,11 @@ function wireEvents(){
   });
   document.getElementById('share-link-email').addEventListener('click', ()=>{
     document.getElementById('share-link-popover').style.display = 'none';
+    trackEvent('share-email', 'Share via Email');
   });
   document.getElementById('share-link-whatsapp').addEventListener('click', ()=>{
     document.getElementById('share-link-popover').style.display = 'none';
+    trackEvent('share-whatsapp', 'Share via WhatsApp');
   });
 
   document.getElementById('btn-generate-months').addEventListener('click', ()=>{
