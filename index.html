@@ -489,6 +489,26 @@
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
   }
 
+  .share-link-wrap{position:relative;display:inline-block;}
+  #btn-share-link{
+    font-family:var(--font-body);font-size:12.5px;font-weight:500;
+    padding:8px 14px;border-radius:3px;border:1px solid var(--ink);
+    background:transparent;color:var(--ink);cursor:pointer;
+  }
+  #btn-share-link:hover{background:var(--ink);color:var(--paper);}
+  .share-link-popover{
+    position:absolute;top:calc(100% + 6px);inset-inline-start:0;
+    background:var(--paper-raised);border:1px solid var(--rule);border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);padding:6px;min-width:160px;z-index:100;
+  }
+  .share-link-popover a{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 10px;border-radius:5px;text-decoration:none;
+    font-family:var(--font-body);font-size:12.5px;color:var(--ink);
+  }
+  .share-link-popover a:hover{background:var(--paper);}
+  .share-link-popover .sl-icon{font-size:15px;}
+
   .modal-overlay{
     position:fixed;inset:0;background:rgba(24,34,54,0.55);
     display:flex;align-items:center;justify-content:center;
@@ -551,6 +571,17 @@
       <button id="btn-connect-excel" data-i18n="btn_connect_excel" style="display:none;">Connect Excel file…</button>
       <button id="btn-share-excel" data-i18n="btn_share_excel" style="display:none;">Share / Back Up…</button>
       <button id="btn-reload-linked" data-i18n="btn_reload_linked" style="display:none;">Reload from linked file</button>
+      <div class="share-link-wrap">
+        <button id="btn-share-link" data-i18n="btn_share_link">Share this page</button>
+        <div id="share-link-popover" class="share-link-popover" style="display:none;">
+          <a id="share-link-email" href="#" target="_blank" rel="noopener">
+            <span class="sl-icon">✉️</span><span data-i18n="share_via_email">Email</span>
+          </a>
+          <a id="share-link-whatsapp" href="#" target="_blank" rel="noopener">
+            <span class="sl-icon">💬</span><span data-i18n="share_via_whatsapp">WhatsApp</span>
+          </a>
+        </div>
+      </div>
       <button id="btn-reset" class="danger" data-i18n="btn_reset">Reset all</button>
       <span id="save-flag" data-i18n="msg_saved">Saved</span>
       <input type="file" id="file-import" accept="application/json" style="display:none;">
@@ -852,6 +883,7 @@ const TRANSLATIONS = {
     brand_title:'Salary budget & savings planner',
     sub:'Track monthly income and spending, watch your savings rate, and project where your balance lands over time.',
     btn_save:'Save now', btn_export:'Export data (.json)', btn_import:'Import data', btn_reset:'Reset all',
+    btn_share_link:'Share this page', share_via_email:'Email', share_via_whatsapp:'WhatsApp',
     btn_export_excel:'Export to Excel (.xlsx)', btn_connect_excel:'Connect Excel file…', btn_update_excel:'Update linked Excel file',
     btn_import_excel:'Load from Excel', btn_reload_linked:'Reload from linked file',
     fs_not_supported:'Linking a file works in Chrome or Edge on desktop. On this browser, please use Export to Excel instead.',
@@ -924,6 +956,7 @@ const TRANSLATIONS = {
     brand_title:'مخطط الراتب والميزانية والادخار',
     sub:'تتبّع دخلك ومصروفاتك الشهرية، وراقب معدل ادخارك، وتوقّع رصيدك مع الوقت.',
     btn_save:'احفظ الآن', btn_export:'تصدير البيانات (.json)', btn_import:'استيراد البيانات', btn_reset:'إعادة تعيين الكل',
+    btn_share_link:'مشاركة هذه الصفحة', share_via_email:'البريد الإلكتروني', share_via_whatsapp:'واتساب',
     btn_export_excel:'تصدير إلى إكسل (.xlsx)', btn_connect_excel:'ربط ملف إكسل…', btn_update_excel:'تحديث ملف إكسل المرتبط',
     btn_import_excel:'تحميل من إكسل', btn_reload_linked:'إعادة تحميل من الملف المرتبط',
     fs_not_supported:'ربط ملف يعمل في متصفح Chrome أو Edge على الحاسوب. على هذا المتصفح، الرجاء استخدام زر التصدير إلى إكسل بدلاً من ذلك.',
@@ -2068,6 +2101,30 @@ function renderAll(){
 }
 
 /* ---------- language ---------- */
+const PLANNER_SHARE_URL = 'https://hassan62293.github.io/Budget-Planner/';
+
+function shareLinkTexts(){
+  const url = PLANNER_SHARE_URL;
+  if(lang==='ar'){
+    return {
+      subject: 'مخطط الراتب والميزانية والادخار',
+      message: 'جرّب مخطط الراتب والميزانية والادخار: ' + url
+    };
+  }
+  return {
+    subject: 'Salary Budget & Savings Planner',
+    message: 'Check out this budget planner: ' + url
+  };
+}
+
+function updateShareLinkHrefs(){
+  const { subject, message } = shareLinkTexts();
+  const emailLink = document.getElementById('share-link-email');
+  const waLink = document.getElementById('share-link-whatsapp');
+  if(emailLink) emailLink.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(message);
+  if(waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent(message);
+}
+
 function updateDateTime(){
   const el = document.getElementById('current-datetime');
   if(!el) return;
@@ -2108,6 +2165,7 @@ function applyLanguage(l){
   updateLinkStatus();
   updateDateTime();
   syncUserNameInput();
+  updateShareLinkHrefs();
 }
 
 function switchTab(tabName){
@@ -2131,6 +2189,24 @@ function wireEvents(){
   });
   document.getElementById('user-name-input').addEventListener('input', e=>{
     e.target.classList.toggle('attention', !e.target.value.trim());
+  });
+
+  document.getElementById('btn-share-link').addEventListener('click', e=>{
+    e.stopPropagation();
+    const pop = document.getElementById('share-link-popover');
+    pop.style.display = pop.style.display==='none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', e=>{
+    const wrap = document.querySelector('.share-link-wrap');
+    if(wrap && !wrap.contains(e.target)){
+      document.getElementById('share-link-popover').style.display = 'none';
+    }
+  });
+  document.getElementById('share-link-email').addEventListener('click', ()=>{
+    document.getElementById('share-link-popover').style.display = 'none';
+  });
+  document.getElementById('share-link-whatsapp').addEventListener('click', ()=>{
+    document.getElementById('share-link-popover').style.display = 'none';
   });
 
   document.getElementById('btn-generate-months').addEventListener('click', ()=>{
@@ -2253,7 +2329,10 @@ function wireEvents(){
     if(e.target.id==='reset-confirm-overlay') e.target.style.display = 'none';
   });
   document.addEventListener('keydown', e=>{
-    if(e.key==='Escape') document.getElementById('reset-confirm-overlay').style.display = 'none';
+    if(e.key==='Escape'){
+      document.getElementById('reset-confirm-overlay').style.display = 'none';
+      document.getElementById('share-link-popover').style.display = 'none';
+    }
   });
   document.getElementById('btn-reset-yes').addEventListener('click', ()=>{
     document.getElementById('reset-confirm-overlay').style.display = 'none';
