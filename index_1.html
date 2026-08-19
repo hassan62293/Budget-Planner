@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="title">Salary Budget &amp; Savings Planner — Abdullah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Chart.js and SheetJS are loaded with CDN fallbacks by the app script below,
+     since a single blocked CDN would otherwise leave charts/Excel silently broken. -->
+
+<style>
+  :root{
+    --ink:#182236;
+    --ink-soft:#5a6478;
+    --paper:#F6F4EC;
+    --paper-raised:#FFFFFF;
+    --rule:#D9D4C4;
+    --emerald:#1F6F54;
+    --emerald-deep:#134A38;
+    --brick:#AD4A31;
+    --brick-deep:#7C3520;
+    --amber:#E7A93D;
+    --amber-bg:#FBF0DA;
+    --amber-border:#D69B2E;
+    --font-body:'Inter','IBM Plex Sans Arabic',sans-serif;
+    --font-display:'Fraunces','Amiri',serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:4rem;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ===== Header / passbook strip ===== */
+  header.top{
+    border-bottom:1px solid var(--ink);
+    background:var(--paper);
+    padding:34px 0 0;
+  }
+  .title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+  .brand{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:30px;
+    margin:0;
+  }
+  .brand .stub-no{
+    font-family:var(--font-body);
+    font-size:12px;
+    color:var(--ink-soft);
+    letter-spacing:0.04em;
+    display:block;
+    margin-bottom:6px;
+  }
+  .lang-switch{display:flex;border:1px solid var(--ink);border-radius:3px;overflow:hidden;height:fit-content;}
+  .lang-switch button{
+    font-family:var(--font-body);
+    font-size:12px;
+    font-weight:500;
+    padding:8px 14px;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .lang-switch button.active{background:var(--ink);color:var(--paper);}
+  .lang-switch button:not(.active):hover{background:var(--rule);}
+  .current-datetime{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);
+    margin:0;
+  }
+  .user-name-input{
+    display:block;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:24px;
+    color:var(--emerald-deep);
+    border:none;
+    border-bottom:2px solid transparent;
+    background:transparent;
+    padding:2px 0 6px;
+    margin:2px 0 4px;
+    width:100%;
+    max-width:420px;
+  }
+  .user-name-input:focus{outline:none;border-bottom-color:var(--amber-border);}
+  .user-name-input::placeholder{color:var(--ink-soft);font-weight:500;font-size:16px;font-family:var(--font-body);}
+  .user-name-input.attention{
+    border-bottom-width:2px;
+    animation:nameGlow 1.8s ease-in-out infinite;
+  }
+  @keyframes nameGlow{
+    0%{ border-bottom-color:var(--amber-border); box-shadow:0 3px 10px rgba(231,169,61,0.55); }
+    33%{ border-bottom-color:var(--emerald); box-shadow:0 3px 10px rgba(31,111,84,0.5); }
+    66%{ border-bottom-color:var(--brick); box-shadow:0 3px 10px rgba(173,74,49,0.5); }
+    100%{ border-bottom-color:var(--amber-border); box-shadow:0 3px 10px rgba(231,169,61,0.55); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .user-name-input.attention{ animation:none; border-bottom-color:var(--amber-border); }
+  }
+  .sub{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:6px 0 22px;
+    max-width:540px;
+    line-height:1.7;
+  }
+  .actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+  .actions button{
+    font-family:var(--font-body);
+    font-size:12.5px;
+    font-weight:500;
+    padding:8px 14px;
+    border-radius:3px;
+    border:1px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .actions button:hover{background:var(--ink);color:var(--paper);}
+  .actions button.danger{border-color:var(--brick);color:var(--brick-deep);}
+  .actions button.danger:hover{background:var(--brick-deep);color:#fff;}
+  .actions button#btn-save:hover{background:var(--emerald-deep);color:#fff;}
+  #save-flag{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--emerald-deep);
+    align-self:center;
+    opacity:0;
+    transition:opacity .4s;
+  }
+
+  /* ledger balance strip */
+  .strip{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    border-top:1px solid var(--ink);
+  }
+  .strip .cell{
+    padding:14px 18px;
+    border-inline-end:1px solid var(--rule);
+  }
+  .strip .cell:last-child{border-inline-end:none;}
+  .strip .cell .k{
+    font-size:10.5px;
+    text-transform:none;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+  }
+  .strip .cell .v{
+    font-family:var(--font-mono);
+    font-size:19px;
+    font-weight:500;
+    margin:0;
+    direction:ltr;
+    text-align:right;
+  }
+  .strip .cell .v.pos{color:var(--emerald-deep);}
+  .strip .cell .v.neg{color:var(--brick-deep);}
+
+  /* ===== Tabs ===== */
+  nav.tabs{
+    display:flex;
+    gap:2px;
+    margin:26px 0 0;
+    border-bottom:1px solid var(--ink);
+  }
+  nav.tabs button{
+    font-family:var(--font-body);
+    font-size:13.5px;
+    font-weight:500;
+    padding:11px 20px 12px;
+    background:var(--rule);
+    border:1px solid var(--ink);
+    border-bottom:none;
+    border-radius:6px 6px 0 0;
+    color:var(--ink-soft);
+    cursor:pointer;
+    position:relative;
+    top:1px;
+  }
+  nav.tabs button.active{
+    background:var(--paper-raised);
+    color:var(--ink);
+  }
+  main{padding-top:26px;}
+  section.panel{display:none;}
+  section.panel.active{display:block;}
+
+  h2.section-title{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 4px;
+  }
+  p.section-note{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 18px;
+    max-width:640px;
+    line-height:1.7;
+  }
+  .legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+  .legend span{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .legend i{width:11px;height:11px;display:inline-block;border-radius:2px;border:1px solid var(--ink);}
+  .legend i.in{background:var(--amber-bg);border-color:var(--amber-border);}
+  .legend i.out{background:var(--paper-raised);}
+
+  .reminder-banner{
+    display:flex;align-items:flex-start;gap:10px;
+    background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:6px;
+    padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--ink);line-height:1.6;
+  }
+  .reminder-banner .rb-icon{font-size:14px;line-height:1.4;}
+  tbody tr.row-empty td{background:#FDFAF2;}
+  tbody tr.row-empty:hover td{background:#FBF5E6;}
+  tbody tr.row-empty td:first-child{background:#FDFAF2;}
+
+  .setup-card{
+    background:var(--paper-raised);border:1px solid var(--rule);border-radius:8px;
+    padding:16px 18px;margin-bottom:18px;
+  }
+  .setup-card h3{font-family:var(--font-display);font-weight:600;font-size:15px;margin:0 0 6px;}
+  .setup-fields{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;}
+  .setup-fields .field{display:flex;flex-direction:column;gap:6px;}
+  .setup-fields label{font-size:11.5px;color:var(--ink-soft);}
+  .setup-fields input[type="number"]{
+    font-family:var(--font-mono);font-size:13px;text-align:right;direction:ltr;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:8px 9px;width:90px;
+  }
+  .setup-fields input[type="month"]{
+    font-family:var(--font-body);font-size:13px;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:8px 9px;width:150px;
+  }
+  .setup-fields button{
+    font-family:var(--font-body);font-size:12.5px;font-weight:500;
+    padding:9px 16px;border-radius:3px;border:1px solid var(--emerald-deep);
+    background:transparent;color:var(--emerald-deep);cursor:pointer;
+  }
+  .setup-fields button:hover{background:var(--emerald-deep);color:#fff;}
+
+  .columns-section{border-top:1px solid var(--rule);margin-top:16px;padding-top:16px;}
+  .columns-section h3{font-family:var(--font-display);font-weight:600;font-size:15px;margin:0 0 6px;}
+  .category-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .cat-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--paper);border:1px solid var(--rule);border-radius:20px;
+    padding:5px 6px 5px 12px;font-size:12px;color:var(--ink);
+  }
+  .cat-chip .cat-remove{
+    border:none;background:var(--rule);color:var(--ink-soft);
+    width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px;
+    display:flex;align-items:center;justify-content:center;padding:0;line-height:1;
+  }
+  .cat-chip .cat-remove:hover{background:var(--brick-deep);color:#fff;}
+  .quick-add{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .quick-add button{
+    font-family:var(--font-body);font-size:11.5px;
+    border:1px dashed var(--ink-soft);background:transparent;color:var(--ink-soft);
+    border-radius:20px;padding:5px 12px;cursor:pointer;
+  }
+  .quick-add button:hover{border-color:var(--emerald-deep);color:var(--emerald-deep);}
+  .custom-add{display:flex;gap:8px;flex-wrap:wrap;}
+  .custom-add input{
+    font-family:var(--font-body);font-size:12.5px;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:8px 10px;width:200px;
+  }
+  .custom-add button{
+    font-family:var(--font-body);font-size:12.5px;font-weight:500;
+    padding:8px 14px;border-radius:3px;border:1px solid var(--ink);
+    background:var(--paper-raised);cursor:pointer;
+  }
+  .custom-add button:hover{background:var(--ink);color:var(--paper);}
+
+  .planning-mode-list{display:flex;flex-direction:column;gap:8px;}
+  .pm-row{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--paper);border:1px solid var(--rule);border-radius:6px;
+    padding:8px 12px;
+  }
+  .pm-row .pm-label{font-size:12.5px;color:var(--ink);min-width:140px;flex:1;}
+  .pm-toggle{display:flex;border:1px solid var(--ink);border-radius:3px;overflow:hidden;}
+  .pm-toggle button{
+    font-family:var(--font-body);font-size:11px;font-weight:500;
+    padding:6px 12px;border:none;background:transparent;color:var(--ink-soft);cursor:pointer;
+  }
+  .pm-toggle button.active{background:var(--ink);color:var(--paper);}
+  .pm-row-wrap{border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:8px;}
+  .pm-row-wrap:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .pm-periods{
+    display:flex;flex-direction:column;gap:6px;margin:8px 0 0;
+    padding-inline-start:14px;border-inline-start:2px solid var(--amber-border);
+  }
+  .period-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .period-row input[type="month"]{
+    font-family:var(--font-body);font-size:11.5px;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:5px 6px;width:122px;
+  }
+  .period-row .period-arrow{color:var(--ink-soft);font-size:12px;}
+  .period-row input[type="number"]{
+    font-family:var(--font-mono);font-size:11.5px;text-align:right;direction:ltr;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:5px 6px;width:84px;
+  }
+  .period-row .period-remove{
+    border:none;background:var(--rule);color:var(--ink-soft);
+    width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px;
+    display:flex;align-items:center;justify-content:center;padding:0;line-height:1;
+  }
+  .period-row .period-remove:hover{background:var(--brick-deep);color:#fff;}
+  .btn-add-period{
+    align-self:flex-start;font-family:var(--font-body);font-size:11px;
+    border:1px dashed var(--emerald-deep);background:transparent;color:var(--emerald-deep);
+    border-radius:20px;padding:5px 12px;cursor:pointer;margin-top:2px;
+  }
+  .btn-add-period:hover{background:var(--emerald-deep);color:#fff;}
+
+  /* ===== Table ===== */
+  .table-wrap{
+    overflow-x:auto;
+    border:1px solid var(--ink);
+    border-radius:8px;
+    background:var(--paper-raised);
+  }
+  table{border-collapse:collapse;width:100%;min-width:1080px;}
+  thead th{
+    font-family:var(--font-body);
+    font-size:10.5px;
+    letter-spacing:0.03em;
+    color:var(--ink-soft);
+    text-align:right;
+    padding:10px 10px;
+    border-bottom:1px solid var(--ink);
+    background:var(--paper);
+    white-space:nowrap;
+    position:sticky;
+    top:0;
+  }
+  thead th:first-child, tbody td:first-child, tfoot td:first-child{
+    text-align:start;
+    position:sticky;
+    inset-inline-start:0;
+    background:var(--paper);
+    z-index:2;
+  }
+  tbody td, tfoot td{
+    padding:6px 8px;
+    text-align:right;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    white-space:nowrap;
+    direction:ltr;
+  }
+  tbody td:first-child, tfoot td:first-child{
+    font-family:var(--font-body);
+    font-size:12.5px;
+    text-align:start;
+    direction:inherit;
+    color:var(--ink);
+    background:var(--paper-raised);
+  }
+  tbody tr:hover td{background:#FBFAF5;}
+  tbody tr:hover td:first-child{background:#FBFAF5;}
+  input.cell-input{
+    width:78px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    text-align:right;
+    direction:ltr;
+    border:1px solid var(--amber-border);
+    background:var(--amber-bg);
+    border-radius:3px;
+    padding:5px 6px;
+    color:var(--ink);
+  }
+  input.cell-input:focus{outline:2px solid var(--emerald);outline-offset:1px;}
+  input.cell-input.cell-locked{background:var(--paper);border-color:var(--rule);color:var(--ink-soft);cursor:not-allowed;}
+  input.month-input{
+    font-family:var(--font-body);
+    font-size:12.5px;
+    border:1px solid var(--amber-border);
+    background:var(--amber-bg);
+    border-radius:3px;
+    padding:5px 6px;
+    width:130px;
+  }
+  td.calc{color:var(--ink-soft);}
+  td.pos{color:var(--emerald-deep);}
+  td.neg{color:var(--brick-deep);}
+  td.rowdel{text-align:center;}
+  td.rowdel button{
+    border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;
+  }
+  td.rowdel button:hover{color:var(--brick-deep);}
+  tfoot td{font-weight:600;background:var(--paper);border-top:1px solid var(--ink);border-bottom:none;}
+
+  .table-actions{display:flex;gap:10px;margin-top:12px;}
+  .table-actions button{
+    font-family:var(--font-body);font-size:12.5px;font-weight:500;
+    padding:7px 13px;border-radius:3px;border:1px solid var(--ink);
+    background:var(--paper-raised);cursor:pointer;
+  }
+  .table-actions button:hover{background:var(--ink);color:var(--paper);}
+
+  .rules-box{
+    display:flex;gap:28px;margin-top:22px;flex-wrap:wrap;
+    border-top:1px solid var(--rule);padding-top:18px;
+  }
+  .rules-box .field{display:flex;flex-direction:column;gap:6px;}
+  .rules-box label{font-size:11.5px;color:var(--ink-soft);}
+  .rules-box input{
+    font-family:var(--font-mono);font-size:13px;
+    text-align:right;direction:ltr;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:7px 9px;width:150px;
+  }
+
+  /* ===== Dashboard ===== */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:26px;}
+  .kpi{
+    background:var(--paper-raised);border:1px solid var(--rule);border-radius:8px;
+    padding:14px 16px;
+  }
+  .kpi .k{font-size:10.5px;color:var(--ink-soft);margin:0 0 8px;}
+  .kpi .v{font-family:var(--font-mono);font-size:20px;font-weight:500;margin:0;direction:ltr;text-align:right;}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .chart-card{
+    background:var(--paper-raised);border:1px solid var(--rule);border-radius:8px;padding:18px;
+  }
+  .chart-card h3{font-family:var(--font-display);font-weight:600;font-size:15px;margin:0 0 14px;}
+  .chart-card.wide{grid-column:1/-1;}
+  canvas{display:block;}
+  .chart-canvas-box{position:relative;height:260px;width:100%;}
+
+  /* ===== Forecast ===== */
+  .forecast-grid{display:grid;grid-template-columns:280px 1fr;gap:28px;align-items:start;}
+  .assump-card{
+    background:var(--paper-raised);border:1px solid var(--rule);border-radius:8px;padding:18px;
+  }
+  .assump-card h3{font-family:var(--font-display);font-weight:600;font-size:15px;margin:0 0 14px;}
+  .assump-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .assump-field label{font-size:11.5px;color:var(--ink-soft);}
+  .assump-field .hint{font-size:10.5px;color:var(--ink-soft);opacity:0.8;}
+  .assump-field input{
+    font-family:var(--font-mono);font-size:13px;
+    text-align:right;direction:ltr;
+    border:1px solid var(--amber-border);background:var(--amber-bg);
+    border-radius:3px;padding:8px 9px;width:100%;
+  }
+  .result-banner{
+    background:var(--ink);color:var(--paper);border-radius:8px;padding:20px 22px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .result-banner .k{font-size:11px;color:#C9C4B4;margin:0 0 4px;}
+  .result-banner .v{font-family:var(--font-mono);font-size:26px;font-weight:500;margin:0;direction:ltr;}
+
+  .help-content{max-width:760px;}
+  .help-section{border-bottom:1px solid var(--rule);padding:16px 0;}
+  .help-section:first-child{padding-top:0;}
+  .help-section:last-child{border-bottom:none;}
+  .help-section h3{font-family:var(--font-display);font-weight:600;font-size:16px;margin:0 0 8px;}
+  .help-section p{font-size:13.5px;line-height:1.8;color:var(--ink);margin:0;}
+  .help-section p strong{color:var(--emerald-deep);font-weight:600;}
+
+  footer.foot{
+    max-width:1180px;margin:40px auto 0;padding:18px 28px 0;
+    border-top:1px solid var(--rule);
+    font-size:11.5px;color:var(--ink-soft);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(24,34,54,0.55);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;z-index:1000;
+  }
+  .modal-card{
+    background:var(--paper-raised);border-radius:10px;
+    padding:26px 28px;max-width:420px;width:100%;
+    box-shadow:0 12px 40px rgba(0,0,0,0.25);
+  }
+  .modal-card h3{
+    font-family:var(--font-display);font-weight:600;font-size:18px;
+    margin:0 0 10px;color:var(--brick-deep);
+  }
+  .modal-card p{font-size:13.5px;line-height:1.7;color:var(--ink);margin:0 0 20px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+  .modal-actions button{
+    font-family:var(--font-body);font-size:13px;font-weight:500;
+    padding:9px 20px;border-radius:4px;cursor:pointer;
+  }
+  .modal-actions #btn-reset-no{
+    border:1px solid var(--ink);background:transparent;color:var(--ink);
+  }
+  .modal-actions #btn-reset-no:hover{background:var(--ink);color:var(--paper);}
+  .modal-actions #btn-reset-yes{
+    border:1px solid var(--brick-deep);background:var(--brick-deep);color:#fff;
+  }
+  .modal-actions #btn-reset-yes:hover{background:var(--brick);border-color:var(--brick);}
+
+  @media (max-width:900px){
+    .strip{grid-template-columns:repeat(2,1fr);}
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .charts{grid-template-columns:1fr;}
+    .forecast-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="title-row">
+      <h1 class="brand"><span class="stub-no" data-i18n="stub_no">Passbook · Personal Ledger</span><span data-i18n="brand_title">Salary budget &amp; savings planner</span></h1>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button id="lang-en" data-lang="en" data-i18n="lang_en">English</button>
+          <button id="lang-ar" data-lang="ar" data-i18n="lang_ar">العربية</button>
+        </div>
+        <p id="current-datetime" class="current-datetime"></p>
+      </div>
+    </div>
+    <input type="text" id="user-name-input" class="user-name-input" data-i18n-placeholder="username_placeholder" placeholder="Enter your name">
+    <p class="sub" data-i18n="sub">Track monthly income and spending, watch your savings rate, and project where your balance lands over time.</p>
+    <div class="actions">
+      <button id="btn-save" style="border-color:var(--emerald-deep);color:var(--emerald-deep);" data-i18n="btn_save">Save now</button>
+      <button id="btn-export" data-i18n="btn_export">Export data (.json)</button>
+      <button id="btn-import" data-i18n="btn_import">Import data</button>
+      <button id="btn-export-excel" data-i18n="btn_export_excel">Export to Excel (.xlsx)</button>
+      <button id="btn-import-excel" data-i18n="btn_import_excel">Load from Excel</button>
+      <button id="btn-connect-excel" data-i18n="btn_connect_excel" style="display:none;">Connect Excel file…</button>
+      <button id="btn-share-excel" data-i18n="btn_share_excel" style="display:none;">Share / Back Up…</button>
+      <button id="btn-reload-linked" data-i18n="btn_reload_linked" style="display:none;">Reload from linked file</button>
+      <button id="btn-reset" class="danger" data-i18n="btn_reset">Reset all</button>
+      <span id="save-flag" data-i18n="msg_saved">Saved</span>
+      <input type="file" id="file-import" accept="application/json" style="display:none;">
+      <input type="file" id="file-import-excel" accept=".xlsx,.xls" style="display:none;">
+    </div>
+    <p id="excel-link-status" style="display:none;font-size:11px;color:var(--ink-soft);margin:-14px 0 18px;"></p>
+  </div>
+  <div class="strip" id="ledger-strip">
+    <div class="cell"><p class="k" data-i18n="strip_salary">Total income</p><p class="v" id="strip-salary">$0</p></div>
+    <div class="cell"><p class="k" data-i18n="strip_spend">Total spend</p><p class="v" id="strip-spend">$0</p></div>
+    <div class="cell"><p class="k" data-i18n="strip_savings">Total savings</p><p class="v" id="strip-savings">$0</p></div>
+    <div class="cell"><p class="k" data-i18n="strip_rate">Savings rate</p><p class="v" id="strip-rate">0%</p></div>
+    <div class="cell"><p class="k" data-i18n="strip_emergency">Emergency fund</p><p class="v" id="strip-emergency">$0</p></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button data-tab="budget" class="active" data-i18n="tab_budget">Monthly budget</button>
+    <button data-tab="dashboard" data-i18n="tab_dashboard">Dashboard</button>
+    <button data-tab="forecast" id="tab-forecast-btn" data-i18n="tab_forecast_base">Forecast</button>
+    <button data-tab="help" data-i18n="tab_help">How to use</button>
+  </nav>
+
+  <main>
+    <section class="panel active" id="panel-budget">
+      <h2 class="section-title" data-i18n="budget_h2">Monthly budget tracker</h2>
+      <p class="section-note" data-i18n="budget_note">Fill in salary and spending for each month. Totals, savings and savings rate update automatically. Enter 0 for a category that doesn't apply.</p>
+      <div class="legend">
+        <span><i class="in"></i><span data-i18n="legend_in">Your input</span></span>
+        <span><i class="out"></i><span data-i18n="legend_out">Calculated automatically</span></span>
+      </div>
+
+      <div id="empty-months-reminder" class="reminder-banner" style="display:none;"></div>
+
+      <div class="setup-card">
+        <h3 data-i18n="setup_title">Set up your table</h3>
+        <p class="section-note" style="margin:0 0 14px;" data-i18n="setup_note">Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.</p>
+        <div class="setup-fields">
+          <div class="field">
+            <label data-i18n="setup_years_label">Number of years</label>
+            <input type="number" id="setup-years" min="1" max="20" step="1" value="1">
+          </div>
+          <div class="field">
+            <label data-i18n="setup_startmonth_label">Starting month</label>
+            <input type="month" id="setup-start-month">
+          </div>
+          <button id="btn-generate-months" data-i18n="btn_generate">Generate months table</button>
+        </div>
+
+        <div class="columns-section">
+          <h3 data-i18n="columns_title">Table columns</h3>
+          <p class="section-note" style="margin:0 0 12px;" data-i18n="columns_note">Choose which expense categories to track. Remove ones you don't need, or add your own.</p>
+          <div id="category-list" class="category-list"></div>
+          <div id="quick-add-categories" class="quick-add"></div>
+          <div class="custom-add">
+            <input type="text" id="new-category-name" data-i18n-placeholder="new_category_placeholder" placeholder="e.g. Subscriptions">
+            <button id="btn-add-category" data-i18n="btn_add_category">+ Add column</button>
+          </div>
+        </div>
+
+        <div class="columns-section">
+          <h3 data-i18n="planning_mode_title">Fixed vs. variable</h3>
+          <p class="section-note" style="margin:0 0 12px;" data-i18n="planning_mode_note">Mark an entry as fixed to set one amount for the whole period, or variable to enter it month by month.</p>
+          <div id="planning-mode-list" class="planning-mode-list"></div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr id="budget-thead-row"></tr>
+          </thead>
+          <tbody id="budget-body"></tbody>
+          <tfoot>
+            <tr id="budget-totals"></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="table-actions">
+        <button id="btn-add-month" data-i18n="table_add_month">+ Add month</button>
+        <button id="btn-remove-month" data-i18n="table_remove_month">− Remove last month</button>
+      </div>
+
+      <div class="rules-box">
+        <div class="field">
+          <label data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount ($)</label>
+          <input type="number" id="emergency-threshold" step="1">
+        </div>
+        <div class="field">
+          <label data-i18n="rule_start_label">Starting emergency balance ($)</label>
+          <input type="number" id="emergency-start" step="1">
+        </div>
+      </div>
+      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
+    </section>
+
+    <section class="panel" id="panel-dashboard">
+      <h2 class="section-title" data-i18n="dashboard_h2">Dashboard</h2>
+      <p class="section-note" data-i18n="dashboard_note">Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.</p>
+
+      <div class="kpis">
+        <div class="kpi"><p class="k" data-i18n="kpi_salary">Total income</p><p class="v" id="kpi-salary">$0</p></div>
+        <div class="kpi"><p class="k" data-i18n="kpi_expenses">Total expenses</p><p class="v" id="kpi-expenses">$0</p></div>
+        <div class="kpi"><p class="k" data-i18n="kpi_savings">Total savings</p><p class="v" id="kpi-savings">$0</p></div>
+        <div class="kpi"><p class="k" data-i18n="kpi_rate">Avg. savings rate</p><p class="v" id="kpi-rate">0%</p></div>
+        <div class="kpi"><p class="k" data-i18n="kpi_avgsavings">Avg. monthly savings</p><p class="v" id="kpi-avg-savings">$0</p><p style="font-size:10px;color:var(--ink-soft);margin:4px 0 0;" data-i18n="kpi_avgsavings_sub">Months with salary entered only</p></div>
+      </div>
+
+      <div id="charts-unavailable-dashboard" class="reminder-banner" style="display:none;"></div>
+      <div class="charts">
+        <div class="chart-card">
+          <h3 data-i18n="chart_category_title">Spending by category</h3>
+          <div class="chart-canvas-box"><canvas id="chart-category"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="chart_rate_title">Savings rate trend</h3>
+          <div class="chart-canvas-box"><canvas id="chart-rate"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <h3 data-i18n="chart_trend_title">Monthly trend — salary, expenses, savings</h3>
+          <div class="chart-canvas-box"><canvas id="chart-trend"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-forecast">
+      <h2 class="section-title" id="forecast-title">Savings forecast</h2>
+      <p class="section-note" data-i18n="forecast_note">Edit the assumptions on the left — everything else recalculates automatically. Contributions grow yearly with (salary growth − expense growth); returns use a mid-year convention.</p>
+      <p class="section-note" id="forecast-basis-note" style="margin-top:-10px;"></p>
+      <div id="charts-unavailable-forecast" class="reminder-banner" style="display:none;"></div>
+
+      <div class="forecast-grid">
+        <div class="assump-card">
+          <h3 data-i18n="assumptions_h3">Assumptions</h3>
+          <div class="assump-field">
+            <label data-i18n="f_start_label">Starting savings (today, $)</label>
+            <input type="number" id="f-start" step="1">
+          </div>
+          <div class="assump-field">
+            <label data-i18n="f_avgsavings_label">Current avg. monthly savings ($)</label>
+            <input type="number" id="f-avg-savings" step="1">
+            <span class="hint" id="f-avg-hint" data-i18n="f_avghint_auto">Auto-filled from Dashboard — edit to override</span>
+          </div>
+          <div class="assump-field">
+            <label data-i18n="f_salarygrowth_label">Annual salary growth rate (%)</label>
+            <input type="number" id="f-salary-growth" step="0.1">
+          </div>
+          <div class="assump-field">
+            <label data-i18n="f_expensegrowth_label">Annual expense growth rate (%)</label>
+            <input type="number" id="f-expense-growth" step="0.1">
+          </div>
+          <div class="assump-field">
+            <label data-i18n="f_return_label">Annual investment return rate (%)</label>
+            <input type="number" id="f-return" step="0.1">
+          </div>
+        </div>
+
+        <div>
+          <div class="result-banner">
+            <div><p class="k" id="forecast-result-label">Projected savings</p><p class="v" id="forecast-result">$0</p></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="position:static;" data-i18n="forecast_table_year">Year</th>
+                  <th data-i18n="forecast_table_beginning">Beginning balance</th>
+                  <th data-i18n="forecast_table_contrib">Annual contributions</th>
+                  <th data-i18n="forecast_table_returns">Investment returns</th>
+                  <th data-i18n="forecast_table_ending">Ending balance</th>
+                  <th data-i18n="forecast_table_growth">Growth vs year 1</th>
+                </tr>
+              </thead>
+              <tbody id="forecast-body"></tbody>
+            </table>
+          </div>
+          <div class="chart-card" style="margin-top:18px;">
+            <h3 data-i18n="forecast_chart_title">Ending balance by year</h3>
+            <div class="chart-canvas-box"><canvas id="chart-forecast"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-help">
+      <h2 class="section-title" data-i18n="help_h2">How to use</h2>
+
+      <div id="help-content-en" class="help-content">
+        <div class="help-section">
+          <h3>Getting started</h3>
+          <p>Go to the <strong>Monthly budget</strong> tab. Under <strong>Set up your table</strong>, choose how many years to plan for and pick a starting month, then click <strong>Generate months table</strong> — this creates one row per month.</p>
+        </div>
+        <div class="help-section">
+          <h3>Filling in your numbers</h3>
+          <p>Type your salary, side income, and expenses for each month. Amber cells are yours to edit; everything else (Total spend, Monthly savings, Savings rate, Emergency fund balance) calculates automatically. A banner will remind you if any month is still empty.</p>
+        </div>
+        <div class="help-section">
+          <h3>Customizing categories</h3>
+          <p>Under <strong>Table columns</strong>, remove any expense category you don't need, or add your own (like Subscriptions or Gym) using the "+ Add column" box.</p>
+        </div>
+        <div class="help-section">
+          <h3>Fixed vs. variable</h3>
+          <p>For anything that stays the same for a while — like rent or a steady salary — switch it to <strong>Fixed</strong> and set an amount for a period (with a start month, and an end month if it changes later). Add another period to reflect a raise or a rent increase. Leave things that change month to month, like groceries, as <strong>Variable</strong>.</p>
+        </div>
+        <div class="help-section">
+          <h3>The emergency fund rule</h3>
+          <p>Set a monthly surplus threshold and a starting balance. Each month, if income minus expenses meets that threshold, that amount is automatically saved to the emergency fund; a smaller surplus goes in fully; a shortfall is automatically covered from the fund if there's enough saved.</p>
+        </div>
+        <div class="help-section">
+          <h3>Dashboard &amp; forecast</h3>
+          <p>The <strong>Dashboard</strong> tab summarizes totals, your savings rate, and spending by category. The <strong>Forecast</strong> tab projects your savings years ahead, scaled automatically to how many months you've filled in — edit the assumptions to see how salary growth, expense growth, or investment returns change the outcome.</p>
+        </div>
+        <div class="help-section">
+          <h3>Saving your data</h3>
+          <p>Your data saves automatically in this browser. Use <strong>Save now</strong> any time to confirm it's saved, and <strong>Export data (.json)</strong> for a backup you can re-import later with <strong>Import data</strong>.</p>
+        </div>
+        <div class="help-section">
+          <h3>Working with Excel</h3>
+          <p><strong>Export to Excel</strong> downloads a full workbook (Monthly budget, Dashboard, Forecast). <strong>Load from Excel</strong> reads one back in — handy if you'd rather edit numbers directly in a spreadsheet. On Chrome or Edge on desktop, <strong>Connect Excel file…</strong> links one specific file so <strong>Update linked Excel file</strong> and <strong>Reload from linked file</strong> always work with that same file, in the same folder, every month.</p>
+          <p style="margin-top:8px;"><strong>Using OneDrive?</strong> If you have the OneDrive desktop app syncing a folder on this computer, just choose a file inside that folder when you click <strong>Connect Excel file…</strong> — OneDrive picks up the change and uploads it automatically every time you click <strong>Update linked Excel file</strong>, no extra steps needed.</p>
+          <p style="margin-top:8px;"><strong>On iPhone or Android?</strong> "Connect Excel file…" only works on Chrome or Edge on desktop. On mobile, use <strong>Share / Back Up…</strong> instead — it opens your phone's normal share sheet with both a full backup (.json) and an Excel copy of your data attached, so you can save them straight into OneDrive, iCloud Drive, Google Drive, or email them to yourself, in one tap.</p>
+          <p style="margin-top:8px;"><strong>Protecting your data if something happens to your device:</strong> everything you enter is saved only in this browser, on this device — if your phone is lost, reset, or replaced, that data doesn't exist anywhere else unless you've backed it up. Use <strong>Share / Back Up…</strong> (or <strong>Export data (.json)</strong> on desktop) regularly, and keep the .json file somewhere safe like OneDrive or iCloud Drive. If you ever need to restore it — new device, or after a reset — open the app and use <strong>Import data</strong> with that same file to get everything back exactly as it was, no re-entering required.</p>
+          <p style="margin-top:8px;"><strong>Share button not working on mobile?</strong> This feature only works when the page is opened via a real <code>https://</code> link — not when opened directly as a downloaded file or through an app's built-in file viewer (which is common when opening from OneDrive on iPhone). The fix is to host this file somewhere with a real link — for example, free options like Netlify Drop or GitHub Pages — then open that link instead of the local file. Once hosted, saving straight to OneDrive from the share sheet works reliably.</p>
+        </div>
+        <div class="help-section">
+          <h3>Switching language</h3>
+          <p>Use the English / العربية buttons at the top right to switch anytime — your data stays exactly the same.</p>
+        </div>
+      </div>
+
+      <div id="help-content-ar" class="help-content" dir="rtl" lang="ar" style="display:none;">
+        <div class="help-section">
+          <h3>البدء</h3>
+          <p>افتح تبويب <strong>الميزانية الشهرية</strong>. ضمن <strong>إعداد الجدول</strong>، اختر عدد السنوات التي تخطط لها وحدد الشهر الأول، ثم اضغط <strong>إنشاء جدول الأشهر</strong> — سيُنشئ هذا صفًا لكل شهر.</p>
+        </div>
+        <div class="help-section">
+          <h3>إدخال الأرقام</h3>
+          <p>أدخل راتبك، والدخل الإضافي، والمصروفات لكل شهر. الخلايا الكهرمانية هي التي تُدخلها أنت؛ أما البقية (إجمالي الصرف، الادخار الشهري، معدل الادخار، رصيد صندوق الطوارئ) فتُحسب تلقائيًا. ستذكّرك رسالة إن بقي أي شهر فارغًا.</p>
+        </div>
+        <div class="help-section">
+          <h3>تخصيص الفئات</h3>
+          <p>ضمن <strong>أعمدة الجدول</strong>، احذف أي فئة مصروفات لا تحتاجها، أو أضف فئتك الخاصة (مثل الاشتراكات أو النادي الرياضي) عبر مربع "+ إضافة عمود".</p>
+        </div>
+        <div class="help-section">
+          <h3>ثابت أم متغيّر</h3>
+          <p>لأي مبلغ يبقى ثابتًا لفترة — كالإيجار أو راتب مستقر — بدّله إلى <strong>ثابت</strong> وحدد مبلغًا لفترة معينة (بشهر بداية، وشهر نهاية إن كان سيتغيّر لاحقًا). أضف فترة أخرى لتمثيل زيادة في الراتب أو الإيجار. اترك ما يتغيّر شهريًا، كالبقالة، على وضع <strong>متغيّر</strong>.</p>
+        </div>
+        <div class="help-section">
+          <h3>قاعدة صندوق الطوارئ</h3>
+          <p>حدد حد فائض شهري ورصيدًا ابتدائيًا. كل شهر، إذا بلغ الفائض (الدخل ناقص المصروفات) هذا الحد، يُحفظ ذلك المبلغ تلقائيًا في صندوق الطوارئ؛ وإذا كان الفائض أقل، يُحفظ بالكامل؛ وإذا حدث عجز، يُغطّى تلقائيًا من الصندوق إن توفّر فيه ما يكفي.</p>
+        </div>
+        <div class="help-section">
+          <h3>لوحة المعلومات والتوقعات</h3>
+          <p>يلخّص تبويب <strong>لوحة المعلومات</strong> الإجماليات، ومعدل ادخارك، والمصروفات حسب الفئة. ويتوقّع تبويب <strong>التوقعات</strong> ادخارك للسنوات القادمة، بحسب عدد الأشهر التي أدخلتها — عدّل الافتراضات لترى أثر نمو الراتب أو المصروفات أو العائد الاستثماري.</p>
+        </div>
+        <div class="help-section">
+          <h3>حفظ بياناتك</h3>
+          <p>تُحفظ بياناتك تلقائيًا في هذا المتصفح. استخدم <strong>احفظ الآن</strong> في أي وقت للتأكد من الحفظ، و<strong>تصدير البيانات (.json)</strong> لأخذ نسخة احتياطية يمكنك استعادتها لاحقًا عبر <strong>استيراد البيانات</strong>.</p>
+        </div>
+        <div class="help-section">
+          <h3>العمل مع إكسل</h3>
+          <p>يقوم <strong>تصدير إلى إكسل</strong> بتنزيل ملف كامل (الميزانية الشهرية، لوحة المعلومات، التوقعات). ويقرأ <strong>تحميل من إكسل</strong> ملفًا مثله ليعيد إدخاله — مفيد إن كنت تفضّل تعديل الأرقام مباشرة في جدول بيانات. وعلى متصفح Chrome أو Edge على الحاسوب، يربط <strong>ربط ملف إكسل…</strong> ملفًا محددًا بحيث يعمل <strong>تحديث ملف إكسل المرتبط</strong> و<strong>إعادة تحميل من الملف المرتبط</strong> دائمًا مع الملف نفسه، في المجلد نفسه، شهرًا بعد شهر.</p>
+          <p style="margin-top:8px;"><strong>تستخدم OneDrive؟</strong> إذا كان تطبيق OneDrive لسطح المكتب يُزامن مجلدًا على هذا الجهاز، فقط اختر ملفًا داخل ذلك المجلد عند الضغط على <strong>ربط ملف إكسل…</strong> — سيرصد OneDrive التغيير ويرفعه تلقائيًا في كل مرة تضغط فيها <strong>تحديث ملف إكسل المرتبط</strong>، دون أي خطوات إضافية.</p>
+          <p style="margin-top:8px;"><strong>على آيفون أو أندرويد؟</strong> يعمل زر <strong>ربط ملف إكسل…</strong> فقط على متصفح Chrome أو Edge على الحاسوب. على الجوال، استخدم زر <strong>مشاركة / نسخ احتياطي…</strong> بدلاً منه — يفتح قائمة المشاركة المعتادة في هاتفك مع نسخة احتياطية كاملة (.json) ونسخة إكسل من بياناتك مرفقتين معًا، بحيث يمكنك حفظهما مباشرة في OneDrive أو iCloud Drive أو Google Drive، أو إرسالهما لنفسك بالبريد الإلكتروني، بضغطة واحدة.</p>
+          <p style="margin-top:8px;"><strong>لحماية بياناتك إن حدث خلل بجهازك:</strong> كل ما تُدخله يُحفظ فقط في هذا المتصفح، على هذا الجهاز — إذا فُقد هاتفك أو أُعيد ضبطه أو استُبدل، فلن تكون تلك البيانات موجودة في أي مكان آخر ما لم تكن قد أخذت نسخة احتياطية منها. استخدم <strong>مشاركة / نسخ احتياطي…</strong> (أو <strong>تصدير البيانات (.json)</strong> على الحاسوب) بانتظام، واحتفظ بملف الـ .json في مكان آمن مثل OneDrive أو iCloud Drive. وإذا احتجت لاستعادتها لاحقًا — جهاز جديد، أو بعد إعادة ضبط — افتح التطبيق واستخدم <strong>استيراد البيانات</strong> مع ذلك الملف نفسه لاسترجاع كل شيء كما كان تمامًا، دون الحاجة لإعادة الإدخال.</p>
+          <p style="margin-top:8px;"><strong>زر المشاركة لا يعمل على الجوال؟</strong> تعمل هذه الميزة فقط عند فتح الصفحة عبر رابط ويب حقيقي (<code>https://</code>) — وليس عند فتحها كملف تم تنزيله مباشرة أو عبر عارض ملفات داخل تطبيق (وهو أمر شائع عند الفتح من OneDrive على آيفون). الحل هو استضافة هذا الملف في مكان له رابط حقيقي — مثل خيارات مجانية كـ Netlify Drop أو GitHub Pages — ثم فتح ذلك الرابط بدلاً من الملف المحلي. بعد الاستضافة، سيعمل الحفظ مباشرة في OneDrive من قائمة المشاركة بشكل موثوق.</p>
+        </div>
+        <div class="help-section">
+          <h3>تبديل اللغة</h3>
+          <p>استخدم زرّي English / العربية أعلى الصفحة للتبديل في أي وقت — بياناتك تبقى كما هي تمامًا.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="foot">
+  <span data-i18n="footer_amber">Amber cells are your inputs. Everything else calculates automatically.</span>
+  <span data-i18n="footer_autosave">Data saves automatically in this browser.</span>
+</footer>
+
+<div id="reset-confirm-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <h3 data-i18n="reset_confirm_title">Reset all data?</h3>
+    <p data-i18n="reset_confirm_message">You'll permanently lose all your data and your customized setup — months, categories, fixed/variable settings, and everything else. This can't be undone.</p>
+    <div class="modal-actions">
+      <button id="btn-reset-no" data-i18n="btn_no">Cancel</button>
+      <button id="btn-reset-yes" class="danger" data-i18n="btn_yes">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TRANSLATIONS = {
+  en: {
+    title:'Salary Budget & Savings Planner — Abdullah',
+    stub_no:'Passbook · Personal Ledger',
+    brand_title:'Salary budget & savings planner',
+    sub:'Track monthly income and spending, watch your savings rate, and project where your balance lands over time.',
+    btn_save:'Save now', btn_export:'Export data (.json)', btn_import:'Import data', btn_reset:'Reset all',
+    btn_export_excel:'Export to Excel (.xlsx)', btn_connect_excel:'Connect Excel file…', btn_update_excel:'Update linked Excel file',
+    btn_import_excel:'Load from Excel', btn_reload_linked:'Reload from linked file',
+    fs_not_supported:'Linking a file works in Chrome or Edge on desktop. On this browser, please use Export to Excel instead.',
+    charts_unavailable:"Charts couldn't load, probably because a firewall, antivirus, or ad blocker on this network is blocking the chart library. Your numbers above are still accurate — try a different network, or disable any script blockers for this page and reload.",
+    btn_retry_charts:'Retry loading charts',
+    xlsx_unavailable:"Excel features couldn't load — this usually means a firewall, antivirus, or ad blocker is blocking the required library. Try a different network, or disable script blockers for this page and reload.",
+    prompt_excel_filename:'Name the file (choose the save location in the next dialog)',
+    username_placeholder:'Enter your name',
+    btn_share_excel:'Share / Back Up…',
+    share_not_supported:"Sharing files isn't supported in this browser — use Export to Excel instead.",
+    share_failed:"Couldn't share the file. Try Export to Excel instead.",
+    share_needs_https:"Sharing files only works when this page is opened via a real web link (https://), not when opened directly as a local file or through an app's built-in viewer. See \"Working with Excel\" in How to use for free hosting options — once hosted, this button will work.",
+    fs_write_failed:"Couldn't write to the linked file. Try reconnecting it.",
+    fs_read_failed:"Couldn't read the linked file. Try reconnecting it.",
+    alert_excel_import_error:"Could not read that file — make sure it's a .xlsx export from this planner (or has the same column layout).",
+    excel_reconnect_needed:'Permission needed — click to reconnect your linked file.',
+    strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Total savings', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
+    tab_budget:'Monthly budget', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
+    budget_h2:'Monthly budget tracker',
+    budget_note:"Fill in salary and spending for each month. Totals, savings and savings rate update automatically. Enter 0 for a category that doesn't apply.",
+    legend_in:'Your input', legend_out:'Calculated automatically',
+    setup_title:'Set up your table',
+    setup_note:'Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.',
+    setup_years_label:'Number of years', setup_startmonth_label:'Starting month', btn_generate:'Generate months table',
+    columns_title:'Table columns',
+    columns_note:"Choose which expense categories to track. Remove ones you don't need, or add your own.",
+    new_category_placeholder:'e.g. Subscriptions', btn_add_category:'+ Add column',
+    min_category_msg:'Keep at least one expense column.',
+    planning_mode_title:'Fixed vs. variable',
+    planning_mode_note:'Mark an entry as fixed to set an amount for a chosen period — add more periods for a salary raise or a rate change later on. Leave it variable to enter it month by month.',
+    btn_add_period:'+ Add period', period_ongoing:'ongoing',
+    mode_fixed:'Fixed', mode_variable:'Variable',
+    th_month:'Month', th_salary:'Salary', th_sideincome:'Side income', th_rent:'Rent / Housing', th_utilities:'Utilities', th_groceries:'Groceries',
+    th_transport:'Transport', th_entertainment:'Entertainment', th_other:'Other expenses', th_emergency:'Emergency',
+    th_totalspend:'Total spend', th_monthlysavings:'Monthly savings', th_savingsrate:'Savings rate', th_emergencybalance:'Emergency fund balance',
+    table_add_month:'+ Add month', table_remove_month:'− Remove last month',
+    rule_threshold_label:'Min. surplus threshold — emergency amount ($)', rule_start_label:'Starting emergency balance ($)',
+    rule_note:"Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).",
+    dashboard_h2:'Dashboard',
+    dashboard_note:'Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.',
+    kpi_salary:'Total income', kpi_expenses:'Total expenses', kpi_savings:'Total savings', kpi_rate:'Avg. savings rate',
+    kpi_avgsavings:'Avg. monthly savings', kpi_avgsavings_sub:'Months with income entered only',
+    chart_category_title:'Spending by category', chart_rate_title:'Savings rate trend', chart_trend_title:'Monthly trend — salary, expenses, savings',
+    forecast_note:'Edit the assumptions on the left — everything else recalculates automatically. Contributions grow yearly with (salary growth − expense growth); returns use a mid-year convention.',
+    assumptions_h3:'Assumptions',
+    f_start_label:'Starting savings (today, $)', f_avgsavings_label:'Current avg. monthly savings ($)',
+    f_avghint_auto:'Auto-filled from Dashboard — edit to override',
+    f_avghint_custom:'Custom value — clear the field to reset to auto',
+    f_salarygrowth_label:'Annual salary growth rate (%)', f_expensegrowth_label:'Annual expense growth rate (%)', f_return_label:'Annual investment return rate (%)',
+    forecast_table_year:'Year', forecast_table_beginning:'Beginning balance', forecast_table_contrib:'Annual contributions',
+    forecast_table_returns:'Investment returns', forecast_table_ending:'Ending balance', forecast_table_growth:'Growth vs year 1',
+    forecast_chart_title:'Ending balance by year',
+    footer_amber:'Amber cells are your inputs. Everything else calculates automatically.',
+    footer_autosave:'Data saves automatically in this browser.',
+    row_delete_title:'Remove month', totals_label:'Total / avg',
+    emergency_tooltip:'Auto-funded up to the threshold; withdrawn on deficit months',
+    alert_import_error:'Could not read that file — make sure it is a JSON export from this planner.',
+    confirm_reset:'Reset all data? This clears every month, assumption and balance.',
+    reset_confirm_title:'Reset all data?',
+    reset_confirm_message:"You'll permanently lose all your data and your customized setup — months, categories, fixed/variable settings, and everything else. This can't be undone.",
+    btn_yes:'OK', btn_no:'Cancel',
+    msg_saving:'Saving…', msg_saved:'Saved', msg_editing:'Editing…', msg_savefailed:'Save failed — use Export to back up',
+    cat_rent:'Rent / Housing', cat_utilities:'Utilities', cat_groceries:'Groceries', cat_transport:'Transport', cat_entertainment:'Entertainment', cat_other:'Other expenses',
+    series_salary:'Salary', series_expenses:'Expenses', series_savings:'Savings',
+    lang_en:'English', lang_ar:'العربية'
+  },
+  ar: {
+    title:'مخطط الراتب والميزانية والادخار — عبدالله',
+    stub_no:'دفتر شخصي · كشف حساب',
+    brand_title:'مخطط الراتب والميزانية والادخار',
+    sub:'تتبّع دخلك ومصروفاتك الشهرية، وراقب معدل ادخارك، وتوقّع رصيدك مع الوقت.',
+    btn_save:'احفظ الآن', btn_export:'تصدير البيانات (.json)', btn_import:'استيراد البيانات', btn_reset:'إعادة تعيين الكل',
+    btn_export_excel:'تصدير إلى إكسل (.xlsx)', btn_connect_excel:'ربط ملف إكسل…', btn_update_excel:'تحديث ملف إكسل المرتبط',
+    btn_import_excel:'تحميل من إكسل', btn_reload_linked:'إعادة تحميل من الملف المرتبط',
+    fs_not_supported:'ربط ملف يعمل في متصفح Chrome أو Edge على الحاسوب. على هذا المتصفح، الرجاء استخدام زر التصدير إلى إكسل بدلاً من ذلك.',
+    charts_unavailable:'تعذّر تحميل الرسوم البيانية، على الأرجح بسبب جدار حماية أو برنامج مكافحة فيروسات أو أداة حظر إعلانات تمنع مكتبة الرسوم البيانية. أرقامك أعلاه لا تزال دقيقة — جرّب شبكة مختلفة، أو عطّل أي أداة حظر لهذه الصفحة وأعد التحميل.',
+    btn_retry_charts:'إعادة محاولة تحميل الرسوم البيانية',
+    xlsx_unavailable:'تعذّر تحميل ميزات إكسل — على الأرجح بسبب جدار حماية أو برنامج مكافحة فيروسات أو أداة حظر إعلانات تمنع المكتبة المطلوبة. جرّب شبكة مختلفة، أو عطّل أي أداة حظر لهذه الصفحة وأعد التحميل.',
+    prompt_excel_filename:'سمِّ الملف (اختر مكان الحفظ في النافذة التالية)',
+    username_placeholder:'أدخل اسمك',
+    btn_share_excel:'مشاركة / نسخ احتياطي…',
+    share_not_supported:'مشاركة الملفات غير مدعومة في هذا المتصفح — استخدم زر التصدير إلى إكسل بدلاً من ذلك.',
+    share_failed:'تعذّرت مشاركة الملف. جرّب زر التصدير إلى إكسل بدلاً من ذلك.',
+    share_needs_https:'تعمل مشاركة الملفات فقط عند فتح هذه الصفحة عبر رابط ويب حقيقي (https://)، وليس عند فتحها كملف محلي مباشر أو عبر عارض ملفات داخل تطبيق. راجع قسم «العمل مع إكسل» في «طريقة الاستخدام» لخيارات استضافة مجانية — وبعد الاستضافة سيعمل هذا الزر.',
+    fs_write_failed:'تعذّرت الكتابة في الملف المرتبط. حاول إعادة ربطه.',
+    fs_read_failed:'تعذّرت قراءة الملف المرتبط. حاول إعادة ربطه.',
+    alert_excel_import_error:'تعذّرت قراءة هذا الملف — تأكد أنه ملف .xlsx مُصدَّر من هذا المخطط (أو له نفس ترتيب الأعمدة).',
+    excel_reconnect_needed:'يلزم إذن — اضغط لإعادة ربط ملفك المرتبط.',
+    strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'إجمالي الادخار', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
+    tab_budget:'الميزانية الشهرية', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
+    budget_h2:'متتبّع الميزانية الشهرية',
+    budget_note:'أدخل الراتب والمصروفات لكل شهر. تُحدَّث الإجماليات والادخار ومعدل الادخار تلقائيًا. أدخل 0 لأي فئة لا تنطبق عليك.',
+    legend_in:'إدخالك', legend_out:'يُحسب تلقائيًا',
+    setup_title:'إعداد الجدول',
+    setup_note:'اختر عدد السنوات التي تريد البدء بها والشهر الأول — سيُنشئ هذا الجدول أدناه. يمكنك إضافة أشهر أو حذفها في أي وقت.',
+    setup_years_label:'عدد السنوات', setup_startmonth_label:'الشهر الأول', btn_generate:'إنشاء جدول الأشهر',
+    columns_title:'أعمدة الجدول',
+    columns_note:'اختر فئات المصروفات التي تريد تتبعها. احذف ما لا تحتاجه، أو أضف فئتك الخاصة.',
+    new_category_placeholder:'مثال: الاشتراكات', btn_add_category:'+ إضافة عمود',
+    min_category_msg:'يجب الإبقاء على عمود مصروفات واحد على الأقل.',
+    planning_mode_title:'ثابت أم متغيّر',
+    planning_mode_note:'علّم الإدخال بأنه ثابت لتحديد مبلغ خلال فترة زمنية تحددها — أضف فترات أخرى لتمثيل زيادة راتب أو تغيير لاحق. اتركه متغيّرًا لإدخاله شهرًا بشهر.',
+    btn_add_period:'+ إضافة فترة', period_ongoing:'مستمر',
+    mode_fixed:'ثابت', mode_variable:'متغيّر',
+    th_month:'الشهر', th_salary:'الراتب', th_sideincome:'دخل إضافي', th_rent:'الإيجار / السكن', th_utilities:'المرافق', th_groceries:'البقالة',
+    th_transport:'المواصلات', th_entertainment:'الترفيه', th_other:'مصروفات أخرى', th_emergency:'الطوارئ',
+    th_totalspend:'إجمالي الصرف', th_monthlysavings:'الادخار الشهري', th_savingsrate:'معدل الادخار', th_emergencybalance:'رصيد صندوق الطوارئ',
+    table_add_month:'+ إضافة شهر', table_remove_month:'− حذف آخر شهر',
+    rule_threshold_label:'حد الفائض الأدنى — مبلغ الطوارئ ($)', rule_start_label:'رصيد الطوارئ الابتدائي ($)',
+    rule_note:'قاعدة الطوارئ: كل شهر، إذا بلغ الفائض (الراتب ناقص المصروفات) الحد المحدد، يُحفظ هذا المبلغ تلقائيًا في صندوق الطوارئ؛ وإذا كان الفائض أقل، يُحفظ الفائض بالكامل؛ وإذا حدث عجز، يُغطّى تلقائيًا من الصندوق بحسب المتاح فيه.',
+    dashboard_h2:'لوحة المعلومات',
+    dashboard_note:'الإجماليات السنوية، ومتوسط الادخار الشهري، والمصروفات حسب الفئة — لا حاجة لإدخال بيانات هنا، فكل شيء يُستمد من الميزانية الشهرية.',
+    kpi_salary:'إجمالي الدخل', kpi_expenses:'إجمالي المصروفات', kpi_savings:'إجمالي الادخار', kpi_rate:'متوسط معدل الادخار',
+    kpi_avgsavings:'متوسط الادخار الشهري', kpi_avgsavings_sub:'للأشهر التي أُدخل فيها دخل فقط',
+    chart_category_title:'المصروفات حسب الفئة', chart_rate_title:'اتجاه معدل الادخار', chart_trend_title:'الاتجاه الشهري — الراتب والمصروفات والادخار',
+    forecast_note:'عدّل الافتراضات في البطاقة المخصصة لذلك — يُعاد احتساب كل شيء آخر تلقائيًا. تنمو المساهمات سنويًا بمعدل (نمو الراتب − نمو المصروفات)، وتُحتسب العوائد باستخدام قاعدة منتصف العام.',
+    assumptions_h3:'الافتراضات',
+    f_start_label:'الادخار الابتدائي (اليوم، $)', f_avgsavings_label:'متوسط الادخار الشهري الحالي ($)',
+    f_avghint_auto:'يُملأ تلقائيًا من لوحة المعلومات — عدّله للتجاوز',
+    f_avghint_custom:'قيمة مخصّصة — امسح الحقل لإعادته للوضع التلقائي',
+    f_salarygrowth_label:'معدل نمو الراتب السنوي (%)', f_expensegrowth_label:'معدل نمو المصروفات السنوي (%)', f_return_label:'معدل العائد الاستثماري السنوي (%)',
+    forecast_table_year:'السنة', forecast_table_beginning:'الرصيد الافتتاحي', forecast_table_contrib:'المساهمات السنوية',
+    forecast_table_returns:'عوائد الاستثمار', forecast_table_ending:'الرصيد الختامي', forecast_table_growth:'النمو مقارنة بالسنة الأولى',
+    forecast_chart_title:'الرصيد الختامي حسب السنة',
+    footer_amber:'الخلايا الكهرمانية هي إدخالاتك. كل شيء آخر يُحسب تلقائيًا.',
+    footer_autosave:'تُحفظ البيانات تلقائيًا في هذا المتصفح.',
+    row_delete_title:'حذف الشهر', totals_label:'الإجمالي / المتوسط',
+    emergency_tooltip:'يُموَّل تلقائيًا حتى الحد المحدد، ويُسحب منه عند العجز',
+    alert_import_error:'تعذّرت قراءة هذا الملف — تأكّد أنه ملف JSON مُصدَّر من هذا المخطط.',
+    confirm_reset:'هل تريد إعادة تعيين جميع البيانات؟ سيؤدي هذا إلى مسح كل شهر وافتراض ورصيد.',
+    reset_confirm_title:'إعادة تعيين جميع البيانات؟',
+    reset_confirm_message:'ستفقد نهائيًا جميع بياناتك وإعداداتك المخصصة — الأشهر، والفئات، وإعدادات الثابت/المتغيّر، وكل شيء آخر. لا يمكن التراجع عن هذا.',
+    btn_yes:'موافق', btn_no:'إلغاء',
+    msg_saving:'جارٍ الحفظ…', msg_saved:'تم الحفظ', msg_editing:'جارٍ التعديل…', msg_savefailed:'فشل الحفظ — استخدم زر التصدير للنسخ الاحتياطي',
+    cat_rent:'الإيجار / السكن', cat_utilities:'المرافق', cat_groceries:'البقالة', cat_transport:'المواصلات', cat_entertainment:'الترفيه', cat_other:'مصروفات أخرى',
+    series_salary:'الراتب', series_expenses:'المصروفات', series_savings:'الادخار',
+    lang_en:'English', lang_ar:'العربية'
+  }
+};
+
+let lang = 'en';
+let chartsAvailable = false;
+let xlsxAvailable = false;
+
+function loadScriptPromise(src){
+  return new Promise((resolve,reject)=>{
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('failed to load '+src));
+    document.head.appendChild(s);
+  });
+}
+async function loadWithFallbacks(sources, checkFn){
+  for(const src of sources){
+    if(checkFn()) return true;
+    try{ await loadScriptPromise(src); if(checkFn()) return true; }catch(e){}
+  }
+  return checkFn();
+}
+async function ensureChartLoaded(){
+  chartsAvailable = await loadWithFallbacks([
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+    'https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js'
+  ], ()=> typeof Chart!=='undefined');
+  return chartsAvailable;
+}
+async function ensureXlsxLoaded(){
+  xlsxAvailable = await loadWithFallbacks([
+    'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+  ], ()=> typeof XLSX!=='undefined');
+  return xlsxAvailable;
+}
+function t(key){ return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]!==undefined) ? TRANSLATIONS[lang][key] : key; }
+
+function arYears(n){
+  if(n===1) return 'سنة واحدة';
+  if(n===2) return 'سنتين';
+  if(n>=3 && n<=10) return n+' سنوات';
+  return n+' سنة';
+}
+function arMonths(n){
+  if(n===1) return 'شهر واحد';
+  if(n===2) return 'شهرين';
+  if(n>=3 && n<=10) return n+' أشهر';
+  return n+' شهرًا';
+}
+function reminderMissingSalaryText(list){
+  if(!list.length) return '';
+  if(lang==='ar'){
+    return arMonths(list.length)+' لم يُدخل فيها الراتب بعد: '+list.join('، ');
+  }
+  return (list.length===1 ? '1 month' : list.length+' months')+' missing a salary entry: '+list.join(', ');
+}
+function forecastTitle(n){ return lang==='ar' ? ('توقعات الادخار لـ '+arYears(n)) : (n+'-year savings forecast'); }
+function forecastBasisNote(n,m){
+  return lang==='ar'
+    ? ('تُسقط التوقعات لمدة '+arYears(n)+'، بناءً على '+arMonths(m)+' تم إدخالها في الميزانية الشهرية.')
+    : ('Projects '+n+' year'+(n===1?'':'s')+' ahead, based on the '+m+' month'+(m===1?'':'s')+' entered in Monthly budget.');
+}
+function forecastResultLabel(n){ return lang==='ar' ? ('الادخار المتوقع خلال '+arYears(n)) : ('Projected savings in '+n+' year'+(n===1?'':'s')); }
+function forecastTabLabel(n){ return lang==='ar' ? ('توقعات '+arYears(n)) : (n+'-year forecast'); }
+function forecastYearLabel(y){ return lang==='ar' ? ('سنة '+y) : ('Year '+y); }
+function confirmRegenerateMsg(n){
+  return lang==='ar'
+    ? ('سيتم حذف بيانات '+arMonths(n)+' تقع خارج النطاق الجديد. هل تريد المتابعة؟')
+    : (n+' month'+(n===1?'':'s')+' of data outside the new range will be removed. Continue?');
+}
+
+const DEFAULT_CATEGORY_KEYS = ['rent','utilities','groceries','transport','entertainment','other'];
+const STORE_KEY = 'salary-budget-planner-bilingual-v1';
+
+function categoryLabel(key){
+  if(DEFAULT_CATEGORY_KEYS.includes(key)) return t('cat_'+key);
+  return (state.customLabels && state.customLabels[key]) || key;
+}
+
+function fmtMoney(n){
+  n = Math.round(n||0);
+  const neg = n < 0;
+  const s = Math.abs(n).toLocaleString('en-US');
+  return (neg?'-$':'$') + s;
+}
+function fmtPct(n){
+  return (Math.round((n||0)*1000)/10) + '%';
+}
+function monthLabel(ym){
+  if(!ym) return '';
+  const [y,m] = ym.split('-').map(Number);
+  const d = new Date(y, m-1, 1);
+  return d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+}
+function addMonths(ym, n){
+  const [y,m] = ym.split('-').map(Number);
+  const d = new Date(y, m-1+n, 1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+function currentYm(){
+  const now = new Date();
+  return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+}
+
+function blankMonth(ym){
+  const m = { id:'m'+Date.now()+'-'+Math.random().toString(36).slice(2,7), ym, salary:0, sideIncome:0, emergency:0 };
+  state.categories.forEach(c=> m[c]=0);
+  return m;
+}
+
+function normalizeState(s){
+  if(!s.categories) s.categories = [...DEFAULT_CATEGORY_KEYS];
+  if(!s.customLabels) s.customLabels = {};
+  if(!s.fieldModes) s.fieldModes = {};
+  if(!s.fixedSchedules) s.fixedSchedules = {};
+
+  // migrate old single-value fixed fields (pre-schedule format) if present
+  const firstYm = (s.months && s.months[0] && s.months[0].ym) || currentYm();
+  if(s.salaryMode==='fixed' && !s.fieldModes.salary){
+    s.fieldModes.salary = 'fixed';
+    s.fixedSchedules.salary = [{ id:'mig-salary', startYm:firstYm, endYm:null, amount:Number(s.salaryFixedValue)||0 }];
+  }
+  if(s.categoryModes){
+    Object.keys(s.categoryModes).forEach(key=>{
+      if(s.categoryModes[key]==='fixed' && !s.fieldModes[key]){
+        s.fieldModes[key] = 'fixed';
+        s.fixedSchedules[key] = [{ id:'mig-'+key, startYm:firstYm, endYm:null, amount:Number((s.fixedValues||{})[key])||0 }];
+      }
+    });
+  }
+
+  if(!s.fieldModes.salary) s.fieldModes.salary = 'variable';
+  if(!s.fixedSchedules.salary) s.fixedSchedules.salary = [];
+  if(!s.fieldModes.sideIncome) s.fieldModes.sideIncome = 'variable';
+  if(!s.fixedSchedules.sideIncome) s.fixedSchedules.sideIncome = [];
+  s.categories.forEach(key=>{
+    if(!s.fieldModes[key]) s.fieldModes[key] = 'variable';
+    if(!s.fixedSchedules[key]) s.fixedSchedules[key] = [];
+  });
+  s.months.forEach(m=>{ if(m.sideIncome===undefined) m.sideIncome = 0; });
+  if(s.hasSeenHelp===undefined) s.hasSeenHelp = true;
+  if(s.userName===undefined) s.userName = '';
+  return s;
+}
+
+function defaultState(){
+  const startYm = currentYm();
+  const categories = [...DEFAULT_CATEGORY_KEYS];
+  const months = [];
+  for(let i=0;i<12;i++){
+    const m = { id:'m'+i+'-'+Date.now(), ym: addMonths(startYm, i), salary:0, sideIncome:0, emergency:0 };
+    categories.forEach(c=> m[c]=0);
+    months.push(m);
+  }
+  const fieldModes = { salary:'variable', sideIncome:'variable' };
+  const fixedSchedules = { salary:[], sideIncome:[] };
+  categories.forEach(c=>{ fieldModes[c]='variable'; fixedSchedules[c]=[]; });
+  return {
+    months,
+    categories,
+    customLabels: {},
+    fieldModes,
+    fixedSchedules,
+    hasSeenHelp: false,
+    userName: '',
+    lang: (navigator.language||'en').toLowerCase().startsWith('ar') ? 'ar' : 'en',
+    emergencyThreshold: 500,
+    emergencyStart: 0,
+    forecast: { start:0, avgSavingsOverride:null, salaryGrowth:3, expenseGrowth:2, investmentReturn:6 }
+  };
+}
+
+let state = null;
+let saveTimer = null;
+
+async function loadState(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(STORE_KEY, false);
+      if(res && res.value){ state = normalizeState(JSON.parse(res.value)); return; }
+      state = defaultState();
+      return;
+    }
+  }catch(e){}
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ state = normalizeState(JSON.parse(raw)); return; }
+  }catch(e){}
+  state = defaultState();
+}
+
+async function saveNow(){
+  const flag = document.getElementById('save-flag');
+  clearTimeout(saveTimer);
+  flag.textContent = t('msg_saving');
+  flag.style.opacity = '1';
+  try{
+    if(window.storage){
+      await window.storage.set(STORE_KEY, JSON.stringify(state), false);
+      flag.textContent = t('msg_saved');
+    } else {
+      throw new Error('no window.storage');
+    }
+  }catch(e){
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      flag.textContent = t('msg_saved');
+    }catch(e2){
+      flag.textContent = t('msg_savefailed');
+      setTimeout(()=>{flag.style.opacity='0';}, 3000);
+      return false;
+    }
+  }
+  setTimeout(()=>{flag.style.opacity='0';}, 1200);
+  return true;
+}
+
+function scheduleSave(){
+  const flag = document.getElementById('save-flag');
+  flag.textContent = t('msg_editing');
+  flag.style.opacity = '1';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 350);
+}
+
+function getFixedAmountForMonth(key, ym){
+  const periods = state.fixedSchedules[key] || [];
+  let best = null;
+  periods.forEach(p=>{
+    if(ym >= p.startYm && (!p.endYm || ym <= p.endYm)){
+      if(!best || p.startYm > best.startYm) best = p;
+    }
+  });
+  return best ? (Number(best.amount)||0) : 0;
+}
+function effectiveValue(m, key){
+  return (state.fieldModes[key]==='fixed') ? getFixedAmountForMonth(key, m.ym) : (Number(m[key])||0);
+}
+function effectiveSalary(m){ return effectiveValue(m,'salary'); }
+function effectiveSideIncome(m){ return effectiveValue(m,'sideIncome'); }
+function effectiveCategoryValue(m, key){ return effectiveValue(m, key); }
+
+function monthCalc(m, prevBalance, threshold){
+  const incomeVal = effectiveSalary(m) + effectiveSideIncome(m);
+  const expenseSum = state.categories.reduce((s,c)=>s+effectiveCategoryValue(m,c),0);
+  const surplus = incomeVal - expenseSum;
+  let emer;
+  if(surplus >= threshold) emer = threshold;
+  else if(surplus >= 0) emer = surplus;
+  else emer = -Math.min(-surplus, prevBalance);
+  const spend = expenseSum + emer;
+  const savings = incomeVal - spend;
+  const rate = incomeVal > 0 ? savings/incomeVal : 0;
+  const balance = prevBalance + emer;
+  return {spend, savings, rate, emer, balance};
+}
+
+function computeAll(){
+  const threshold = Number(state.emergencyThreshold)||0;
+  let prevBalance = Number(state.emergencyStart)||0;
+  const rows = state.months.map(m=>{
+    const c = monthCalc(m, prevBalance, threshold);
+    prevBalance = c.balance;
+    return {m, spend:c.spend, savings:c.savings, rate:c.rate, emergencyContribution:c.emer, emergencyBalance:c.balance};
+  });
+  const totals = rows.reduce((acc,r)=>{
+    acc.salary += effectiveSalary(r.m);
+    acc.sideIncome += effectiveSideIncome(r.m);
+    acc.spend += r.spend;
+    acc.savings += r.savings;
+    state.categories.forEach(c=> acc[c] = (acc[c]||0) + effectiveCategoryValue(r.m,c) );
+    acc.emergency += r.emergencyContribution;
+    return acc;
+  }, {salary:0, sideIncome:0, spend:0, savings:0, emergency:0});
+  totals.income = totals.salary + totals.sideIncome;
+  totals.rate = totals.income>0 ? totals.savings/totals.income : 0;
+  const filled = rows.filter(r=> (effectiveSalary(r.m)+effectiveSideIncome(r.m)) > 0);
+  totals.avgSavings = filled.length ? filled.reduce((s,r)=>s+r.savings,0)/filled.length : 0;
+  return {rows, totals};
+}
+
+function hasMonthData(m){
+  return (Number(m.salary)||0)!==0 || (Number(m.sideIncome)||0)!==0 || state.categories.some(c=> (Number(m[c])||0)!==0);
+}
+
+function generateMonths(startYm, numMonths){
+  const result = [];
+  for(let i=0;i<numMonths;i++){
+    const ym = addMonths(startYm, i);
+    const existing = state.months.find(m=>m.ym===ym);
+    result.push(existing || blankMonth(ym));
+  }
+  return result;
+}
+
+/* ---------- rendering: budget table ---------- */
+function renderTableHead(){
+  const row = document.getElementById('budget-thead-row');
+  let html = `<th>${t('th_month')}</th><th>${t('th_salary')}</th><th>${t('th_sideincome')}</th>`;
+  state.categories.forEach(key=>{ html += `<th>${categoryLabel(key)}</th>`; });
+  html += `<th>${t('th_emergency')}</th>
+    <th>${t('th_totalspend')}</th>
+    <th>${t('th_monthlysavings')}</th>
+    <th>${t('th_savingsrate')}</th>
+    <th>${t('th_emergencybalance')}</th>
+    <th></th>`;
+  row.innerHTML = html;
+}
+
+function renderCategoryManager(){
+  const list = document.getElementById('category-list');
+  list.innerHTML = state.categories.map(key=>`
+    <span class="cat-chip">${categoryLabel(key)}<button data-key="${key}" class="cat-remove" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button></span>
+  `).join('');
+  list.querySelectorAll('.cat-remove').forEach(btn=>{
+    btn.addEventListener('click', ()=> removeCategory(btn.dataset.key));
+  });
+
+  const quick = document.getElementById('quick-add-categories');
+  const missing = DEFAULT_CATEGORY_KEYS.filter(k=> !state.categories.includes(k));
+  quick.innerHTML = missing.map(k=>`<button type="button" data-key="${k}" class="cat-quickadd">+ ${t('cat_'+k)}</button>`).join('');
+  quick.querySelectorAll('.cat-quickadd').forEach(btn=>{
+    btn.addEventListener('click', ()=> addCategory(btn.dataset.key));
+  });
+}
+
+function categoryHasData(key){
+  const periods = state.fixedSchedules[key] || [];
+  if(periods.some(p=> (Number(p.amount)||0)!==0)) return true;
+  return state.months.some(m=> (Number(m[key])||0)!==0);
+}
+function confirmRemoveCategoryMsg(label){
+  return lang==='ar'
+    ? ('سيتم حذف كل البيانات المُدخلة في عمود "'+label+'". هل تريد المتابعة؟')
+    : ('This will delete all entered data in the "'+label+'" column. Continue?');
+}
+
+function removeCategory(key){
+  if(state.categories.length<=1){ alert(t('min_category_msg')); return; }
+  const label = categoryLabel(key);
+  if(categoryHasData(key) && !confirm(confirmRemoveCategoryMsg(label))) return;
+  state.categories = state.categories.filter(c=>c!==key);
+  delete state.customLabels[key];
+  delete state.fieldModes[key];
+  delete state.fixedSchedules[key];
+  state.months.forEach(m=>{ delete m[key]; });
+  renderAll();
+  scheduleSave();
+}
+function addCategory(key){
+  if(state.categories.includes(key)) return;
+  state.categories.push(key);
+  state.fieldModes[key] = state.fieldModes[key] || 'variable';
+  state.fixedSchedules[key] = state.fixedSchedules[key] || [];
+  state.months.forEach(m=>{ if(m[key]===undefined) m[key]=0; });
+  renderAll();
+  scheduleSave();
+}
+function addCustomCategory(rawLabel){
+  const label = (rawLabel||'').trim();
+  if(!label) return;
+  const key = 'custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  state.categories.push(key);
+  state.customLabels[key] = label;
+  state.fieldModes[key] = 'variable';
+  state.fixedSchedules[key] = [];
+  state.months.forEach(m=>{ m[key]=0; });
+  renderAll();
+  scheduleSave();
+}
+
+function setFieldMode(key, mode){
+  state.fieldModes[key] = mode;
+  if(mode==='fixed' && (!state.fixedSchedules[key] || state.fixedSchedules[key].length===0)){
+    const vals = state.months.map(m=>Number(m[key])||0).filter(v=>v!==0);
+    const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+    const startYm = (state.months[0] && state.months[0].ym) || currentYm();
+    state.fixedSchedules[key] = [{ id:'p'+Date.now(), startYm, endYm:null, amount:avg }];
+  }
+  renderAll();
+  scheduleSave();
+}
+function addPeriod(key){
+  const periods = state.fixedSchedules[key] || (state.fixedSchedules[key]=[]);
+  const last = periods[periods.length-1];
+  const startYm = last ? addMonths(last.startYm,1) : ((state.months[0]&&state.months[0].ym)||currentYm());
+  periods.push({ id:'p'+Date.now()+'-'+Math.random().toString(36).slice(2,5), startYm, endYm:null, amount:0 });
+  renderAll();
+  scheduleSave();
+}
+function updatePeriod(key, pid, field, value){
+  const p = (state.fixedSchedules[key]||[]).find(x=>x.id===pid);
+  if(!p) return;
+  p[field] = value;
+  renderAll();
+  scheduleSave();
+}
+function removePeriod(key, pid){
+  state.fixedSchedules[key] = (state.fixedSchedules[key]||[]).filter(p=>p.id!==pid);
+  renderAll();
+  scheduleSave();
+}
+
+function periodRowHtml(key, p){
+  return `<div class="period-row" data-key="${key}" data-pid="${p.id}">
+    <input type="month" class="period-start" value="${p.startYm}">
+    <span class="period-arrow">→</span>
+    <input type="month" class="period-end" value="${p.endYm||''}" placeholder="${t('period_ongoing')}">
+    <input type="number" class="period-amount" value="${p.amount||0}">
+    <button type="button" class="period-remove" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button>
+  </div>`;
+}
+
+function fieldRowHtml(key, label){
+  const fixed = state.fieldModes[key]==='fixed';
+  const periods = state.fixedSchedules[key] || [];
+  let html = `<div class="pm-row-wrap">
+    <div class="pm-row">
+      <span class="pm-label">${label}</span>
+      <div class="pm-toggle" data-row="${key}">
+        <button type="button" data-mode="variable" class="${!fixed?'active':''}">${t('mode_variable')}</button>
+        <button type="button" data-mode="fixed" class="${fixed?'active':''}">${t('mode_fixed')}</button>
+      </div>
+    </div>`;
+  if(fixed){
+    html += `<div class="pm-periods">`;
+    periods.forEach(p=>{ html += periodRowHtml(key,p); });
+    html += `<button type="button" class="btn-add-period" data-key="${key}">${t('btn_add_period')}</button></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderPlanningModes(){
+  const list = document.getElementById('planning-mode-list');
+  let html = fieldRowHtml('salary', t('th_salary'));
+  html += fieldRowHtml('sideIncome', t('th_sideincome'));
+  state.categories.forEach(key=>{ html += fieldRowHtml(key, categoryLabel(key)); });
+  list.innerHTML = html;
+
+  list.querySelectorAll('.pm-toggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const row = btn.closest('.pm-toggle').dataset.row;
+      setFieldMode(row, btn.dataset.mode);
+    });
+  });
+  list.querySelectorAll('.btn-add-period').forEach(btn=>{
+    btn.addEventListener('click', ()=> addPeriod(btn.dataset.key));
+  });
+  list.querySelectorAll('.period-row').forEach(row=>{
+    const key = row.dataset.key, pid = row.dataset.pid;
+    row.querySelector('.period-start').addEventListener('change', e=> updatePeriod(key,pid,'startYm',e.target.value));
+    row.querySelector('.period-end').addEventListener('change', e=> updatePeriod(key,pid,'endYm', e.target.value || null));
+    row.querySelector('.period-amount').addEventListener('change', e=> updatePeriod(key,pid,'amount', Number(e.target.value)||0));
+    row.querySelector('.period-remove').addEventListener('click', ()=> removePeriod(key,pid));
+  });
+}
+
+function renderBudget(){
+  renderTableHead();
+  const body = document.getElementById('budget-body');
+  const {rows, totals} = computeAll();
+  body.innerHTML = '';
+  rows.forEach((r, idx)=>{
+    const m = r.m;
+    const tr = document.createElement('tr');
+    const salaryLocked = state.fieldModes.salary==='fixed';
+    const sideLocked = state.fieldModes.sideIncome==='fixed';
+    let html = `
+      <td><input class="month-input" type="month" value="${m.ym}" data-idx="${idx}" data-field="ym"></td>
+      <td><input class="cell-input${salaryLocked?' cell-locked':''}" type="number" value="${effectiveSalary(m)}" data-idx="${idx}" data-field="salary"${salaryLocked?' disabled':''}></td>
+      <td><input class="cell-input${sideLocked?' cell-locked':''}" type="number" value="${effectiveSideIncome(m)}" data-idx="${idx}" data-field="sideIncome"${sideLocked?' disabled':''}></td>`;
+    state.categories.forEach(key=>{
+      const locked = state.fieldModes[key]==='fixed';
+      html += `<td><input class="cell-input${locked?' cell-locked':''}" type="number" value="${effectiveCategoryValue(m,key)}" data-idx="${idx}" data-field="${key}"${locked?' disabled':''}></td>`;
+    });
+    html += `
+      <td class="calc ${r.emergencyContribution>=0?'pos':'neg'}" title="${t('emergency_tooltip')}">${fmtMoney(r.emergencyContribution)}</td>
+      <td class="calc">${fmtMoney(r.spend)}</td>
+      <td class="calc ${r.savings>=0?'pos':'neg'}">${fmtMoney(r.savings)}</td>
+      <td class="calc">${fmtPct(r.rate)}</td>
+      <td class="calc">${fmtMoney(r.emergencyBalance)}</td>
+      <td class="rowdel"><button data-idx="${idx}" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button></td>
+    `;
+    tr.innerHTML = html;
+    const salaryMissing = state.fieldModes.salary!=='fixed' && (Number(m.salary)||0)===0;
+    if(salaryMissing) tr.classList.add('row-empty');
+    body.appendChild(tr);
+  });
+
+  const reminder = document.getElementById('empty-months-reminder');
+  if(state.fieldModes.salary==='fixed'){
+    reminder.style.display = 'none';
+    reminder.innerHTML = '';
+  } else {
+    const missingSalaryMonths = rows.filter(r=> (Number(r.m.salary)||0)===0).map(r=> monthLabel(r.m.ym));
+    if(missingSalaryMonths.length){
+      reminder.style.display = 'flex';
+      reminder.innerHTML = `<span class="rb-icon">◆</span><span>${reminderMissingSalaryText(missingSalaryMonths)}</span>`;
+    } else {
+      reminder.style.display = 'none';
+      reminder.innerHTML = '';
+    }
+  }
+
+  const tf = document.getElementById('budget-totals');
+  let totalsHtml = `<td>${t('totals_label')}</td><td>${fmtMoney(totals.salary)}</td><td>${fmtMoney(totals.sideIncome||0)}</td>`;
+  state.categories.forEach(key=>{ totalsHtml += `<td>${fmtMoney(totals[key]||0)}</td>`; });
+  totalsHtml += `
+    <td>${fmtMoney(totals.emergency)}</td>
+    <td>${fmtMoney(totals.spend)}</td>
+    <td class="${totals.savings>=0?'pos':'neg'}">${fmtMoney(totals.savings)}</td>
+    <td>${fmtPct(totals.rate)}</td>
+    <td></td>
+    <td></td>
+  `;
+  tf.innerHTML = totalsHtml;
+
+  document.getElementById('emergency-threshold').value = state.emergencyThreshold;
+  document.getElementById('emergency-start').value = state.emergencyStart;
+  if(state.months.length){
+    document.getElementById('setup-years').value = Math.max(1, Math.round(state.months.length/12));
+    document.getElementById('setup-start-month').value = state.months[0].ym;
+  }
+
+  body.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', onCellChange);
+  });
+  body.querySelectorAll('button[data-idx]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.months.splice(Number(btn.dataset.idx),1);
+      renderAll();
+      scheduleSave();
+    });
+  });
+
+  renderCategoryManager();
+  renderPlanningModes();
+  renderStrip(totals);
+}
+
+function onCellChange(e){
+  const idx = Number(e.target.dataset.idx);
+  const field = e.target.dataset.field;
+  if(field === 'ym'){
+    state.months[idx].ym = e.target.value;
+  } else {
+    state.months[idx][field] = Number(e.target.value)||0;
+  }
+  renderAll();
+  scheduleSave();
+}
+
+function renderStrip(totals){
+  document.getElementById('strip-salary').textContent = fmtMoney(totals.income);
+  document.getElementById('strip-spend').textContent = fmtMoney(totals.spend);
+  const sv = document.getElementById('strip-savings');
+  sv.textContent = fmtMoney(totals.savings);
+  sv.className = 'v ' + (totals.savings>=0?'pos':'neg');
+  document.getElementById('strip-rate').textContent = fmtPct(totals.rate);
+  const {rows} = computeAll();
+  const lastBal = rows.length ? rows[rows.length-1].emergencyBalance : (Number(state.emergencyStart)||0);
+  document.getElementById('strip-emergency').textContent = fmtMoney(lastBal);
+}
+
+/* ---------- dashboard ---------- */
+let chartCategory, chartRate, chartTrend, chartForecast;
+
+function renderChartsNotice(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  if(chartsAvailable){
+    el.style.display = 'none';
+    el.innerHTML = '';
+  } else {
+    el.style.display = 'flex';
+    el.innerHTML = `<span class="rb-icon">◆</span><span>${t('charts_unavailable')} <button type="button" id="btn-retry-${elementId}" style="margin-inline-start:8px;font-family:var(--font-body);font-size:11px;border:1px solid var(--ink);background:transparent;border-radius:3px;padding:4px 10px;cursor:pointer;">${t('btn_retry_charts')}</button></span>`;
+    const btn = document.getElementById('btn-retry-'+elementId);
+    if(btn) btn.addEventListener('click', async ()=>{
+      btn.disabled = true;
+      await ensureChartLoaded();
+      renderAll();
+    });
+  }
+}
+
+function renderDashboard(){
+  const {rows, totals} = computeAll();
+  document.getElementById('kpi-salary').textContent = fmtMoney(totals.income);
+  document.getElementById('kpi-expenses').textContent = fmtMoney(totals.spend);
+  document.getElementById('kpi-savings').textContent = fmtMoney(totals.savings);
+  document.getElementById('kpi-rate').textContent = fmtPct(totals.rate);
+  document.getElementById('kpi-avg-savings').textContent = fmtMoney(totals.avgSavings);
+
+  const catData = state.categories.map(c=> totals[c]||0 );
+  const catLabels = state.categories.map(c=> categoryLabel(c));
+  const months = rows.map(r=> monthLabel(r.m.ym));
+  const salarySeries = rows.map(r=> effectiveSalary(r.m));
+  const sideIncomeSeries = rows.map(r=> effectiveSideIncome(r.m));
+  const spendSeries = rows.map(r=> r.spend);
+  const savingsSeries = rows.map(r=> r.savings);
+  const rateSeries = rows.map(r=> Math.round(r.rate*1000)/10);
+
+  const palette = ['#1F6F54','#B0472F','#E7A93D','#5a6478','#3C3489','#0C447C'];
+
+  if(document.getElementById('panel-dashboard').classList.contains('active')){
+    renderChartsNotice('charts-unavailable-dashboard');
+  }
+  if(chartsAvailable && document.getElementById('panel-dashboard').classList.contains('active')){
+    if(chartCategory) chartCategory.destroy();
+    chartCategory = new Chart(document.getElementById('chart-category'), {
+      type:'bar',
+      data:{ labels:catLabels, datasets:[{ data:catData, backgroundColor: catData.map((_,i)=>palette[i % palette.length]) }]},
+      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>fmtMoney(v) } } } }
+    });
+
+    if(chartRate) chartRate.destroy();
+    chartRate = new Chart(document.getElementById('chart-rate'), {
+      type:'line',
+      data:{ labels:months, datasets:[{ data:rateSeries, borderColor:'#1F6F54', backgroundColor:'rgba(31,111,84,0.12)', fill:true, tension:0.25, pointRadius:2 }]},
+      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>v+'%' } } } }
+    });
+
+    if(chartTrend) chartTrend.destroy();
+    chartTrend = new Chart(document.getElementById('chart-trend'), {
+      type:'bar',
+      data:{ labels:months, datasets:[
+        { label:t('series_salary'), data:salarySeries, backgroundColor:'#0C447C' },
+        { label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:'#3C3489' },
+        { label:t('series_expenses'), data:spendSeries, backgroundColor:'#B0472F' },
+        { label:t('series_savings'), data:savingsSeries, backgroundColor:'#1F6F54' }
+      ]},
+      options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{ y:{ ticks:{ callback:v=>fmtMoney(v) } } } }
+    });
+  }
+
+  return totals;
+}
+
+/* ---------- forecast ---------- */
+function computeForecast(dashTotals){
+  const f = state.forecast;
+  const autoAvg = dashTotals.avgSavings;
+  const avgUsed = f.avgSavingsOverride !== null && f.avgSavingsOverride !== undefined ? f.avgSavingsOverride : autoAvg;
+
+  const salaryG = (Number(f.salaryGrowth)||0)/100;
+  const expenseG = (Number(f.expenseGrowth)||0)/100;
+  const ret = (Number(f.investmentReturn)||0)/100;
+  const netGrowth = salaryG - expenseG;
+
+  const monthsCount = state.months.length;
+  const numYears = Math.max(1, Math.ceil(monthsCount/12));
+
+  let beginning = Number(f.start)||0;
+  let year1Ending = null;
+  const years = [];
+  for(let y=1;y<=numYears;y++){
+    const contributions = (Number(avgUsed)||0) * 12 * Math.pow(1+netGrowth, y-1);
+    const returns = (beginning + contributions/2) * ret;
+    const ending = beginning + contributions + returns;
+    if(y===1) year1Ending = ending;
+    const growthVsYear1 = year1Ending ? (ending - year1Ending)/Math.abs(year1Ending) : 0;
+    years.push({y, beginning, contributions, returns, ending, growthVsYear1});
+    beginning = ending;
+  }
+  return {years, numYears, monthsCount, avgUsed};
+}
+
+function renderForecast(dashTotals){
+  const f = state.forecast;
+  document.getElementById('f-start').value = f.start;
+  document.getElementById('f-salary-growth').value = f.salaryGrowth;
+  document.getElementById('f-expense-growth').value = f.expenseGrowth;
+  document.getElementById('f-return').value = f.investmentReturn;
+
+  const {years, numYears, monthsCount, avgUsed} = computeForecast(dashTotals);
+  document.getElementById('f-avg-savings').value = Math.round(avgUsed);
+  document.getElementById('f-avg-hint').textContent = f.avgSavingsOverride===null ? t('f_avghint_auto') : t('f_avghint_custom');
+
+  document.getElementById('forecast-title').textContent = forecastTitle(numYears);
+  document.getElementById('forecast-basis-note').textContent = forecastBasisNote(numYears, monthsCount);
+  document.getElementById('forecast-result-label').textContent = forecastResultLabel(numYears);
+  document.getElementById('tab-forecast-btn').textContent = forecastTabLabel(numYears);
+
+  const body = document.getElementById('forecast-body');
+  body.innerHTML = years.map(row=>`
+    <tr>
+      <td style="font-family:var(--font-body);text-align:start;direction:inherit;">${row.y}</td>
+      <td>${fmtMoney(row.beginning)}</td>
+      <td>${fmtMoney(row.contributions)}</td>
+      <td>${fmtMoney(row.returns)}</td>
+      <td>${fmtMoney(row.ending)}</td>
+      <td>${fmtPct(row.growthVsYear1)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('forecast-result').textContent = fmtMoney(years[years.length-1].ending);
+
+  if(document.getElementById('panel-forecast').classList.contains('active')){
+    renderChartsNotice('charts-unavailable-forecast');
+  }
+  if(chartsAvailable && document.getElementById('panel-forecast').classList.contains('active')){
+    if(chartForecast) chartForecast.destroy();
+    chartForecast = new Chart(document.getElementById('chart-forecast'), {
+      type:'bar',
+      data:{ labels:years.map(r=>forecastYearLabel(r.y)), datasets:[{ data: years.map(r=>r.ending), backgroundColor:'#1F6F54' }]},
+      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>fmtMoney(v) } } } }
+    });
+  }
+}
+
+/* ---------- Excel export & linked-file sync ---------- */
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function parseMonthLabel(label){
+  if(label===undefined || label===null) return null;
+  const s = String(label).trim();
+  const m = s.match(/^([A-Za-z]{3})[a-z]*\s+(\d{4})$/);
+  if(!m) return null;
+  const idx = MONTH_ABBR.findIndex(a=> a.toLowerCase()===m[1].toLowerCase());
+  if(idx<0) return null;
+  return m[2]+'-'+String(idx+1).padStart(2,'0');
+}
+
+function findBudgetSheet(wb){
+  const candidates = [TRANSLATIONS.en.tab_budget, TRANSLATIONS.ar.tab_budget];
+  for(const name of wb.SheetNames){
+    if(candidates.includes(name)) return wb.Sheets[name];
+  }
+  return wb.Sheets[wb.SheetNames[0]];
+}
+
+function resolveCategoryKeyForLabel(label){
+  for(const k of DEFAULT_CATEGORY_KEYS){
+    if(label===TRANSLATIONS.en['cat_'+k] || label===TRANSLATIONS.ar['cat_'+k]) return k;
+  }
+  for(const k of state.categories){
+    if(state.customLabels[k] && state.customLabels[k]===label) return k;
+  }
+  return null;
+}
+
+function importFromWorkbook(wb){
+  const ws = findBudgetSheet(wb);
+  if(!ws) throw new Error('no sheet');
+  const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:0});
+  if(!aoa.length) throw new Error('empty sheet');
+  const headers = aoa[0];
+  const numLeadingCols = 3;   // Month, Salary, Side income
+  const numTrailingCols = 5;  // Emergency, Total spend, Monthly savings, Savings rate, Emergency fund balance
+  const catCount = headers.length - numLeadingCols - numTrailingCols;
+  if(catCount < 0) throw new Error('unexpected column layout');
+  const catHeaders = headers.slice(numLeadingCols, numLeadingCols+catCount);
+
+  const resolvedKeys = [];
+  const seen = {};
+  catHeaders.forEach(h=>{
+    const label = String(h===undefined||h===null?'':h).trim();
+    let key = resolveCategoryKeyForLabel(label);
+    if(!key){
+      key = 'custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'_'+Object.keys(seen).length;
+      state.customLabels[key] = label || key;
+    }
+    seen[key] = true;
+    resolvedKeys.push(key);
+  });
+
+  const newCategories = [];
+  resolvedKeys.forEach(k=>{ if(!newCategories.includes(k)) newCategories.push(k); });
+  if(!newCategories.length) throw new Error('no category columns found');
+
+  const months = [];
+  for(let i=1;i<aoa.length;i++){
+    const row = aoa[i];
+    if(!row || !row.length) continue;
+    const ym = parseMonthLabel(row[0]);
+    if(!ym) continue;
+    const m = { id:'m'+Date.now()+'-'+i+'-'+Math.random().toString(36).slice(2,5), ym, salary:Number(row[1])||0, sideIncome:Number(row[2])||0, emergency:0 };
+    resolvedKeys.forEach((k,ci)=>{ m[k] = Number(row[numLeadingCols+ci])||0; });
+    months.push(m);
+  }
+  if(!months.length) throw new Error('no data rows found');
+  months.sort((a,b)=> a.ym < b.ym ? -1 : (a.ym > b.ym ? 1 : 0));
+
+  state.categories = newCategories;
+  state.fieldModes.salary = state.fieldModes.salary || 'variable';
+  state.fieldModes.sideIncome = state.fieldModes.sideIncome || 'variable';
+  state.fixedSchedules.salary = state.fixedSchedules.salary || [];
+  state.fixedSchedules.sideIncome = state.fixedSchedules.sideIncome || [];
+  newCategories.forEach(k=>{
+    state.fieldModes[k] = state.fieldModes[k] || 'variable';
+    state.fixedSchedules[k] = state.fixedSchedules[k] || [];
+  });
+  state.months = months;
+}
+
+function buildWorkbook(){
+  const {rows, totals} = computeAll();
+  const wb = XLSX.utils.book_new();
+
+  const headerRow = [t('th_month'), t('th_salary'), t('th_sideincome')];
+  state.categories.forEach(c=> headerRow.push(categoryLabel(c)));
+  headerRow.push(t('th_emergency'), t('th_totalspend'), t('th_monthlysavings'), t('th_savingsrate'), t('th_emergencybalance'));
+
+  const aoa = [headerRow];
+  rows.forEach(r=>{
+    const row = [monthLabel(r.m.ym), effectiveSalary(r.m), effectiveSideIncome(r.m)];
+    state.categories.forEach(c=> row.push(effectiveCategoryValue(r.m,c)));
+    row.push(r.emergencyContribution, r.spend, r.savings, Math.round(r.rate*1000)/10, r.emergencyBalance);
+    aoa.push(row);
+  });
+  const totalsRow = [t('totals_label'), totals.salary, totals.sideIncome||0];
+  state.categories.forEach(c=> totalsRow.push(totals[c]||0));
+  totalsRow.push(totals.emergency, totals.spend, totals.savings, Math.round(totals.rate*1000)/10, '');
+  aoa.push(totalsRow);
+  const ws1 = XLSX.utils.aoa_to_sheet(aoa);
+  XLSX.utils.book_append_sheet(wb, ws1, t('tab_budget').slice(0,31));
+
+  const dashAoa = [
+    [t('kpi_salary'), Math.round(totals.income)],
+    [t('kpi_expenses'), Math.round(totals.spend)],
+    [t('kpi_savings'), Math.round(totals.savings)],
+    [t('kpi_rate'), Math.round(totals.rate*1000)/10 + '%'],
+    [t('kpi_avgsavings'), Math.round(totals.avgSavings)],
+    [],
+    [t('chart_category_title')]
+  ];
+  state.categories.forEach(c=> dashAoa.push([categoryLabel(c), Math.round(totals[c]||0)]));
+  const ws2 = XLSX.utils.aoa_to_sheet(dashAoa);
+  XLSX.utils.book_append_sheet(wb, ws2, t('tab_dashboard').slice(0,31));
+
+  const fc = computeForecast(totals);
+  const forecastAoa = [[t('forecast_table_year'), t('forecast_table_beginning'), t('forecast_table_contrib'), t('forecast_table_returns'), t('forecast_table_ending'), t('forecast_table_growth')]];
+  fc.years.forEach(row=> forecastAoa.push([row.y, Math.round(row.beginning), Math.round(row.contributions), Math.round(row.returns), Math.round(row.ending), (Math.round(row.growthVsYear1*1000)/10)+'%']));
+  const ws3 = XLSX.utils.aoa_to_sheet(forecastAoa);
+  XLSX.utils.book_append_sheet(wb, ws3, t('tab_forecast_base').slice(0,31));
+
+  return wb;
+}
+
+function sanitizeForFilename(s){
+  return s.trim().replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,'_');
+}
+
+function suggestedExcelFilename(){
+  const now = new Date();
+  const monthName = now.toLocaleDateString('en-US', {month:'long'});
+  const namePart = state.userName ? sanitizeForFilename(state.userName)+'_' : '';
+  return `Budget_Planner_${namePart}${monthName}_${now.getFullYear()}`;
+}
+
+async function exportToExcel(){
+  const ok = await ensureXlsxLoaded();
+  if(!ok){ alert(t('xlsx_unavailable')); return; }
+  const suggested = suggestedExcelFilename();
+
+  if('showSaveFilePicker' in window){
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName: suggested+'.xlsx',
+        types: [{ description:'Excel Workbook', accept: {'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']} }]
+      });
+      await writeToHandle(handle);
+      return;
+    }catch(e){
+      if(e.name==='AbortError') return;
+      // fall through to the prompt-based fallback below on any other error
+    }
+  }
+
+  let filename = prompt(t('prompt_excel_filename'), suggested);
+  if(filename===null) return;
+  filename = filename.trim() || suggested;
+  if(!/\.xlsx$/i.test(filename)) filename += '.xlsx';
+  const wb = buildWorkbook();
+  XLSX.writeFile(wb, filename);
+}
+
+async function shareBackupFiles(){
+  if(!navigator.share){
+    if(location.protocol==='file:'){ alert(t('share_needs_https')); }
+    else{ alert(t('share_not_supported')); }
+    return;
+  }
+
+  const baseName = suggestedExcelFilename();
+  const files = [];
+
+  // The JSON backup needs no external library and is a lossless, exact copy of
+  // everything in the app — this is the one that truly guarantees no re-entry
+  // of data if a device is lost, reset, or broken. Always include it.
+  const jsonText = JSON.stringify(state, null, 2);
+  files.push(new File([jsonText], baseName+'.json', {type:'application/json'}));
+
+  // Add the Excel workbook too when available, as a human-readable companion.
+  const xlsxOk = await ensureXlsxLoaded();
+  if(xlsxOk){
+    try{
+      const wb = buildWorkbook();
+      const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+      files.push(new File([wbout], baseName+'.xlsx', {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    }catch(e){}
+  }
+
+  // Some browsers' canShare() is overly conservative about non-media file types, or
+  // about sharing multiple files at once, even when share() itself would work — so we
+  // attempt the real share rather than trusting a negative canShare() result, and
+  // gracefully retry with just the JSON file if sharing both together is rejected.
+  try{
+    await navigator.share({files, title:baseName});
+  }catch(e){
+    if(e.name==='AbortError') return;
+    if((e.name==='TypeError' || e.name==='NotAllowedError') && files.length>1){
+      try{
+        await navigator.share({files:[files[0]], title:baseName});
+        return;
+      }catch(e2){
+        if(e2.name==='AbortError') return;
+      }
+    }
+    if(e.name==='TypeError' || e.name==='NotAllowedError'){
+      if(location.protocol==='file:'){ alert(t('share_needs_https')); }
+      else{ alert(t('share_not_supported')); }
+    } else {
+      alert(t('share_failed'));
+    }
+  }
+}
+
+let linkedFileHandle = null;
+let linkedNeedsReconnect = false;
+const FS_DB_NAME = 'budget-planner-fs';
+const FS_STORE_NAME = 'handles';
+function openHandleDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(FS_DB_NAME,1);
+    req.onupgradeneeded = ()=> req.result.createObjectStore(FS_STORE_NAME);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function saveHandleToDB(handle){
+  try{
+    const db = await openHandleDB();
+    await new Promise((resolve,reject)=>{
+      const tx = db.transaction(FS_STORE_NAME,'readwrite');
+      tx.objectStore(FS_STORE_NAME).put(handle,'linkedExcel');
+      tx.oncomplete = resolve;
+      tx.onerror = ()=>reject(tx.error);
+    });
+  }catch(e){}
+}
+async function loadHandleFromDB(){
+  try{
+    const db = await openHandleDB();
+    return await new Promise((resolve,reject)=>{
+      const tx = db.transaction(FS_STORE_NAME,'readonly');
+      const req = tx.objectStore(FS_STORE_NAME).get('linkedExcel');
+      req.onsuccess = ()=> resolve(req.result || null);
+      req.onerror = ()=> reject(req.error);
+    });
+  }catch(e){ return null; }
+}
+
+function excelLinkedStatusText(name){
+  const now = new Date();
+  const time = now.toLocaleTimeString(lang==='ar' ? 'ar' : 'en-US', {hour:'2-digit', minute:'2-digit'});
+  return lang==='ar' ? ('مرتبط: '+name+' · آخر تحديث '+time) : ('Linked: '+name+' · updated '+time);
+}
+
+function updateLinkStatus(needsReconnect){
+  if(needsReconnect!==undefined) linkedNeedsReconnect = needsReconnect;
+  const btn = document.getElementById('btn-connect-excel');
+  const reloadBtn = document.getElementById('btn-reload-linked');
+  const status = document.getElementById('excel-link-status');
+  if(!btn || !status) return;
+  if(linkedFileHandle){
+    btn.textContent = linkedNeedsReconnect ? t('btn_connect_excel') : t('btn_update_excel');
+    status.style.display = 'block';
+    status.textContent = linkedNeedsReconnect ? t('excel_reconnect_needed') : excelLinkedStatusText(linkedFileHandle.name);
+    if(reloadBtn) reloadBtn.style.display = 'inline-block';
+  } else {
+    btn.textContent = t('btn_connect_excel');
+    status.style.display = 'none';
+    if(reloadBtn) reloadBtn.style.display = 'none';
+  }
+}
+
+async function reloadFromLinkedFile(){
+  if(!linkedFileHandle) return;
+  const xok = await ensureXlsxLoaded();
+  if(!xok){ alert(t('xlsx_unavailable')); return; }
+  const ok = await ensurePermission(linkedFileHandle);
+  if(!ok){ updateLinkStatus(true); return; }
+  try{
+    const file = await linkedFileHandle.getFile();
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    importFromWorkbook(wb);
+    updateLinkStatus(false);
+    renderAll();
+    scheduleSave();
+  }catch(e){
+    alert(t('fs_read_failed'));
+  }
+}
+
+async function ensurePermission(handle){
+  const opts = {mode:'readwrite'};
+  try{
+    if((await handle.queryPermission(opts))==='granted') return true;
+    if((await handle.requestPermission(opts))==='granted') return true;
+  }catch(e){}
+  return false;
+}
+
+async function writeToHandle(handle){
+  const wb = buildWorkbook();
+  const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  const writable = await handle.createWritable();
+  await writable.write(wbout);
+  await writable.close();
+}
+
+async function connectExcelFile(){
+  if(!('showSaveFilePicker' in window)){ alert(t('fs_not_supported')); return; }
+  const xok = await ensureXlsxLoaded();
+  if(!xok){ alert(t('xlsx_unavailable')); return; }
+  try{
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'budget-planner-data.xlsx',
+      types: [{ description:'Excel Workbook', accept: {'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']} }]
+    });
+    linkedFileHandle = handle;
+    await saveHandleToDB(handle);
+    await writeToHandle(handle);
+    updateLinkStatus(false);
+  }catch(e){
+    if(e.name!=='AbortError') console.error(e);
+  }
+}
+
+async function onExcelLinkClick(){
+  if(!linkedFileHandle){ await connectExcelFile(); return; }
+  const xok = await ensureXlsxLoaded();
+  if(!xok){ alert(t('xlsx_unavailable')); return; }
+  const ok = await ensurePermission(linkedFileHandle);
+  if(!ok){ await connectExcelFile(); return; }
+  try{
+    await writeToHandle(linkedFileHandle);
+    updateLinkStatus(false);
+  }catch(e){
+    alert(t('fs_write_failed'));
+  }
+}
+
+async function tryRestoreLinkedFile(){
+  if(!('showSaveFilePicker' in window)) return;
+  try{
+    const handle = await loadHandleFromDB();
+    if(handle){
+      const perm = await handle.queryPermission({mode:'readwrite'});
+      linkedFileHandle = handle;
+      updateLinkStatus(perm!=='granted');
+    }
+  }catch(e){}
+}
+
+function renderAll(){
+  renderBudget();
+  const dashTotals = renderDashboard();
+  renderForecast(dashTotals);
+}
+
+/* ---------- language ---------- */
+function updateDateTime(){
+  const el = document.getElementById('current-datetime');
+  if(!el) return;
+  const now = new Date();
+  const locale = lang==='ar' ? 'ar' : 'en-US';
+  el.textContent = now.toLocaleString(locale, {weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+function syncUserNameInput(){
+  const el = document.getElementById('user-name-input');
+  if(!el) return;
+  el.value = state.userName || '';
+  el.classList.toggle('attention', !state.userName);
+}
+
+function applyLanguage(l){
+  lang = l;
+  state.lang = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l==='ar' ? 'rtl' : 'ltr';
+  document.documentElement.style.setProperty('--font-body', l==='ar' ? "'IBM Plex Sans Arabic','Inter',sans-serif" : "'Inter','IBM Plex Sans Arabic',sans-serif");
+  document.documentElement.style.setProperty('--font-display', l==='ar' ? "'Amiri','Fraunces',serif" : "'Fraunces','Amiri',serif");
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    const val = TRANSLATIONS[l][key];
+    if(val!==undefined) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = TRANSLATIONS[l][key];
+    if(val!==undefined) el.placeholder = val;
+  });
+  document.getElementById('lang-en').classList.toggle('active', l==='en');
+  document.getElementById('lang-ar').classList.toggle('active', l==='ar');
+  document.getElementById('help-content-en').style.display = l==='en' ? 'block' : 'none';
+  document.getElementById('help-content-ar').style.display = l==='ar' ? 'block' : 'none';
+  renderAll();
+  updateLinkStatus();
+  updateDateTime();
+  syncUserNameInput();
+}
+
+function switchTab(tabName){
+  document.querySelectorAll('nav.tabs button').forEach(b=> b.classList.toggle('active', b.dataset.tab===tabName));
+  document.querySelectorAll('section.panel').forEach(p=> p.classList.toggle('active', p.id==='panel-'+tabName));
+  renderAll();
+}
+
+/* ---------- events ---------- */
+function wireEvents(){
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+  });
+
+  document.getElementById('lang-en').addEventListener('click', ()=>{ applyLanguage('en'); scheduleSave(); });
+  document.getElementById('lang-ar').addEventListener('click', ()=>{ applyLanguage('ar'); scheduleSave(); });
+
+  document.getElementById('user-name-input').addEventListener('change', e=>{
+    state.userName = e.target.value.trim();
+    scheduleSave();
+  });
+  document.getElementById('user-name-input').addEventListener('input', e=>{
+    e.target.classList.toggle('attention', !e.target.value.trim());
+  });
+
+  document.getElementById('btn-generate-months').addEventListener('click', ()=>{
+    const years = Math.max(1, Math.min(20, Number(document.getElementById('setup-years').value)||1));
+    const startYm = document.getElementById('setup-start-month').value || state.months[0].ym;
+    const numMonths = years*12;
+    const newYmSet = new Set();
+    for(let i=0;i<numMonths;i++) newYmSet.add(addMonths(startYm,i));
+    const droppedCount = state.months.filter(m=> !newYmSet.has(m.ym) && hasMonthData(m)).length;
+    if(droppedCount>0 && !confirm(confirmRegenerateMsg(droppedCount))) return;
+    state.months = generateMonths(startYm, numMonths);
+    renderAll();
+    scheduleSave();
+  });
+
+  document.getElementById('btn-add-month').addEventListener('click', ()=>{
+    const last = state.months[state.months.length-1];
+    const nextYm = last ? addMonths(last.ym,1) : (new Date()).getFullYear()+'-01';
+    state.months.push(blankMonth(nextYm));
+    renderAll();
+    scheduleSave();
+  });
+  document.getElementById('btn-remove-month').addEventListener('click', ()=>{
+    if(state.months.length>1){ state.months.pop(); renderAll(); scheduleSave(); }
+  });
+
+  document.getElementById('btn-add-category').addEventListener('click', ()=>{
+    const input = document.getElementById('new-category-name');
+    addCustomCategory(input.value);
+    input.value = '';
+  });
+  document.getElementById('new-category-name').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      document.getElementById('btn-add-category').click();
+    }
+  });
+
+  document.getElementById('emergency-threshold').addEventListener('change', e=>{
+    state.emergencyThreshold = Number(e.target.value)||0;
+    renderAll(); scheduleSave();
+  });
+  document.getElementById('emergency-start').addEventListener('change', e=>{
+    state.emergencyStart = Number(e.target.value)||0;
+    renderAll(); scheduleSave();
+  });
+
+  ['f-start','f-salary-growth','f-expense-growth','f-return'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', e=>{
+      const map = {'f-start':'start','f-salary-growth':'salaryGrowth','f-expense-growth':'expenseGrowth','f-return':'investmentReturn'};
+      state.forecast[map[id]] = Number(e.target.value)||0;
+      renderAll(); scheduleSave();
+    });
+  });
+  document.getElementById('f-avg-savings').addEventListener('change', e=>{
+    state.forecast.avgSavingsOverride = e.target.value===''? null : Number(e.target.value);
+    renderAll(); scheduleSave();
+  });
+
+  document.getElementById('btn-save').addEventListener('click', ()=>{
+    saveNow();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'budget-planner-data.json'; a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
+  document.getElementById('btn-connect-excel').addEventListener('click', onExcelLinkClick);
+  document.getElementById('btn-share-excel').addEventListener('click', shareBackupFiles);
+  document.getElementById('btn-reload-linked').addEventListener('click', reloadFromLinkedFile);
+  document.getElementById('btn-import-excel').addEventListener('click', ()=>{
+    document.getElementById('file-import-excel').click();
+  });
+  document.getElementById('file-import-excel').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const ok = await ensureXlsxLoaded();
+    if(!ok){ alert(t('xlsx_unavailable')); e.target.value=''; return; }
+    try{
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:'array'});
+      importFromWorkbook(wb);
+      applyLanguage(state.lang==='ar' ? 'ar' : 'en');
+      scheduleSave();
+    }catch(err){
+      alert(t('alert_excel_import_error'));
+    }
+    e.target.value = '';
+  });
+  document.getElementById('btn-import').addEventListener('click', ()=>{
+    document.getElementById('file-import').click();
+  });
+  document.getElementById('file-import').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(parsed && parsed.months){
+          state = normalizeState(parsed);
+          applyLanguage(state.lang==='ar' ? 'ar' : 'en');
+          scheduleSave();
+        }
+      }catch(err){ alert(t('alert_import_error')); }
+    };
+    reader.readAsText(file);
+  });
+  document.getElementById('btn-reset').addEventListener('click', ()=>{
+    document.getElementById('reset-confirm-overlay').style.display = 'flex';
+  });
+  document.getElementById('btn-reset-no').addEventListener('click', ()=>{
+    document.getElementById('reset-confirm-overlay').style.display = 'none';
+  });
+  document.getElementById('reset-confirm-overlay').addEventListener('click', e=>{
+    if(e.target.id==='reset-confirm-overlay') e.target.style.display = 'none';
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape') document.getElementById('reset-confirm-overlay').style.display = 'none';
+  });
+  document.getElementById('btn-reset-yes').addEventListener('click', ()=>{
+    document.getElementById('reset-confirm-overlay').style.display = 'none';
+    const keepLang = state.lang;
+    state = defaultState();
+    state.lang = keepLang;
+    renderAll();
+    scheduleSave();
+  });
+}
+
+(async function init(){
+  await loadState();
+  wireEvents();
+  // Load Chart.js and SheetJS with CDN fallbacks; don't block the rest of the app on this.
+  ensureChartLoaded().then(()=> renderAll());
+  ensureXlsxLoaded();
+  if('showSaveFilePicker' in window){
+    document.getElementById('btn-connect-excel').style.display = 'inline-block';
+    await tryRestoreLinkedFile();
+  }
+  // Always show Share / Back Up… — even where it can't work yet (e.g. opened as a local
+  // file), clicking it gives the person a clear, actionable reason why instead of the
+  // button just silently not being there.
+  document.getElementById('btn-share-excel').style.display = 'inline-block';
+  applyLanguage(state.lang==='ar' ? 'ar' : 'en');
+  if(!state.hasSeenHelp){
+    switchTab('help');
+    state.hasSeenHelp = true;
+    scheduleSave();
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 30000);
+})();
+</script>
+</body>
+</html>
