@@ -537,6 +537,17 @@
     border:1px solid var(--brick-deep);background:var(--brick-deep);color:#fff;
   }
   .modal-actions #btn-reset-yes:hover{background:var(--brick);border-color:var(--brick);}
+  .modal-actions #announcement-modal-ok{
+    border:1px solid var(--emerald-deep);background:var(--emerald-deep);color:#fff;
+  }
+  .modal-actions #announcement-modal-ok:hover{background:var(--emerald);border-color:var(--emerald);}
+
+  .announcement-banner{
+    background:var(--amber-bg);border-bottom:2px solid var(--amber-border);
+    color:var(--ink);text-align:center;font-weight:500;
+    padding:11px 20px;font-size:13px;line-height:1.5;
+    font-family:var(--font-body);
+  }
 
   @media (max-width:900px){
     .strip{grid-template-columns:repeat(2,1fr);}
@@ -550,6 +561,18 @@
 <script data-goatcounter="https://hassan-budget.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
+
+<div id="announcement-banner" class="announcement-banner" style="display:none;"></div>
+
+<div id="announcement-modal-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <h3 data-i18n="announcement_modal_title">📣 Announcement</h3>
+    <p id="announcement-modal-text"></p>
+    <div class="modal-actions" style="justify-content:center;">
+      <button id="announcement-modal-ok" data-i18n="btn_got_it">Got it</button>
+    </div>
+  </div>
+</div>
 
 <header class="top">
   <div class="wrap">
@@ -879,6 +902,20 @@
 </div>
 
 <script>
+/* =====================================================================================
+   ANNOUNCEMENT BANNER — edit this yourself any time, no need to ask Claude.
+
+   Type your message between the quotes below. It will:
+     • show once as a pop-up the first time someone sees this exact message
+     • stay as a banner at the very top of the page for as long as it's set here
+
+   To turn the banner off completely, leave BOTH lines as empty quotes: ''
+   You can set only one language if you want — the other will just reuse it.
+   ===================================================================================== */
+const ANNOUNCEMENT_EN = '';
+const ANNOUNCEMENT_AR = '';
+/* ===================================================================================== */
+
 const TRANSLATIONS = {
   en: {
     title:'Salary Budget & Savings Planner — Abdullah',
@@ -948,6 +985,7 @@ const TRANSLATIONS = {
     reset_confirm_title:'Reset all data?',
     reset_confirm_message:"You'll permanently lose all your data and your customized setup — months, categories, fixed/variable settings, and everything else. This can't be undone.",
     btn_yes:'OK', btn_no:'Cancel',
+    announcement_modal_title:'📣 Announcement', btn_got_it:'Got it',
     msg_saving:'Saving…', msg_saved:'Saved', msg_editing:'Editing…', msg_savefailed:'Save failed — use Export to back up',
     cat_rent:'Rent / Housing', cat_utilities:'Utilities', cat_groceries:'Groceries', cat_transport:'Transport', cat_entertainment:'Entertainment', cat_other:'Other expenses',
     series_salary:'Salary', series_expenses:'Expenses', series_savings:'Savings',
@@ -1021,6 +1059,7 @@ const TRANSLATIONS = {
     reset_confirm_title:'إعادة تعيين جميع البيانات؟',
     reset_confirm_message:'ستفقد نهائيًا جميع بياناتك وإعداداتك المخصصة — الأشهر، والفئات، وإعدادات الثابت/المتغيّر، وكل شيء آخر. لا يمكن التراجع عن هذا.',
     btn_yes:'موافق', btn_no:'إلغاء',
+    announcement_modal_title:'📣 إعلان', btn_got_it:'حسنًا',
     msg_saving:'جارٍ الحفظ…', msg_saved:'تم الحفظ', msg_editing:'جارٍ التعديل…', msg_savefailed:'فشل الحفظ — استخدم زر التصدير للنسخ الاحتياطي',
     cat_rent:'الإيجار / السكن', cat_utilities:'المرافق', cat_groceries:'البقالة', cat_transport:'المواصلات', cat_entertainment:'الترفيه', cat_other:'مصروفات أخرى',
     series_salary:'الراتب', series_expenses:'المصروفات', series_savings:'الادخار',
@@ -2117,6 +2156,32 @@ function trackEvent(path, title){
   }catch(e){}
 }
 
+function getAnnouncementText(){
+  if(lang==='ar') return ANNOUNCEMENT_AR || ANNOUNCEMENT_EN || '';
+  return ANNOUNCEMENT_EN || ANNOUNCEMENT_AR || '';
+}
+function renderAnnouncementBanner(){
+  const banner = document.getElementById('announcement-banner');
+  const text = getAnnouncementText();
+  if(!text){ banner.style.display = 'none'; banner.textContent = ''; return; }
+  banner.style.display = 'block';
+  banner.textContent = text;
+}
+function maybeShowAnnouncementPopup(){
+  if(!ANNOUNCEMENT_EN && !ANNOUNCEMENT_AR) return;
+  const signature = (ANNOUNCEMENT_EN||'') + '||' + (ANNOUNCEMENT_AR||'');
+  let seen = null;
+  try{ seen = localStorage.getItem('planner-announcement-seen'); }catch(e){}
+  if(seen === signature) return;
+  document.getElementById('announcement-modal-text').textContent = getAnnouncementText();
+  document.getElementById('announcement-modal-overlay').style.display = 'flex';
+}
+function dismissAnnouncementPopup(){
+  document.getElementById('announcement-modal-overlay').style.display = 'none';
+  const signature = (ANNOUNCEMENT_EN||'') + '||' + (ANNOUNCEMENT_AR||'');
+  try{ localStorage.setItem('planner-announcement-seen', signature); }catch(e){}
+}
+
 function shareLinkTexts(){
   const url = PLANNER_SHARE_URL;
   if(lang==='ar'){
@@ -2180,6 +2245,7 @@ function applyLanguage(l){
   updateDateTime();
   syncUserNameInput();
   updateShareLinkHrefs();
+  renderAnnouncementBanner();
 }
 
 function switchTab(tabName){
@@ -2348,6 +2414,7 @@ function wireEvents(){
     if(e.key==='Escape'){
       document.getElementById('reset-confirm-overlay').style.display = 'none';
       document.getElementById('share-link-popover').style.display = 'none';
+      if(document.getElementById('announcement-modal-overlay').style.display!=='none') dismissAnnouncementPopup();
     }
   });
   document.getElementById('btn-reset-yes').addEventListener('click', ()=>{
@@ -2357,6 +2424,11 @@ function wireEvents(){
     state.lang = keepLang;
     renderAll();
     scheduleSave();
+  });
+
+  document.getElementById('announcement-modal-ok').addEventListener('click', dismissAnnouncementPopup);
+  document.getElementById('announcement-modal-overlay').addEventListener('click', e=>{
+    if(e.target.id==='announcement-modal-overlay') dismissAnnouncementPopup();
   });
 }
 
@@ -2382,6 +2454,7 @@ function wireEvents(){
   }
   updateDateTime();
   setInterval(updateDateTime, 30000);
+  maybeShowAnnouncementPopup();
 })();
 </script>
 </body>
