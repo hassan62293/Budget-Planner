@@ -1639,6 +1639,39 @@ nav.tabs button{ color:var(--ink); }
    consequence of the figure rather than another instruction. */
 .rules-hint{ margin:10px 0 0; }
 
+/* ----------------------------------------------------------------------------
+   "Share this page" popover on a phone
+   .actions is a horizontal scroll rail there (overflow-x:auto), and once one
+   axis is not visible the other computes to auto as well — so an absolutely
+   positioned popover opening below the button was clipped to zero visible
+   height. It opened and showed nothing, which is precisely what "the button
+   does not work" looked like.
+
+   Phones normally take the native share sheet instead (see the click handler).
+   This is the fallback for a phone browser without navigator.share: a bottom
+   sheet, which escapes the clipping container entirely and matches the
+   quick-add sheet already in the app.
+   -------------------------------------------------------------------------- */
+@media (max-width:639px){
+  .share-link-popover{
+    position:fixed;
+    inset-inline:10px;
+    inset-inline-start:10px;
+    left:10px; right:10px;
+    top:auto;
+    bottom:calc(84px + env(safe-area-inset-bottom));
+    min-width:0;
+    padding:8px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-md);
+    z-index:130;
+  }
+  .share-link-popover a{
+    min-height:var(--tap);
+    display:flex; align-items:center; gap:10px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -4605,6 +4638,25 @@ function wireEvents(){
 
   document.getElementById('btn-share-link').addEventListener('click', e=>{
     e.stopPropagation();
+
+    // On a phone the popover was invisible: the actions row becomes a
+    // horizontal scroll rail with overflow-x:auto, and once one axis stops
+    // being visible the other computes to auto too, so a popover opening
+    // BELOW the button was clipped to zero height. It opened; nothing showed.
+    //
+    // A phone has a far better control for this anyway. The native sheet
+    // offers Messages, Mail, WhatsApp and AirDrop instead of the two links
+    // this popover can hold. Larger screens keep the popover, which works
+    // there and is less disruptive than a system sheet.
+    //
+    // Called synchronously: navigator.share needs the tap still to be live.
+    if(isPhoneLayout() && navigator.share){
+      const { subject, message } = shareLinkTexts();
+      navigator.share({ title: subject, text: message, url: PLANNER_SHARE_URL })
+        .catch(()=>{});   // AbortError just means they dismissed it
+      return;
+    }
+
     const pop = document.getElementById('share-link-popover');
     pop.style.display = pop.style.display==='none' ? 'block' : 'none';
   });
