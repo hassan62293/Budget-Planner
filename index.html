@@ -1505,6 +1505,140 @@ a[role="button"]{
 .help-list li{ margin-bottom:7px; font-size:13.5px; line-height:1.65; }
 .help-content .help-section{ margin-bottom:26px; }
 
+/* ============================================================================
+   Forecast on a phone
+   The base stylesheet puts min-width:1080px on every table. The budget table
+   is replaced by cards so it never showed, but the forecast table inherited
+   that width and pushed the whole page sideways. One card per year instead.
+   ============================================================================ */
+.fc-cards{ display:none; }
+
+@media (max-width:639px){
+  .fc-cards{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  #panel-forecast .table-wrap{ display:none; }
+
+  /* The assumptions card and the chart both need to fit the width too. */
+  #panel-forecast .forecast-grid{ gap:16px; }
+  #panel-forecast .assump-card,
+  #panel-forecast .chart-card{ padding:14px; border-radius:var(--radius); }
+  #panel-forecast .chart-canvas-box{ height:210px; }
+  #panel-forecast .result-banner{ padding:15px 16px; border-radius:var(--radius); }
+  #panel-forecast .result-banner .v{ font-size:21px; }
+}
+
+.fc-card{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:13px 14px;
+}
+.fc-card-head{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding-bottom:9px; margin-bottom:9px; border-bottom:1px solid var(--rule);
+}
+.fc-year{ font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-.015em; }
+.fc-end{
+  font-size:16px; font-weight:700; color:var(--good);
+  font-variant-numeric:tabular-nums;
+}
+.fc-rows{ margin:0; display:flex; flex-direction:column; gap:6px; }
+.fc-rows > div{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.fc-rows dt{ font-size:12px; color:var(--ink-soft); }
+.fc-rows dd{
+  margin:0; font-size:13px; font-weight:600;
+  font-variant-numeric:tabular-nums; color:var(--ink);
+}
+.fc-rows dd.pos{ color:var(--good); }
+
+/* ----------------------------------------------------------------------------
+   Table widths belong to the table that needs them
+   The budget table has 15 columns and genuinely needs a min-width to force
+   horizontal scrolling rather than crushing every column. That rule was
+   written unscoped, so it also hit the 6-column forecast table and pushed the
+   whole desktop page sideways. Min-widths are now per-panel.
+   -------------------------------------------------------------------------- */
+#panel-forecast table{ min-width:0; width:100%; }
+#panel-forecast .table-wrap{ overflow-x:auto; }
+
+@media (min-width:640px){
+  table{ min-width:0; }              /* drop the base 1080px for everything */
+  #panel-budget table{ min-width:920px; }   /* re-apply only where it is needed */
+}
+@media (min-width:640px) and (max-width:1023px){
+  #panel-budget table{ min-width:760px; }
+}
+
+/* ============================================================================
+   "Enter your name" — glow the whole field
+   The original animated only the underline, which is easy to miss on a phone
+   where the field sits under a large heading. The border, radius and padding
+   are set on the base rule with a transparent border so the geometry never
+   changes when the class is added or removed — animating those directly would
+   make the header jump every 1.8s.
+   ============================================================================ */
+.user-name-input{
+  border:2px solid transparent;
+  border-bottom:2px solid transparent;   /* override the base underline-only rule */
+  border-radius:12px;
+  padding:8px 12px;
+  margin:4px 0 8px;
+  background:transparent;
+  transition:border-color .18s ease, background-color .18s ease;
+}
+.user-name-input:focus{
+  outline:none;
+  border-color:var(--emerald);
+  background:var(--paper-raised);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--emerald) 20%, transparent);
+}
+
+/* The attention state pulses the entire outline plus a soft halo around the
+   whole control. Colours cycle through the palette so it reads as an
+   invitation rather than an error. */
+.user-name-input.attention{
+  background:var(--paper-raised);
+  animation:nameGlow 2s ease-in-out infinite;
+}
+@keyframes nameGlow{
+  0%,100%{
+    border-color:var(--amber-border);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--amber) 24%, transparent),
+               0 0 18px 2px color-mix(in srgb, var(--amber) 45%, transparent);
+  }
+  33%{
+    border-color:var(--emerald);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--emerald) 24%, transparent),
+               0 0 18px 2px color-mix(in srgb, var(--emerald) 45%, transparent);
+  }
+  66%{
+    border-color:var(--brick);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--brick) 24%, transparent),
+               0 0 18px 2px color-mix(in srgb, var(--brick) 45%, transparent);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .user-name-input.attention{
+    animation:none;
+    border-color:var(--amber-border);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--amber) 24%, transparent);
+  }
+}
+
+/* The emergency settings moved above the table, so they read as settings that
+   apply to what follows rather than a footnote after it. */
+.rules-box{ margin-bottom:6px; }
+
+/* An inactive tab sits on --rule, which is lighter than the page, so
+   --ink-soft landed at 4.34:1 there — just under AA. Desktop-only, which is
+   why the phone audits never saw it (the tab bar is hidden below 640px).
+   The active tab is fully inverted, so it stays clearly distinguishable. */
+nav.tabs button{ color:var(--ink); }
+/* The active tab already sets its own colour against --paper-raised in the
+   base sheet and must not be overridden here — doing so put cream text on a
+   white tab. It is distinguished by its raised background, not by text colour. */
+
+/* The starting-savings explanation sits under its inputs, so it reads as a
+   consequence of the figure rather than another instruction. */
+.rules-hint{ margin:10px 0 0; }
+
 </style>
 </head>
 <body>
@@ -1596,6 +1730,23 @@ a[role="button"]{
 
       <div id="empty-months-reminder" class="reminder-banner" style="display:none;"></div>
 
+      <div class="rules-box">
+        <div class="field">
+          <label for="emergency-threshold" class="cur-label" data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount</label>
+          <input type="number" id="emergency-threshold" step="1">
+        </div>
+        <div class="field">
+          <label for="emergency-start" class="cur-label" data-i18n="rule_start_label">Starting emergency balance</label>
+          <input type="number" id="emergency-start" step="1">
+        </div>
+        <div class="field">
+          <label for="savings-start" class="cur-label" data-i18n="rule_savings_start_label">Starting savings balance</label>
+          <input type="number" id="savings-start" step="1">
+        </div>
+      </div>
+      <p class="section-note rules-hint" id="savings-start-hint"></p>
+      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
+
       <div class="ov-rows" id="overview-rows"></div>
 
       <div class="table-wrap">
@@ -1610,17 +1761,6 @@ a[role="button"]{
         </table>
       </div>
 
-      <div class="rules-box">
-        <div class="field">
-          <label data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount ($)</label>
-          <input type="number" id="emergency-threshold" step="1">
-        </div>
-        <div class="field">
-          <label data-i18n="rule_start_label">Starting emergency balance ($)</label>
-          <input type="number" id="emergency-start" step="1">
-        </div>
-      </div>
-      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
     </section>
 
     <section class="panel" id="panel-entry">
@@ -1725,16 +1865,17 @@ a[role="button"]{
       <p class="section-note" data-i18n="forecast_note">Edit the assumptions on the left — everything else recalculates automatically. Contributions grow yearly with (salary growth − expense growth); returns use a mid-year convention.</p>
       <p class="section-note" id="forecast-basis-note" style="margin-top:-10px;"></p>
       <div id="charts-unavailable-forecast" class="reminder-banner" style="display:none;"></div>
+      <div class="fc-cards" id="forecast-cards" role="list"></div>
 
       <div class="forecast-grid">
         <div class="assump-card">
           <h3 data-i18n="assumptions_h3">Assumptions</h3>
           <div class="assump-field">
-            <label data-i18n="f_start_label">Starting savings (today, $)</label>
+            <label for="f-start" class="cur-label" data-i18n="f_start_label">Starting savings (today)</label>
             <input type="number" id="f-start" step="1">
           </div>
           <div class="assump-field">
-            <label data-i18n="f_avgsavings_label">Current avg. monthly savings ($)</label>
+            <label for="f-avg-savings" class="cur-label" data-i18n="f_avgsavings_label">Current avg. monthly savings</label>
             <input type="number" id="f-avg-savings" step="1">
             <span class="hint" id="f-avg-hint" data-i18n="f_avghint_auto">Auto-filled from Dashboard — edit to override</span>
           </div>
@@ -2189,7 +2330,8 @@ const TRANSLATIONS = {
     th_transport:'Transport', th_entertainment:'Entertainment', th_other:'Other expenses', th_emergency:'Emergency',
     th_totalspend:'Total spend', th_monthlysavings:'Monthly savings', th_savingsrate:'Savings rate', th_emergencybalance:'Emergency fund balance',
     table_add_month:'+ Add month', table_remove_month:'− Remove last month',
-    rule_threshold_label:'Min. surplus threshold — emergency amount ($)', rule_start_label:'Starting emergency balance ($)',
+    rule_threshold_label:'Min. surplus threshold — emergency amount', rule_start_label:'Starting emergency balance',
+    rule_savings_start_label:'Starting savings balance',
     rule_note:"Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).",
     dashboard_h2:'Dashboard',
     dashboard_note:'Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.',
@@ -2198,7 +2340,7 @@ const TRANSLATIONS = {
     chart_category_title:'Spending by category', chart_rate_title:'Savings rate trend', chart_trend_title:'Monthly trend — salary, expenses, savings',
     forecast_note:'Edit the assumptions on the left — everything else recalculates automatically. Contributions grow yearly with (salary growth − expense growth); returns use a mid-year convention.',
     assumptions_h3:'Assumptions',
-    f_start_label:'Starting savings (today, $)', f_avgsavings_label:'Current avg. monthly savings ($)',
+    f_start_label:'Starting savings (today)', f_avgsavings_label:'Current avg. monthly savings',
     f_avghint_auto:'Auto-filled from Dashboard — edit to override',
     f_avghint_custom:'Custom value — clear the field to reset to auto',
     f_salarygrowth_label:'Annual salary growth rate (%)', f_expensegrowth_label:'Annual expense growth rate (%)', f_return_label:'Annual investment return rate (%)',
@@ -2292,7 +2434,8 @@ const TRANSLATIONS = {
     th_transport:'المواصلات', th_entertainment:'الترفيه', th_other:'مصروفات أخرى', th_emergency:'الطوارئ',
     th_totalspend:'إجمالي الصرف', th_monthlysavings:'الادخار الشهري', th_savingsrate:'معدل الادخار', th_emergencybalance:'رصيد صندوق الطوارئ',
     table_add_month:'+ إضافة شهر', table_remove_month:'− حذف آخر شهر',
-    rule_threshold_label:'حد الفائض الأدنى — مبلغ الطوارئ ($)', rule_start_label:'رصيد الطوارئ الابتدائي ($)',
+    rule_threshold_label:'حد الفائض الأدنى — مبلغ الطوارئ', rule_start_label:'رصيد الطوارئ الابتدائي',
+    rule_savings_start_label:'رصيد الادخار الابتدائي',
     rule_note:'قاعدة الطوارئ: كل شهر، إذا بلغ الفائض (الراتب ناقص المصروفات) الحد المحدد، يُحفظ هذا المبلغ تلقائيًا في صندوق الطوارئ؛ وإذا كان الفائض أقل، يُحفظ الفائض بالكامل؛ وإذا حدث عجز، يُغطّى تلقائيًا من الصندوق بحسب المتاح فيه.',
     dashboard_h2:'لوحة المعلومات',
     dashboard_note:'الإجماليات السنوية، ومتوسط الادخار الشهري، والمصروفات حسب الفئة — لا حاجة لإدخال بيانات هنا، فكل شيء يُستمد من الميزانية الشهرية.',
@@ -2301,7 +2444,7 @@ const TRANSLATIONS = {
     chart_category_title:'المصروفات حسب الفئة', chart_rate_title:'اتجاه معدل الادخار', chart_trend_title:'الاتجاه الشهري — الراتب والمصروفات والادخار',
     forecast_note:'عدّل الافتراضات في البطاقة المخصصة لذلك — يُعاد احتساب كل شيء آخر تلقائيًا. تنمو المساهمات سنويًا بمعدل (نمو الراتب − نمو المصروفات)، وتُحتسب العوائد باستخدام قاعدة منتصف العام.',
     assumptions_h3:'الافتراضات',
-    f_start_label:'الادخار الابتدائي (اليوم، $)', f_avgsavings_label:'متوسط الادخار الشهري الحالي ($)',
+    f_start_label:'الادخار الابتدائي (اليوم)', f_avgsavings_label:'متوسط الادخار الشهري الحالي',
     f_avghint_auto:'يُملأ تلقائيًا من لوحة المعلومات — عدّله للتجاوز',
     f_avghint_custom:'قيمة مخصّصة — امسح الحقل لإعادته للوضع التلقائي',
     f_salarygrowth_label:'معدل نمو الراتب السنوي (%)', f_expensegrowth_label:'معدل نمو المصروفات السنوي (%)', f_return_label:'معدل العائد الاستثماري السنوي (%)',
@@ -2379,6 +2522,23 @@ function confirmRemoveMonthMsg(label){
   return lang === 'ar'
     ? ('إزالة ' + label + '؟ ستُحذف كل الأرقام المُدخلة لهذا الشهر.')
     : ('Remove ' + label + '? Every figure entered for that month will be deleted.');
+}
+function startingSavingsHintText(start, saved, total){
+  if(lang === 'ar'){
+    return 'تبدأ من ' + fmtMoney(start) + '، وبإضافة ' + fmtMoney(saved) +
+           ' مُدّخرة خلال هذه الأشهر يصبح المجموع ' + fmtMoney(total) +
+           ' قبل أي عوائد استثمار. وتنطلق التوقعات من هذا الرقم.';
+  }
+  return 'You start from ' + fmtMoney(start) + '. Adding the ' + fmtMoney(saved) +
+         ' saved across these months gives ' + fmtMoney(total) +
+         ' before any investment growth. The forecast projects from here.';
+}
+
+function entryFieldsDoneText(done, total){
+  if(done >= total) return lang === 'ar' ? 'مكتمل' : 'All filled in';
+  return lang === 'ar'
+    ? ('' + done + ' من ' + total + ' حقول')
+    : (done + ' of ' + total + ' fields');
 }
 function entryProgressText(done, total){
   if(lang === 'ar') return '<b>' + done + '</b> من <b>' + total + '</b> شهرًا مكتملة';
@@ -2587,6 +2747,18 @@ function blankMonth(ym){
 function normalizeState(s){
   // Anyone upgrading from before the picker existed was on dollars.
   if(!s.currency || !CURRENCIES[s.currency]) s.currency = 'USD';
+
+  // Budgets saved before completeness was tracked have no touched list. Infer
+  // it from the values present: anything non-zero was clearly entered by hand.
+  // A month that was fully filled in stays fully filled in; one with only a
+  // salary correctly drops back to partly filled, which is the point.
+  if(Array.isArray(s.months)){
+    const keys = ['salary', 'sideIncome', ...(Array.isArray(s.categories) ? s.categories : [])];
+    s.months.forEach(m=>{
+      if(Array.isArray(m.touched)) return;
+      m.touched = keys.filter(k=> (Number(m[k]) || 0) !== 0);
+    });
+  }
   if(!s.categories) s.categories = [...DEFAULT_CATEGORY_KEYS];
   if(!s.customLabels) s.customLabels = {};
   if(!s.fieldModes) s.fieldModes = {};
@@ -2643,9 +2815,14 @@ function defaultState(){
     userName: '',
     lang: (navigator.language||'en').toLowerCase().startsWith('ar') ? 'ar' : 'en',
     currency: guessCurrency(),
-    emergencyThreshold: 500,
+    emergencyThreshold: 0,
     emergencyStart: 0,
-    forecast: { start:0, avgSavingsOverride:null, salaryGrowth:3, expenseGrowth:2, investmentReturn:6 }
+    // Every assumption starts at zero. A pre-filled 3% pay rise and 6% return
+    // are guesses presented as facts: the projection looks authoritative
+    // before anyone has agreed to the numbers behind it. Starting at zero
+    // makes the forecast show only what the entered budget supports, until
+    // the person supplies assumptions they actually believe.
+    forecast: { start:0, avgSavingsOverride:null, salaryGrowth:0, expenseGrowth:0, investmentReturn:0 }
   };
 }
 
@@ -3011,11 +3188,34 @@ function monthFieldsHtml(m, idx){
 }
 
 /* filled = income entered · partial = spending but no income · empty = nothing */
+/* Every field a month card asks for. */
+function monthFieldKeys(){
+  return ['salary', 'sideIncome', ...state.categories];
+}
+
+/* A field counts as answered when the person has typed in it — including
+   typing 0 — or when it is on a fixed schedule and so is answered for every
+   month at once. */
+function isFieldAnswered(m, key){
+  if(state.fieldModes[key] === 'fixed') return true;
+  return Array.isArray(m.touched) && m.touched.includes(key);
+}
+
+function markFieldAnswered(m, key){
+  if(!Array.isArray(m.touched)) m.touched = [];
+  if(!m.touched.includes(key)) m.touched.push(key);
+}
+
+function monthProgress(m){
+  const keys = monthFieldKeys();
+  const done = keys.filter(k=> isFieldAnswered(m, k)).length;
+  return { done, total: keys.length };
+}
+
 function monthStatus(m){
-  const hasIncome = (effectiveSalary(m) + effectiveSideIncome(m)) > 0;
-  if(hasIncome) return 'filled';
-  const hasSpend = state.categories.some(c=> effectiveCategoryValue(m, c) > 0);
-  return hasSpend ? 'partial' : 'empty';
+  const { done, total } = monthProgress(m);
+  if(done === 0) return 'empty';
+  return done >= total ? 'filled' : 'partial';
 }
 
 /* ============================================================================
@@ -3088,8 +3288,9 @@ function renderEntryForm(){
   const r = rows[entryMonthIdx];
 
   document.getElementById('entry-form-title').textContent = monthLabel(m.ym);
+  const prog = monthProgress(m);
   document.getElementById('entry-form-sub').textContent =
-    entryFormSubText(r.income, r.spend, r.savings);
+    entryFormSubText(r.income, r.spend, r.savings) + ' · ' + entryFieldsDoneText(prog.done, prog.total);
 
   document.getElementById('entry-form-body').innerHTML = `
     <div class="mcard">
@@ -3108,6 +3309,18 @@ function renderEntryForm(){
 
   const isLast = entryMonthIdx >= state.months.length - 1;
   document.getElementById('entry-next').textContent = isLast ? t('entry_finish') : t('entry_next');
+}
+
+/* Money labels used to end in a hardcoded "($)". They now carry .cur-label and
+   get the chosen currency appended after translation, so switching to SAR
+   relabels them rather than leaving a dollar sign behind. */
+function applyCurrencyLabels(){
+  const sym = currencySymbol();
+  document.querySelectorAll('label.cur-label').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(!key) return;
+    el.textContent = t(key) + ' (' + sym + ')';
+  });
 }
 
 function renderCurrencyPicker(){
@@ -3282,6 +3495,18 @@ function refreshComputed(){
   return totals;
 }
 
+/* Spells out what the starting balance does, so it reads as money carried in
+   rather than another figure to fill. Hidden when it is zero, which is the
+   default and needs no explanation. */
+function renderStartingSavingsHint(totals){
+  const el = document.getElementById('savings-start-hint');
+  if(!el) return;
+  const start = Number(state.forecast.start) || 0;
+  if(start <= 0){ el.style.display = 'none'; el.textContent = ''; return; }
+  el.style.display = 'block';
+  el.textContent = startingSavingsHintText(start, totals.savings, start + totals.savings);
+}
+
 function renderEmptyReminder(rows){
   const reminder = document.getElementById('empty-months-reminder');
   if(!reminder) return;
@@ -3356,6 +3581,14 @@ function renderBudget(){
 
   document.getElementById('emergency-threshold').value = state.emergencyThreshold;
   document.getElementById('emergency-start').value = state.emergencyStart;
+
+  // The same value the Forecast tab calls "Starting savings (today)". Not a
+  // copy — both inputs read and write state.forecast.start, so editing either
+  // one moves the other and the projection together.
+  const savingsStart = document.getElementById('savings-start');
+  if(savingsStart) savingsStart.value = Number(state.forecast.start) || 0;
+  renderStartingSavingsHint(totals);
+  applyCurrencyLabels();
   if(state.months.length){
     document.getElementById('setup-years').value = Math.max(1, Math.round(state.months.length/12));
     document.getElementById('setup-start-month').value = state.months[0].ym;
@@ -3396,6 +3629,9 @@ function onCellChange(e){
   }
 
   state.months[idx][field] = Number(target.value) || 0;
+  // Typing 0 is an answer, so this is recorded on any commit, not only on a
+  // non-zero one.
+  markFieldAnswered(state.months[idx], field);
   refreshComputed();
   scheduleDerivedRender();
   scheduleSave();
@@ -3507,6 +3743,7 @@ function qaCommit(){
   if(idx === -1 || !qaCategory || !(amount > 0)) return;
   const m = state.months[idx];
   m[qaCategory] = (Number(m[qaCategory]) || 0) + amount;
+  markFieldAnswered(m, qaCategory);
   closeQuickAdd();
   renderAll();
   scheduleSave();
@@ -3549,10 +3786,18 @@ function wireZeroClearing(){
     const el = e.target;
     if(!el.matches || !el.matches('input[type="number"]')) return;
     if(el.disabled || el.readOnly) return;
-    // Only a literal zero goes: 0.5 and 10 are real values.
+    // A placeholder zero is removed outright so typing starts on an empty
+    // field. A real value is selected instead — never silently discarded —
+    // so typing replaces it while it is still there to be read or kept.
     if(el.value !== '' && Number(el.value) === 0){
       el.dataset.clearedZero = '1';
       el.value = '';
+      return;
+    }
+    if(el.value !== ''){
+      // Safari needs this deferred until after its own focus handling, or the
+      // selection is collapsed to a caret again immediately.
+      setTimeout(()=>{ try{ el.select(); }catch(e){} }, 0);
     }
   });
 
@@ -3788,6 +4033,26 @@ function renderForecast(dashTotals){
   document.getElementById('forecast-result-label').textContent = forecastResultLabel(numYears);
   document.getElementById('tab-forecast-btn').textContent = forecastTabLabel(numYears);
 
+  // Phone gets cards; the table stays for tablet and desktop. Both are always
+  // rendered and CSS shows one, so crossing the breakpoint can never leave the
+  // panel empty.
+  const cardHost = document.getElementById('forecast-cards');
+  if(cardHost){
+    cardHost.innerHTML = years.map(row=>`
+      <article class="fc-card" role="listitem">
+        <div class="fc-card-head">
+          <span class="fc-year">${forecastYearLabel(row.y)}</span>
+          <span class="fc-end">${fmtMoney(row.ending)}</span>
+        </div>
+        <dl class="fc-rows">
+          <div><dt>${t('forecast_table_beginning')}</dt><dd>${fmtMoney(row.beginning)}</dd></div>
+          <div><dt>${t('forecast_table_contrib')}</dt><dd>${fmtMoney(row.contributions)}</dd></div>
+          <div><dt>${t('forecast_table_returns')}</dt><dd class="pos">${fmtMoney(row.returns)}</dd></div>
+          <div><dt>${t('forecast_table_growth')}</dt><dd>${fmtPct(row.growthVsYear1)}</dd></div>
+        </dl>
+      </article>`).join('');
+  }
+
   const body = document.getElementById('forecast-body');
   body.innerHTML = years.map(row=>`
     <tr>
@@ -4019,14 +4284,18 @@ async function shareBackupFiles(){
   const jsonText = JSON.stringify(state, null, 2);
   files.push(new File([jsonText], baseName+'.json', {type:'application/json'}));
 
-  // Add the Excel workbook too when available, as a human-readable companion.
-  const xlsxOk = await ensureXlsxLoaded();
-  if(xlsxOk){
+  // Everything from here to navigator.share() must stay synchronous. Awaiting
+  // anything — in particular the 930 KB SheetJS download — lets the transient
+  // user activation expire, and the share is then rejected outright.
+  if(typeof XLSX !== 'undefined'){
     try{
       const wb = buildWorkbook();
       const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
       files.push(new File([wbout], baseName+'.xlsx', {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     }catch(e){}
+  } else {
+    // Not loaded yet: fetch it for next time, but do not wait for it now.
+    ensureXlsxLoaded().catch(()=>{});
   }
 
   // Some browsers' canShare() is overly conservative about non-media file types, or
@@ -4242,6 +4511,10 @@ function shareLinkTexts(){
   };
 }
 
+function refreshCurrencyLabels(){
+  if(typeof applyCurrencyLabels === 'function') applyCurrencyLabels();
+}
+
 function updateShareLinkHrefs(){
   const { subject, message } = shareLinkTexts();
   const emailLink = document.getElementById('share-link-email');
@@ -4390,6 +4663,11 @@ function wireEvents(){
   });
   document.getElementById('emergency-start').addEventListener('change', e=>{
     state.emergencyStart = Number(e.target.value)||0;
+    renderAll(); scheduleSave();
+  });
+  // Writes the same field the Forecast tab's own input writes.
+  document.getElementById('savings-start').addEventListener('change', e=>{
+    state.forecast.start = Number(e.target.value)||0;
     renderAll(); scheduleSave();
   });
 
