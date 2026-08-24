@@ -1639,6 +1639,10 @@ a[role="button"]{
             <label data-i18n="setup_startmonth_label">Starting month</label>
             <input type="month" id="setup-start-month">
           </div>
+          <div class="field">
+            <label for="setup-currency" data-i18n="setup_currency_label">Currency</label>
+            <select id="setup-currency"></select>
+          </div>
           <button id="btn-generate-months" data-i18n="btn_generate">Generate months table</button>
         </div>
 
@@ -2120,6 +2124,7 @@ const TRANSLATIONS = {
     sub:'Track monthly income and spending, watch your savings rate, and project where your balance lands over time.',
     btn_save:'Save now', btn_export:'Export data (.json)', btn_import:'Import data', btn_reset:'Reset all',
     btn_install:'Install app',
+    setup_currency_label:'Currency',
     tab_entry:'Enter your data',
     tab_entry_short:'Enter',
     tab_overview_short:'Overview',
@@ -2222,6 +2227,7 @@ const TRANSLATIONS = {
     sub:'تتبّع دخلك ومصروفاتك الشهرية، وراقب معدل ادخارك، وتوقّع رصيدك مع الوقت.',
     btn_save:'احفظ الآن', btn_export:'تصدير البيانات (.json)', btn_import:'استيراد البيانات', btn_reset:'إعادة تعيين الكل',
     btn_install:'تثبيت التطبيق',
+    setup_currency_label:'العملة',
     tab_entry:'أدخل بياناتك',
     tab_entry_short:'إدخال',
     tab_overview_short:'نظرة عامة',
@@ -2484,11 +2490,73 @@ function categoryLabel(key){
   return (state.customLabels && state.customLabels[key]) || key;
 }
 
+/* ============================================================================
+   Currency
+   A plain table rather than Intl.NumberFormat: Intl would drag the whole
+   locale in with it, which in Arabic means Arabic-Indic digits (١٢٣) that
+   nobody asked for, and it disagrees with itself across browsers on where the
+   symbol goes. A table gives the same answer everywhere and keeps Latin
+   digits in both languages.
+
+   before:false puts the symbol after the number with a space, which is how
+   the Arabic currencies are normally written.
+   excel is an Excel custom number format, so exported cells stay real numbers
+   that still add up, but display with the symbol.
+   ============================================================================ */
+const CURRENCIES = {
+  USD:{ symbol:'$',    before:true,  excel:'"$"#,##0' },
+  EUR:{ symbol:'€',    before:true,  excel:'"€"#,##0' },
+  GBP:{ symbol:'£',    before:true,  excel:'"£"#,##0' },
+  SAR:{ symbol:'ر.س',  before:false, excel:'#,##0" ر.س"' },
+  AED:{ symbol:'د.إ',  before:false, excel:'#,##0" د.إ"' },
+  QAR:{ symbol:'ر.ق',  before:false, excel:'#,##0" ر.ق"' },
+  KWD:{ symbol:'د.ك',  before:false, excel:'#,##0" د.ك"' },
+  BHD:{ symbol:'د.ب',  before:false, excel:'#,##0" د.ب"' },
+  OMR:{ symbol:'ر.ع',  before:false, excel:'#,##0" ر.ع"' },
+  JOD:{ symbol:'د.أ',  before:false, excel:'#,##0" د.أ"' },
+  EGP:{ symbol:'ج.م',  before:false, excel:'#,##0" ج.م"' },
+  MAD:{ symbol:'د.م',  before:false, excel:'#,##0" د.م"' },
+  TND:{ symbol:'د.ت',  before:false, excel:'#,##0" د.ت"' },
+  DZD:{ symbol:'د.ج',  before:false, excel:'#,##0" د.ج"' },
+  TRY:{ symbol:'₺',    before:true,  excel:'"₺"#,##0' },
+  INR:{ symbol:'₹',    before:true,  excel:'"₹"#,##0' },
+  PKR:{ symbol:'₨',    before:true,  excel:'"₨"#,##0' },
+  JPY:{ symbol:'¥',    before:true,  excel:'"¥"#,##0' },
+  CNY:{ symbol:'CN¥',  before:true,  excel:'"CN¥"#,##0' },
+  CAD:{ symbol:'CA$',  before:true,  excel:'"CA$"#,##0' },
+  AUD:{ symbol:'A$',   before:true,  excel:'"A$"#,##0' },
+  CHF:{ symbol:'CHF',  before:true,  excel:'"CHF "#,##0' },
+};
+
+/* Region of the browser's locale, only ever used to pick a sensible default
+   the very first time. Once state exists this is never consulted again. */
+const REGION_CURRENCY = {
+  SA:'SAR', AE:'AED', QA:'QAR', KW:'KWD', BH:'BHD', OM:'OMR', JO:'JOD',
+  EG:'EGP', MA:'MAD', TN:'TND', DZ:'DZD', TR:'TRY', IN:'INR', PK:'PKR',
+  JP:'JPY', CN:'CNY', CA:'CAD', AU:'AUD', CH:'CHF', GB:'GBP',
+  DE:'EUR', FR:'EUR', ES:'EUR', IT:'EUR', NL:'EUR', IE:'EUR', PT:'EUR',
+};
+function guessCurrency(){
+  try{
+    const region = (new Intl.Locale(navigator.language)).region;
+    if(region && REGION_CURRENCY[region] && CURRENCIES[REGION_CURRENCY[region]]) {
+      return REGION_CURRENCY[region];
+    }
+  }catch(e){}
+  return 'USD';
+}
+
+function currencyDef(){
+  return (state && CURRENCIES[state.currency]) || CURRENCIES.USD;
+}
+function currencySymbol(){ return currencyDef().symbol; }
+
 function fmtMoney(n){
   n = Math.round(n||0);
   const neg = n < 0;
   const s = Math.abs(n).toLocaleString('en-US');
-  return (neg?'-$':'$') + s;
+  const c = currencyDef();
+  return (neg ? '-' : '') + (c.before ? c.symbol + s : s + ' ' + c.symbol);
 }
 function fmtPct(n){
   return (Math.round((n||0)*1000)/10) + '%';
@@ -2517,6 +2585,8 @@ function blankMonth(ym){
 }
 
 function normalizeState(s){
+  // Anyone upgrading from before the picker existed was on dollars.
+  if(!s.currency || !CURRENCIES[s.currency]) s.currency = 'USD';
   if(!s.categories) s.categories = [...DEFAULT_CATEGORY_KEYS];
   if(!s.customLabels) s.customLabels = {};
   if(!s.fieldModes) s.fieldModes = {};
@@ -2572,6 +2642,7 @@ function defaultState(){
     hasSeenHelp: false,
     userName: '',
     lang: (navigator.language||'en').toLowerCase().startsWith('ar') ? 'ar' : 'en',
+    currency: guessCurrency(),
     emergencyThreshold: 500,
     emergencyStart: 0,
     forecast: { start:0, avgSavingsOverride:null, salaryGrowth:3, expenseGrowth:2, investmentReturn:6 }
@@ -3039,6 +3110,17 @@ function renderEntryForm(){
   document.getElementById('entry-next').textContent = isLast ? t('entry_finish') : t('entry_next');
 }
 
+function renderCurrencyPicker(){
+  const sel = document.getElementById('setup-currency');
+  if(!sel) return;
+  if(!sel.options.length){
+    sel.innerHTML = Object.keys(CURRENCIES)
+      .map(code=> `<option value="${code}">${code} · ${CURRENCIES[code].symbol}</option>`)
+      .join('');
+  }
+  sel.value = state.currency;
+}
+
 function renderEntryPanel(){
   const inForm = entryMonthIdx >= 0;
   document.getElementById('entry-grid-view').hidden = inForm;
@@ -3080,6 +3162,12 @@ function wireEntryTab(){
     const pos = years.indexOf(entryYear);
     if(e.target.closest('#ycal-prev') && pos > 0){ entryYear = years[pos-1]; renderEntryCalendar(); }
     if(e.target.closest('#ycal-next') && pos < years.length-1){ entryYear = years[pos+1]; renderEntryCalendar(); }
+  });
+  document.getElementById('setup-currency').addEventListener('change', e=>{
+    if(!CURRENCIES[e.target.value]) return;
+    state.currency = e.target.value;
+    renderAll();          // every displayed amount goes through fmtMoney
+    scheduleSave();
   });
   document.getElementById('entry-back').addEventListener('click', closeEntryForm);
   document.getElementById('entry-delete').addEventListener('click', ()=>{
@@ -3275,6 +3363,7 @@ function renderBudget(){
 
   renderCategoryManager();
   renderPlanningModes();
+  renderCurrencyPicker();
   renderStrip(totals);
   renderEntryPanel();
 }
@@ -3376,6 +3465,8 @@ function renderQuickAdd(){
     chips.appendChild(b);
   });
 
+  const cur = document.getElementById('qa-currency');
+  if(cur) cur.textContent = currencySymbol();
   const digits = document.getElementById('qa-digits');
   const amount = document.getElementById('qa-amount');
   digits.textContent = qaDigits === '' ? '0' : qaDigits;
@@ -3808,6 +3899,20 @@ function importFromWorkbook(wb){
   state.months = months;
 }
 
+/* Applies the chosen currency as an Excel number format to the money columns.
+   The cells stay numeric — formatting them as text would look right and then
+   refuse to add up, which is worse than no formatting at all. */
+function applyMoneyFormat(ws, rowCount, moneyCols){
+  const z = currencyDef().excel;
+  moneyCols.forEach(c=>{
+    for(let r = 1; r <= rowCount; r++){
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[addr];
+      if(cell && typeof cell.v === 'number') cell.z = z;
+    }
+  });
+}
+
 function buildWorkbook(){
   const {rows, totals} = computeAll();
   const wb = XLSX.utils.book_new();
@@ -3828,6 +3933,12 @@ function buildWorkbook(){
   totalsRow.push(totals.emergency, totals.spend, totals.savings, Math.round(totals.rate*1000)/10, '');
   aoa.push(totalsRow);
   const ws1 = XLSX.utils.aoa_to_sheet(aoa);
+  // Every column carries money except the month label and the savings-rate %.
+  const n = state.categories.length;
+  const rateCol = 6 + n;
+  const moneyCols = [];
+  for(let c = 1; c <= 7 + n; c++) if(c !== rateCol) moneyCols.push(c);
+  applyMoneyFormat(ws1, aoa.length - 1, moneyCols);
   XLSX.utils.book_append_sheet(wb, ws1, t('tab_budget').slice(0,31));
 
   const dashAoa = [
@@ -3841,12 +3952,14 @@ function buildWorkbook(){
   ];
   state.categories.forEach(c=> dashAoa.push([categoryLabel(c), Math.round(totals[c]||0)]));
   const ws2 = XLSX.utils.aoa_to_sheet(dashAoa);
+  applyMoneyFormat(ws2, dashAoa.length - 1, [1]);
   XLSX.utils.book_append_sheet(wb, ws2, t('tab_dashboard').slice(0,31));
 
   const fc = computeForecast(totals);
   const forecastAoa = [[t('forecast_table_year'), t('forecast_table_beginning'), t('forecast_table_contrib'), t('forecast_table_returns'), t('forecast_table_ending'), t('forecast_table_growth')]];
   fc.years.forEach(row=> forecastAoa.push([row.y, Math.round(row.beginning), Math.round(row.contributions), Math.round(row.returns), Math.round(row.ending), (Math.round(row.growthVsYear1*1000)/10)+'%']));
   const ws3 = XLSX.utils.aoa_to_sheet(forecastAoa);
+  applyMoneyFormat(ws3, forecastAoa.length - 1, [1, 2, 3, 4]);
   XLSX.utils.book_append_sheet(wb, ws3, t('tab_forecast_base').slice(0,31));
 
   return wb;
