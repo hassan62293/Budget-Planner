@@ -164,7 +164,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4A7C63">
 <meta name="color-scheme" content="light">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1672,6 +1671,245 @@ nav.tabs button{ color:var(--ink); }
   }
 }
 
+/* ============================================================================
+   Planned vs spent
+   One bar component shared by the as-you-go tab and the dashboard, so a
+   category reads the same in both places. Status is carried by the bar colour
+   AND by a worded label ("Over by 240", "Close to plan · 87%"), never by hue
+   alone — the whole point is a warning, and a warning nobody can see is not
+   one.
+   ============================================================================ */
+.sp-head{
+  display:flex; align-items:center; gap:12px; margin-top:16px;
+}
+.sp-head-mid{ flex:1 1 auto; min-width:0; text-align:center; }
+.sp-month{ font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-.018em; }
+.sp-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+
+/* ---- the bar itself ---- */
+.sp-bar{
+  height:8px; border-radius:999px; background:var(--rule);
+  overflow:hidden; margin:8px 0 6px;
+}
+.sp-bar > span{
+  display:block; height:100%; border-radius:999px;
+  background:var(--good); transition:width .25s ease;
+}
+.is-warn .sp-bar > span{ background:var(--warn); }
+.is-over .sp-bar > span{ background:var(--bad); }
+.is-none .sp-bar > span{ background:var(--ink-soft); }
+
+/* ---- month total ---- */
+.sp-total{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:14px 15px; margin-top:14px;
+  border-inline-start:4px solid var(--good);
+}
+.sp-total.is-warn{ border-inline-start-color:var(--warn); }
+.sp-total.is-over{ border-inline-start-color:var(--bad); }
+.sp-total.is-none{ border-inline-start-color:var(--ink-soft); }
+.sp-total-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.sp-total-k{ font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); }
+.sp-total-v{ font-size:22px; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.sp-total-foot{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  font-size:12px; color:var(--ink-soft);
+}
+.sp-left{ font-weight:600; color:var(--good-ink); }
+.sp-total.is-warn .sp-left{ color:var(--warn-ink); }
+.sp-total.is-over .sp-left{ color:var(--bad-ink); }
+
+/* ---- one row per category ---- */
+.sp-rows{ display:flex; flex-direction:column; gap:9px; margin-top:14px; }
+.sp-row{
+  background:var(--paper-raised); border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm); padding:11px 13px;
+}
+.sp-row-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sp-name{ font-size:13px; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sp-field{
+  font-size:16px; font-weight:700; text-align:end; min-width:104px; flex:0 0 auto;
+  padding:8px 10px; border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.sp-field:focus{
+  outline:none; border-color:var(--emerald);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--emerald) 22%, transparent);
+}
+.sp-row-foot{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; font-size:11.5px; color:var(--ink-soft); }
+.sp-status{ font-weight:600; color:var(--good-ink); }
+.is-warn .sp-status{ color:var(--warn-ink); }
+.is-over .sp-status{ color:var(--bad-ink); }
+.is-none .sp-status{ color:var(--ink-soft); }
+
+/* ---- dashboard comparison ---- */
+.pvs-title{
+  font-family:var(--font-display); font-size:17px; font-weight:600;
+  letter-spacing:-.015em; margin:26px 0 4px;
+}
+.pvs{ display:flex; flex-direction:column; gap:9px; margin:14px 0 26px; }
+.pvs-summary{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:14px 15px;
+  border-inline-start:4px solid var(--good);
+}
+.pvs-summary.is-warn{ border-inline-start-color:var(--warn); }
+.pvs-summary.is-over{ border-inline-start-color:var(--bad); }
+.pvs-summary .k{
+  margin:0; font-size:10px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-soft);
+}
+.pvs-summary .v{ margin:3px 0 0; font-size:17px; font-weight:700; letter-spacing:-.015em; font-variant-numeric:tabular-nums; }
+.pvs-summary .v.accent{ color:var(--good-ink); }
+.pvs-summary.is-warn .v.accent{ color:var(--warn-ink); }
+.pvs-summary.is-over .v.accent{ color:var(--bad-ink); }
+
+.pvs-row{
+  background:var(--paper-raised); border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm); padding:11px 13px;
+}
+.pvs-row-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.pvs-name{ font-size:13px; font-weight:600; }
+.pvs-nums{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
+.pvs-nums .of{ color:var(--ink-soft); font-weight:500; }
+.pvs-row-foot{ display:flex; justify-content:flex-end; font-size:11.5px; }
+
+.pvs-empty{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:22px 18px; text-align:center;
+}
+.pvs-empty p{ margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+.pvs-empty button{
+  margin-top:14px; min-height:var(--tap); padding:0 20px; border:none; cursor:pointer;
+  border-radius:var(--radius-sm); background:var(--emerald); color:var(--paper);
+  font-size:14px; font-weight:700; font-family:inherit;
+}
+:root[data-theme="dark"] .pvs-empty button{ color:#1A1815; }
+
+@media (min-width:640px){
+  .pvs{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .pvs-summary{ grid-column:1 / -1; }
+  .sp-rows{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+}
+@media (min-width:1024px){
+  .pvs{ grid-template-columns:repeat(3,1fr); }
+  .sp-rows{ grid-template-columns:repeat(3,1fr); }
+}
+
+/* ----------------------------------------------------------------------------
+   Number inputs need an explicit width, not just a min-width
+   An <input> carries a default intrinsic width of roughly 20 characters —
+   about 324px at 16px type. With flex:0 0 auto that intrinsic width wins and
+   min-width never comes into play, so the field kept its full size and pushed
+   its grid column open. It only showed in Arabic first because the longer
+   labels tipped the row over the edge; the same latent bug applied to the
+   entry form's field in both languages.
+   -------------------------------------------------------------------------- */
+.sp-field{ width:108px; flex:0 0 108px; min-width:0; }
+.mrow-field{ width:104px; flex:0 0 104px; min-width:0; }
+
+@media (max-width:400px){
+  .sp-field{ width:96px; flex-basis:96px; }
+  .mrow-field{ width:94px; flex-basis:94px; }
+}
+
+/* The spend field is tapped constantly on a phone — it gets the same 44px
+   minimum as every other touch target in the app. */
+.sp-field{ min-height:var(--tap); }
+
+/* ============================================================================
+   Cumulative logging
+   The field is an amount to ADD, not the total — so the running total needs to
+   be the prominent thing, and the entry box secondary. A reset per category is
+   not optional with a cumulative total: without it one mistyped number is
+   stuck forever.
+   ============================================================================ */
+.sp-basis{
+  font-size:12px; line-height:1.55; margin:12px 0 0;
+  padding:10px 12px; border-radius:var(--radius-sm);
+  background:var(--good-tint); color:var(--ink);
+}
+.sp-basis.is-open{ background:var(--paper-raised); color:var(--ink-soft); box-shadow:var(--shadow-sm); }
+.sp-basis.is-closed{ background:var(--warn-tint); color:var(--ink); }
+.sp-basis:empty{ display:none; }
+
+.sp-spent{ display:flex; align-items:baseline; gap:7px; margin-top:8px; }
+.sp-spent-v{
+  font-size:20px; font-weight:700; letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.sp-spent-k{ font-size:11px; color:var(--ink-soft); }
+.is-warn .sp-spent-v{ color:var(--warn-ink); }
+.is-over .sp-spent-v{ color:var(--bad-ink); }
+.is-good .sp-spent-v{ color:var(--good-ink); }
+
+.sp-clear{
+  border:none; background:var(--paper); color:var(--ink-soft);
+  width:30px; height:30px; min-width:30px; border-radius:50%;
+  font-size:14px; line-height:1; cursor:pointer; flex:0 0 auto;
+}
+.sp-clear:hover{ background:var(--bad-tint); color:var(--bad-ink); }
+
+.sp-add{ display:flex; gap:7px; margin-top:10px; }
+.sp-add .sp-field{ flex:1 1 auto; width:auto; min-width:0; text-align:start; }
+.sp-add-btn{
+  flex:0 0 auto; min-height:var(--tap); padding:0 18px;
+  border:none; border-radius:8px; cursor:pointer;
+  background:var(--emerald); color:var(--paper);
+  font-size:14px; font-weight:700; font-family:inherit;
+}
+:root[data-theme="dark"] .sp-add-btn{ color:#1A1815; }
+.sp-add-btn:active{ transform:scale(.97); }
+@media (prefers-reduced-motion:reduce){ .sp-add-btn:active{ transform:none; } }
+
+/* ----------------------------------------------------------------------------
+   Grid items must be allowed to shrink
+   A grid item defaults to min-width:auto, meaning it will not go below its
+   content's intrinsic minimum — so a row containing a wide input forced its
+   whole column open rather than fitting into it. Arabic surfaced it first
+   again, with longer status text raising that minimum.
+
+   flex:1 1 0 on the add box (rather than the 1 1 auto it had) starts the
+   input from zero and lets it take what is left, instead of starting from the
+   ~324px an <input> claims by default and shrinking from there.
+   -------------------------------------------------------------------------- */
+.sp-row,
+.pvs-row,
+.fc-card,
+.mcard{ min-width:0; }
+
+.sp-add{ min-width:0; }
+.sp-add .sp-field{ flex:1 1 0; width:auto; min-width:0; }
+.sp-row-top,
+.sp-row-foot,
+.pvs-row-top,
+.pvs-row-foot{ min-width:0; }
+.sp-status,
+.pvs-nums{ min-width:0; }
+
+/* ============================================================================
+   What's new popup
+   A list of changes, not a sentence — so it needs real list styling and a
+   scrollable body for the day a release has a lot in it.
+   ============================================================================ */
+#announcement-modal-text{ text-align:start; max-height:52vh; overflow-y:auto; }
+.wn-intro{ margin:0 0 12px; font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+.wn-list{ margin:0; padding-inline-start:20px; display:flex; flex-direction:column; gap:9px; }
+.wn-list li{ font-size:13.5px; line-height:1.6; color:var(--ink); }
+.wn-list li::marker{ color:var(--emerald); }
+.wn-more{
+  margin:14px 0 0; font-size:12.5px; color:var(--ink-soft);
+  padding-top:12px; border-top:1px solid var(--rule);
+}
+.modal-card h3#announcement-modal-title{
+  text-align:start; font-family:var(--font-display); font-weight:600;
+}
+@media (max-width:639px){
+  #announcement-modal-text{ max-height:58vh; }
+}
+
 </style>
 </head>
 <body>
@@ -1680,8 +1918,8 @@ nav.tabs button{ color:var(--ink); }
 
 <div id="announcement-modal-overlay" class="modal-overlay" style="display:none;">
   <div class="modal-card">
-    <h3 data-i18n="announcement_modal_title">📣 Announcement</h3>
-    <p id="announcement-modal-text"></p>
+    <h3 id="announcement-modal-title" data-i18n="announcement_modal_title">What’s new</h3>
+    <div id="announcement-modal-text"></div>
     <div class="modal-actions" style="justify-content:center;">
       <button id="announcement-modal-ok" data-i18n="btn_got_it">Got it</button>
     </div>
@@ -1699,6 +1937,7 @@ nav.tabs button{ color:var(--ink); }
             <button id="lang-ar" data-lang="ar" data-i18n="lang_ar">العربية</button>
           </div>
           <button id="btn-theme" class="theme-toggle" type="button" aria-label="Switch between light and dark">◐</button>
+          <button id="btn-forecast" class="help-btn" type="button" aria-label="Savings forecast">◹</button>
           <button id="btn-help" class="help-btn" type="button" aria-label="How to use">?</button>
         </div>
         <p id="current-datetime" class="current-datetime"></p>
@@ -1746,7 +1985,8 @@ nav.tabs button{ color:var(--ink); }
 <div class="wrap">
   <nav class="tabs">
     <button data-tab="budget" class="active" data-i18n="tab_budget">Monthly budget</button>
-    <button data-tab="entry" data-i18n="tab_entry">Enter your data</button>
+    <button data-tab="entry" data-i18n="tab_entry">Enter your budget and plan</button>
+    <button data-tab="actual" data-i18n="tab_actual">Enter your data as you go</button>
     <button data-tab="dashboard" data-i18n="tab_dashboard">Dashboard</button>
     <button data-tab="forecast" id="tab-forecast-btn" data-i18n="tab_forecast_base">Forecast</button>
     <button data-tab="help" data-i18n="tab_help">How to use</button>
@@ -1864,6 +2104,24 @@ nav.tabs button{ color:var(--ink); }
       </div>
     </section>
 
+    <section class="panel" id="panel-actual">
+      <h2 class="section-title" data-i18n="actual_h2">Enter your data as you go</h2>
+      <p class="section-note" data-i18n="actual_note">Record what you actually spend, whenever you spend it. Each bar fills as you approach what you planned for that category.</p>
+
+      <div class="sp-head">
+        <button type="button" class="ycal-nav" id="sp-prev" aria-label="Previous month">‹</button>
+        <div class="sp-head-mid">
+          <div class="sp-month" id="sp-month"></div>
+          <div class="sp-sub" id="sp-sub"></div>
+        </div>
+        <button type="button" class="ycal-nav" id="sp-next" aria-label="Next month">›</button>
+      </div>
+
+      <p class="sp-basis" id="sp-basis"></p>
+      <div class="sp-total" id="sp-total"></div>
+      <div class="sp-rows" id="sp-rows"></div>
+    </section>
+
     <section class="panel" id="panel-dashboard">
       <h2 class="section-title" data-i18n="dashboard_h2">Dashboard</h2>
       <p class="section-note" data-i18n="dashboard_note">Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.</p>
@@ -1875,6 +2133,10 @@ nav.tabs button{ color:var(--ink); }
         <div class="kpi"><p class="k" data-i18n="kpi_rate">Avg. savings rate</p><p class="v" id="kpi-rate">0%</p></div>
         <div class="kpi"><p class="k" data-i18n="kpi_avgsavings">Avg. monthly savings</p><p class="v" id="kpi-avg-savings">$0</p><p style="font-size:10px;color:var(--ink-soft);margin:4px 0 0;" data-i18n="kpi_avgsavings_sub">Months with salary entered only</p></div>
       </div>
+
+      <h3 class="pvs-title" data-i18n="pvs_title">Planned vs spent</h3>
+      <p class="section-note" data-i18n="pvs_note">Every category across all your months, plan against reality. Amber means you are close to the plan; red means past it.</p>
+      <div class="pvs" id="planned-vs-spent"></div>
 
       <div id="charts-unavailable-dashboard" class="reminder-banner" style="display:none;"></div>
       <div class="charts">
@@ -1962,14 +2224,14 @@ nav.tabs button{ color:var(--ink); }
         <div class="help-section">
           <h3>Start here — three steps</h3>
           <ol class="help-steps">
-            <li><span class="step-n">1</span><div><b>Decide how long to track</b>
-              <p>Open <span class="help-key">Enter your data</span>. Pick how many years you want to plan for and the month you're starting from, then press <span class="help-key">Generate months table</span>. That creates one slot per month.</p></div></li>
-            <li><span class="step-n">2</span><div><b>Fill in your first month</b>
-              <p>A calendar of months appears. Tap one. Type what you earned and what you spent. Then press <span class="help-key">Save &amp; next month</span> to move on.</p></div></li>
+            <li><span class="step-n">1</span><div><b>Plan what you expect</b>
+              <p>Open <span class="help-key">Enter your budget and plan</span>. Choose how many years to plan for and your starting month, press <span class="help-key">Generate months table</span>, then tap a month and fill in what you earn and expect to spend.</p></div></li>
+            <li><span class="step-n">2</span><div><b>Log what you actually spend</b>
+              <p>Open <span class="help-key">Enter your data as you go</span>. Each time you spend something, type the amount beside that category and press <span class="help-key">Add</span>. It builds up as you go.</p></div></li>
             <li><span class="step-n">3</span><div><b>See where you stand</b>
-              <p>Open <span class="help-key">Overview</span>. Every month you've filled in is there, showing what you kept and what share of your income that was.</p></div></li>
+              <p><span class="help-key">Overview</span> shows what you kept each month. <span class="help-key">Dashboard</span> shows your plan against what you really spent.</p></div></li>
           </ol>
-          <p class="help-tip">That's the whole app. Everything below is detail you can come back to when you need it.</p>
+          <p class="help-tip">That's the whole app: plan it, log it, watch it. Everything below is detail you can come back to.</p>
         </div>
 
         <div class="help-section">
@@ -1977,16 +2239,16 @@ nav.tabs button{ color:var(--ink); }
           <p>On a phone, the bar along the bottom has everything:</p>
           <ul class="help-list">
             <li><b>Overview</b> — what you saved, month by month</li>
-            <li><b>Enter</b> — where you type your numbers</li>
-            <li><b>+</b> — record a single expense in a couple of taps</li>
-            <li><b>Dashboard</b> — charts and yearly totals</li>
-            <li><b>Forecast</b> — where your savings are heading</li>
+            <li><b>Plan</b> — what you expect to earn and spend</li>
+            <li><b>+</b> — log something you just spent, in a couple of taps</li>
+            <li><b>Spent</b> — what you have actually spent this month</li>
+            <li><b>Dashboard</b> — your plan against reality, plus charts and totals</li>
           </ul>
-          <p style="margin-top:10px;">On a computer these are tabs across the top instead. On a phone, this page is behind the <span class="help-key">?</span> button at the top.</p>
+          <p style="margin-top:10px;">On a computer these are tabs across the top, along with the forecast. On a phone the forecast sits behind the <span class="help-key">◹</span> button at the top, and this page behind <span class="help-key">?</span>.</p>
         </div>
 
         <div class="help-section">
-          <h3>Filling in a month</h3>
+          <h3>Planning a month</h3>
           <p>Tap any month in the calendar to open it. Each row is one thing to fill in — your salary first, then each kind of spending. You don't have to complete everything; leave anything that doesn't apply at 0.</p>
           <p style="margin-top:8px;">Three numbers at the top update as you type: what came <b>in</b>, what went <b>out</b>, and what you <b>saved</b>.</p>
           <ul class="help-list">
@@ -2008,14 +2270,44 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>Logging what you actually spend</h3>
+          <p>The <span class="help-key">Enter your data as you go</span> tab is where real spending goes. Each category shows what you planned, what you have spent so far, and a bar that fills as you approach the plan.</p>
+          <p style="margin-top:8px;"><b>It adds up.</b> Type an amount, press <span class="help-key">Add</span>, and it joins the running total for that category. Three shops at 120, 85 and 240 leave you at 445. The box empties ready for the next one, and pressing Enter does the same as pressing Add.</p>
+          <p style="margin-top:8px;">Made a mistake? The <span class="help-key">↺</span> button beside a category clears what you logged there and starts it over.</p>
+          <p style="margin-top:8px;">Spent nothing at all on something? Enter <strong>0</strong> and press Add. That records it as genuinely nothing, which is not the same as never logging it — see below.</p>
+        </div>
+
+        <div class="help-section">
           <h3>The + button</h3>
-          <p>For when you've just spent something and want it down before you forget. Tap <b>+</b>, tap the category, type the amount, press <span class="help-key">Add</span>.</p>
-          <p style="margin-top:8px;">It adds to that category's total for the current month rather than storing each purchase separately — so if Groceries was 800 and you add 128.50, Groceries becomes 928.50.</p>
+          <p>The same thing, quicker. Tap <b>+</b> at the bottom, choose the category, type the amount, press Add. It goes to the current month and joins that category's running total, exactly as the tab does.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>What happens when a month ends</h3>
+          <p>While a month is still running, your savings are worked out from your <strong>plan</strong>. That is deliberate: half a month of logged spending set against a full month's income would look like an enormous surplus that isn't real.</p>
+          <p style="margin-top:8px;">Once the month is over, what you logged takes over:</p>
+          <ul class="help-list">
+            <li>Categories you logged count what you actually spent.</li>
+            <li>Categories you never logged keep their planned figure.</li>
+          </ul>
+          <p style="margin-top:10px;">A line at the top of the tab always says which is being used, so a savings figure never changes without explanation. The app knows a month has ended from your device's own clock.</p>
+          <p class="help-tip">This is why entering <strong>0</strong> matters. A category left untouched falls back to its plan; one where you entered 0 counts as nothing spent.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Plan against reality</h3>
+          <p>The <span class="help-key">Dashboard</span> shows every category with what you planned beside what you spent, across all your months.</p>
+          <ul class="help-list">
+            <li><b>Green</b> — comfortably within your plan.</li>
+            <li><b>Amber</b> — you have used 80% or more of it. Worth a look.</li>
+            <li><b>Red</b> — you have gone past it, and by how much.</li>
+          </ul>
+          <p style="margin-top:10px;">The same colours appear on each category as you log it, so a category getting tight is visible before the month is out.</p>
         </div>
 
         <div class="help-section">
           <h3>Choosing what you track</h3>
-          <p>In <span class="help-key">Enter your data</span>, under <b>Table columns</b>, you decide the categories. Remove any you don't need and add your own — Subscriptions, school fees, whatever fits your life. If a category already has numbers in it, you'll be asked before it goes.</p>
+          <p>In <span class="help-key">Enter your budget and plan</span>, under <b>Table columns</b>, you decide the categories. Remove any you don't need and add your own — Subscriptions, school fees, whatever fits your life. If a category already has numbers in it, you'll be asked before it goes.</p>
         </div>
 
         <div class="help-section">
@@ -2037,8 +2329,14 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>Savings you already have</h3>
+          <p>If you had money saved before starting, put it in <b>Starting savings balance</b>, beside the emergency settings. The forecast then continues from that figure rather than starting at zero, so it reflects where you actually are.</p>
+          <p style="margin-top:8px;">It is the same figure as <b>Starting savings</b> on the forecast page — change either and both move together.</p>
+        </div>
+
+        <div class="help-section">
           <h3>Dashboard and Forecast</h3>
-          <p><b>Dashboard</b> adds everything up: totals, your average savings rate, and where the money actually goes, as charts.</p>
+          <p><b>Dashboard</b> adds everything up: your plan against what you spent, totals, your average savings rate, and where the money actually goes, as charts.</p>
           <p style="margin-top:8px;"><b>Forecast</b> looks ahead. Tell it what you expect for pay rises, rising costs and investment returns, and it estimates where your balance lands. It's an estimate built on your assumptions, not a promise.</p>
           <p style="margin-top:8px;">Neither needs any typing. Both build themselves from what you entered.</p>
         </div>
@@ -2098,14 +2396,14 @@ nav.tabs button{ color:var(--ink); }
         <div class="help-section">
           <h3>ابدأ من هنا — ثلاث خطوات</h3>
           <ol class="help-steps">
-            <li><span class="step-n">١</span><div><b>حدّد مدة التتبّع</b>
-              <p>افتح <span class="help-key">أدخل بياناتك</span>. اختر عدد السنوات التي تخطط لها والشهر الذي تبدأ منه، ثم اضغط <span class="help-key">إنشاء جدول الأشهر</span>. سيُنشئ هذا خانة لكل شهر.</p></div></li>
-            <li><span class="step-n">٢</span><div><b>املأ شهرك الأول</b>
-              <p>سيظهر تقويم بالأشهر. اضغط على أحدها. اكتب ما كسبته وما أنفقته، ثم اضغط <span class="help-key">حفظ والشهر التالي</span> للانتقال.</p></div></li>
+            <li><span class="step-n">١</span><div><b>خطّط لما تتوقعه</b>
+              <p>افتح <span class="help-key">أدخل ميزانيتك وخطتك</span>. اختر عدد السنوات وشهر البداية، واضغط <span class="help-key">إنشاء جدول الأشهر</span>، ثم اضغط شهرًا واملأ دخلك وما تتوقع إنفاقه.</p></div></li>
+            <li><span class="step-n">٢</span><div><b>سجّل ما تنفقه فعليًا</b>
+              <p>افتح <span class="help-key">أدخل بياناتك أولًا بأول</span>. وكلما أنفقت شيئًا، اكتب المبلغ بجانب تلك الفئة واضغط <span class="help-key">إضافة</span>، فيتراكم أولًا بأول.</p></div></li>
             <li><span class="step-n">٣</span><div><b>اطّلع على وضعك</b>
-              <p>افتح <span class="help-key">نظرة عامة</span>. ستجد كل شهر عبّأته، مع ما احتفظت به ونسبته من دخلك.</p></div></li>
+              <p>تعرض <span class="help-key">نظرة عامة</span> ما احتفظت به كل شهر، وتعرض <span class="help-key">لوحة المعلومات</span> خطتك مقابل ما أنفقته فعلًا.</p></div></li>
           </ol>
-          <p class="help-tip">هذا هو التطبيق كله. وكل ما يلي تفاصيل يمكنك العودة إليها عند الحاجة.</p>
+          <p class="help-tip">هذا هو التطبيق كله: خطّط، وسجّل، وراقب. وكل ما يلي تفاصيل يمكنك العودة إليها.</p>
         </div>
 
         <div class="help-section">
@@ -2113,16 +2411,16 @@ nav.tabs button{ color:var(--ink); }
           <p>على الجوال، يحتوي الشريط السفلي على كل شيء:</p>
           <ul class="help-list">
             <li><b>نظرة عامة</b> — ما ادّخرته، شهرًا بشهر</li>
-            <li><b>إدخال</b> — حيث تكتب أرقامك</li>
-            <li><b>+</b> — تسجيل مصروف واحد بضغطتين</li>
-            <li><b>لوحة المعلومات</b> — رسوم بيانية ومجاميع سنوية</li>
-            <li><b>التوقعات</b> — إلى أين يتّجه ادخارك</li>
+            <li><b>الخطة</b> — ما تتوقع أن تكسبه وتنفقه</li>
+            <li><b>+</b> — تسجيل ما أنفقته للتوّ بضغطتين</li>
+            <li><b>المصروف</b> — ما أنفقته فعليًا هذا الشهر</li>
+            <li><b>لوحة المعلومات</b> — خطتك أمام الواقع، مع الرسوم والمجاميع</li>
           </ul>
-          <p style="margin-top:10px;">على الحاسوب تظهر هذه كتبويبات في الأعلى. وعلى الجوال، تجد هذه الصفحة خلف زر <span class="help-key">؟</span> في الأعلى.</p>
+          <p style="margin-top:10px;">على الحاسوب تظهر هذه كتبويبات في الأعلى مع التوقعات. وعلى الجوال تجد التوقعات خلف زر <span class="help-key">◹</span> أعلى الصفحة، وهذه الصفحة خلف <span class="help-key">؟</span>.</p>
         </div>
 
         <div class="help-section">
-          <h3>تعبئة شهر</h3>
+          <h3>التخطيط لشهر</h3>
           <p>اضغط أي شهر في التقويم لفتحه. كل سطر بند تملؤه — راتبك أولًا، ثم أنواع المصروفات. لست مضطرًا لتعبئة كل شيء؛ اترك ما لا ينطبق عليك على 0.</p>
           <p style="margin-top:8px;">تتحدّث ثلاثة أرقام في الأعلى أثناء كتابتك: ما <b>دخل</b>، وما <b>خرج</b>، وما <b>ادّخرت</b>.</p>
           <ul class="help-list">
@@ -2144,14 +2442,44 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>تسجيل ما تنفقه فعليًا</h3>
+          <p>تبويب <span class="help-key">أدخل بياناتك أولًا بأول</span> هو مكان الإنفاق الحقيقي. تعرض كل فئة ما خططت له، وما أنفقته حتى الآن، وشريطًا يمتلئ كلما اقتربت من الخطة.</p>
+          <p style="margin-top:8px;"><b>والمبالغ تتراكم.</b> اكتب مبلغًا واضغط <span class="help-key">إضافة</span> لينضم إلى مجموع تلك الفئة. ثلاث مشتريات بـ 120 و85 و240 تصل بك إلى 445. ويفرغ الحقل استعدادًا للتالي، وضغط Enter يعادل ضغط «إضافة».</p>
+          <p style="margin-top:8px;">أخطأت؟ زر <span class="help-key">↺</span> بجانب الفئة يمسح ما سجّلته فيها ويبدأ من جديد.</p>
+          <p style="margin-top:8px;">لم تنفق شيئًا على بند ما؟ أدخل <strong>0</strong> واضغط «إضافة»، فيُسجَّل ذلك بوصفه «لا شيء» فعلًا، وهو يختلف عن عدم التسجيل إطلاقًا — انظر أدناه.</p>
+        </div>
+
+        <div class="help-section">
           <h3>زر +</h3>
-          <p>لحين تُنفق شيئًا وتريد تسجيله قبل أن تنساه. اضغط <b>+</b>، ثم اختر الفئة، واكتب المبلغ، واضغط <span class="help-key">إضافة</span>.</p>
-          <p style="margin-top:8px;">يُضاف المبلغ إلى مجموع تلك الفئة للشهر الحالي بدل حفظ كل عملية شراء على حدة — فإذا كانت البقالة 800 وأضفت 128.50، تصبح 928.50.</p>
+          <p>الشيء نفسه بسرعة أكبر. اضغط <b>+</b> في الأسفل، واختر الفئة، واكتب المبلغ، واضغط «إضافة». يذهب إلى الشهر الحالي وينضم إلى مجموع تلك الفئة تمامًا كما يفعل التبويب.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>ماذا يحدث عند انتهاء الشهر</h3>
+          <p>ما دام الشهر جاريًا، تُحتسب مدّخراتك من <strong>خطتك</strong>. وهذا مقصود: فنصف شهر من الإنفاق المسجّل أمام دخل شهر كامل سيبدو فائضًا هائلًا غير حقيقي.</p>
+          <p style="margin-top:8px;">وعند انتهاء الشهر يحلّ ما سجّلته محلّها:</p>
+          <ul class="help-list">
+            <li>الفئات التي سجّلتها تُحتسب بما أنفقته فعلًا.</li>
+            <li>والفئات التي لم تسجّلها تبقى على أرقامها المخططة.</li>
+          </ul>
+          <p style="margin-top:10px;">ويوضح سطر أعلى التبويب أيّهما يُستخدم، فلا يتغير رقم المدّخرات دون تفسير. ويعرف التطبيق أن الشهر انتهى من ساعة جهازك نفسها.</p>
+          <p class="help-tip">ولهذا يهمّ إدخال <strong>0</strong>. فالفئة التي لم تُمسّ تعود إلى خطتها، أما التي أدخلت فيها 0 فتُحتسب بلا إنفاق.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>الخطة أمام الواقع</h3>
+          <p>تعرض <span class="help-key">لوحة المعلومات</span> كل فئة بما خططت له بجانب ما أنفقته، عبر كل أشهرك.</p>
+          <ul class="help-list">
+            <li><b>أخضر</b> — ضمن خطتك بأريحية.</li>
+            <li><b>كهرماني</b> — استهلكت 80% منها أو أكثر. يستحق النظر.</li>
+            <li><b>أحمر</b> — تجاوزتها، ويظهر مقدار التجاوز.</li>
+          </ul>
+          <p style="margin-top:10px;">وتظهر الألوان نفسها على كل فئة أثناء التسجيل، فترى الفئة وهي تضيق قبل انتهاء الشهر.</p>
         </div>
 
         <div class="help-section">
           <h3>اختيار ما تتتبّعه</h3>
-          <p>في <span class="help-key">أدخل بياناتك</span>، ضمن <b>أعمدة الجدول</b>، تختار الفئات. احذف ما لا تحتاجه وأضف ما يناسبك — الاشتراكات، الرسوم الدراسية، أو أي شيء يناسب حياتك. وإذا كانت الفئة تحتوي أرقامًا فسيُطلب تأكيدك قبل حذفها.</p>
+          <p>في <span class="help-key">أدخل ميزانيتك وخطتك</span>، ضمن <b>أعمدة الجدول</b>، تختار الفئات. احذف ما لا تحتاجه وأضف ما يناسبك — الاشتراكات، الرسوم الدراسية، أو أي شيء يناسب حياتك. وإذا كانت الفئة تحتوي أرقامًا فسيُطلب تأكيدك قبل حذفها.</p>
         </div>
 
         <div class="help-section">
@@ -2173,8 +2501,14 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>مدّخرات لديك بالفعل</h3>
+          <p>إن كان لديك مال مدّخر قبل البدء، فضعه في <b>رصيد الادخار الابتدائي</b> بجانب إعدادات الطوارئ. عندها تكمل التوقعات من ذلك الرقم بدل أن تبدأ من الصفر، فتعكس موضعك الحقيقي.</p>
+          <p style="margin-top:8px;">وهو الرقم نفسه الموجود في <b>الادخار الابتدائي</b> بصفحة التوقعات — غيّره في أيٍّ منهما فيتغير الآخر معه.</p>
+        </div>
+
+        <div class="help-section">
           <h3>لوحة المعلومات والتوقعات</h3>
-          <p><b>لوحة المعلومات</b> تجمع كل شيء: المجاميع، ومتوسط معدل ادخارك، وأين يذهب مالك فعليًا، في رسوم بيانية.</p>
+          <p><b>لوحة المعلومات</b> تجمع كل شيء: خطتك أمام ما أنفقته، والمجاميع، ومتوسط معدل ادخارك، وأين يذهب مالك فعليًا، في رسوم بيانية.</p>
           <p style="margin-top:8px;"><b>التوقعات</b> تنظر إلى الأمام. أخبرها بما تتوقعه من زيادات في الراتب وارتفاع في التكاليف وعوائد استثمار، فتقدّر أين سيستقر رصيدك. وهي تقدير مبني على افتراضاتك، وليست وعدًا.</p>
           <p style="margin-top:8px;">لا تحتاج أيٌّ منهما لأي كتابة؛ فكلتاهما تُبنيان مما أدخلته.</p>
         </div>
@@ -2233,10 +2567,10 @@ nav.tabs button{ color:var(--ink); }
 
 <nav class="bottom-nav" id="bottom-nav" aria-label="Sections">
   <button type="button" data-tab="budget" class="on"><span class="ic" aria-hidden="true">▤</span><span data-i18n="tab_overview_short">Overview</span></button>
-  <button type="button" data-tab="entry"><span class="ic" aria-hidden="true">✎</span><span data-i18n="tab_entry_short">Enter</span></button>
-  <button type="button" id="btn-quick-add" aria-label="Add an expense"><span class="fab" aria-hidden="true">+</span></button>
+  <button type="button" data-tab="entry"><span class="ic" aria-hidden="true">✎</span><span data-i18n="tab_entry_short">Plan</span></button>
+  <button type="button" id="btn-quick-add" aria-label="Log spending"><span class="fab" aria-hidden="true">+</span></button>
+  <button type="button" data-tab="actual"><span class="ic" aria-hidden="true">◉</span><span data-i18n="tab_actual_short">Spent</span></button>
   <button type="button" data-tab="dashboard"><span class="ic" aria-hidden="true">◱</span><span data-i18n="tab_dashboard">Dashboard</span></button>
-  <button type="button" data-tab="forecast"><span class="ic" aria-hidden="true">◹</span><span data-i18n="tab_forecast_base">Forecast</span></button>
 </nav>
 
 <div id="quick-add-overlay" class="qa-overlay" role="dialog" aria-modal="true" aria-labelledby="qa-title">
@@ -2286,6 +2620,55 @@ nav.tabs button{ color:var(--ink); }
    To turn the banner off completely, leave BOTH lines as empty quotes: ''
    You can set only one language if you want — the other will just reuse it.
    ===================================================================================== */
+/* ============================================================================
+   WHAT'S NEW  —  this is the thing to edit when the app changes.
+
+   To tell everyone about a change:
+     1. Raise `version` by one.
+     2. Replace the items with what changed, in plain language — what it does
+        for them, not what was altered in the code.
+     3. Deploy.
+
+   The popup then shows once per person per version and never again. It is
+   keyed on the version number, not the text, so fixing a typo afterwards does
+   not show it to everybody a second time.
+
+   Someone opening the app for the very first time is marked as having seen the
+   current version without being shown it: a changelog for a version they never
+   used is noise, and they get the How to use page instead.
+   ============================================================================ */
+const WHATS_NEW = {
+  version: 2,
+  en: {
+    title: 'What’s new',
+    intro: 'Two bigger changes, and some smaller fixes.',
+    items: [
+      'The old “Enter your data” tab is now “Enter your budget and plan” — this is where you set what you expect to spend.',
+      'A new tab, “Enter your data as you go”, is where you record what you actually spend. Type each amount and press Add, and it builds up a running total for that category.',
+      'The Dashboard now shows planned against spent for every category. Amber means you are close to your plan, red means past it.',
+      'When a month ends, whatever you logged replaces the plan in your savings. Anything you never logged keeps its planned figure.',
+      'You can enter savings you already have, so the forecast continues from where you are rather than from zero.',
+      'A currency picker, so amounts show in yours instead of dollars.',
+      'A new app icon. On iPhone it only appears if you remove the app from your Home Screen and add it again — iOS keeps the old one otherwise. Your data is not affected.',
+    ],
+    more: 'The How to use page has the full detail.',
+  },
+  ar: {
+    title: 'ما الجديد',
+    intro: 'تغييران رئيسيان وبعض الإصلاحات الأصغر.',
+    items: [
+      'صار تبويب «أدخل بياناتك» السابق باسم «أدخل ميزانيتك وخطتك» — وهو المكان الذي تحدد فيه ما تتوقع إنفاقه.',
+      'وأُضيف تبويب جديد «أدخل بياناتك أولًا بأول» لتسجيل ما تنفقه فعليًا. اكتب كل مبلغ واضغط «إضافة» ليتراكم في مجموع تلك الفئة.',
+      'تعرض لوحة المعلومات الآن المخطط مقابل المصروف لكل فئة. الكهرماني يعني أنك قريب من خطتك، والأحمر يعني أنك تجاوزتها.',
+      'وعند انتهاء الشهر يحلّ ما سجّلته محل الخطة في حساب مدّخراتك، وتبقى الفئات التي لم تسجّلها على أرقامها المخططة.',
+      'ويمكنك إدخال مدّخرات لديك بالفعل، فتكمل التوقعات من حيث أنت بدل أن تبدأ من الصفر.',
+      'وأُضيف اختيار العملة، لتظهر المبالغ بعملتك بدل الدولار.',
+      'وأيقونة جديدة للتطبيق. وعلى الآيفون لن تظهر إلا إذا أزلت التطبيق من الشاشة الرئيسية وأضفته من جديد، إذ يحتفظ iOS بالقديمة. ولا تتأثر بياناتك بذلك.',
+    ],
+    more: 'وتجد التفاصيل الكاملة في صفحة «كيفية الاستخدام».',
+  },
+};
+
 const ANNOUNCEMENT_EN = 'Thank you for Using This Tool';
 const ANNOUNCEMENT_AR = 'شكرا لاستخدامك هذه الاداة';
 /* ===================================================================================== */
@@ -2299,8 +2682,26 @@ const TRANSLATIONS = {
     btn_save:'Save now', btn_export:'Export data (.json)', btn_import:'Import data', btn_reset:'Reset all',
     btn_install:'Install app',
     setup_currency_label:'Currency',
-    tab_entry:'Enter your data',
-    tab_entry_short:'Enter',
+    tab_entry:'Enter your budget and plan',
+    tab_entry_short:'Plan',
+    tab_actual:'Enter your data as you go',
+    tab_actual_short:'Spent',
+    actual_h2:'Enter your data as you go',
+    actual_note:'Record what you actually spend, whenever you spend it. Each bar fills as you approach what you planned for that category.',
+    pvs_title:'Planned vs spent',
+    pvs_note:'Every category across all your months, plan against reality. Amber means you are close to the plan; red means past it.',
+    sp_add:'Add',
+    sp_add_aria:'Amount to add',
+    sp_so_far:'spent so far',
+    sp_none_yet:'nothing logged yet',
+    sp_clear:'Clear',
+    sp_basis_open:'This month is still running, so savings are counted from your plan. Once it ends, what you log here takes over.',
+    pvs_planned:'Planned',
+    pvs_spent:'Spent',
+    pvs_left:'Left',
+    pvs_over:'Over',
+    pvs_empty:'Nothing logged yet. Record what you actually spend and this fills in, showing your plan against reality.',
+    pvs_empty_cta:'Enter your data as you go',
     tab_overview_short:'Overview',
     entry_h2:'Enter your data',
     entry_note:"Pick a month to fill in. Your numbers save as you type, and the calendar shows how far you've got.",
@@ -2315,7 +2716,7 @@ const TRANSLATIONS = {
     entry_no_months:'No months yet. Choose how many years to plan for above, then press Generate months table.',
     ov_empty:'Nothing here yet. Set up your months and fill in the first one, and your overview will build itself.',
     ov_empty_cta:'Enter your data',
-    qa_title:'Add an expense',
+    qa_title:'Log what you spent',
     qa_cancel:'Cancel',
     qa_save:'Add',
     qa_income:'Income',
@@ -2403,8 +2804,26 @@ const TRANSLATIONS = {
     btn_save:'احفظ الآن', btn_export:'تصدير البيانات (.json)', btn_import:'استيراد البيانات', btn_reset:'إعادة تعيين الكل',
     btn_install:'تثبيت التطبيق',
     setup_currency_label:'العملة',
-    tab_entry:'أدخل بياناتك',
-    tab_entry_short:'إدخال',
+    tab_entry:'أدخل ميزانيتك وخطتك',
+    tab_entry_short:'الخطة',
+    tab_actual:'أدخل بياناتك أولًا بأول',
+    tab_actual_short:'المصروف',
+    actual_h2:'أدخل بياناتك أولًا بأول',
+    actual_note:'سجّل ما تنفقه فعليًا وقت إنفاقه. يمتلئ كل شريط كلما اقتربت مما خططت له في تلك الفئة.',
+    pvs_title:'المخطط مقابل المصروف',
+    pvs_note:'كل فئة عبر جميع أشهرك، الخطة أمام الواقع. الكهرماني يعني أنك قريب من الخطة، والأحمر يعني أنك تجاوزتها.',
+    sp_add:'إضافة',
+    sp_add_aria:'المبلغ المراد إضافته',
+    sp_so_far:'أُنفق حتى الآن',
+    sp_none_yet:'لم يُسجّل شيء بعد',
+    sp_clear:'مسح',
+    sp_basis_open:'هذا الشهر ما زال جاريًا، لذا تُحتسب المدّخرات من خطتك. وعند انتهائه يحلّ ما تسجّله هنا محلّها.',
+    pvs_planned:'المخطط',
+    pvs_spent:'المصروف',
+    pvs_left:'المتبقي',
+    pvs_over:'تجاوز',
+    pvs_empty:'لم تُسجّل شيئًا بعد. سجّل ما تنفقه فعليًا وسيمتلئ هذا القسم موضحًا خطتك أمام الواقع.',
+    pvs_empty_cta:'أدخل بياناتك أولًا بأول',
     tab_overview_short:'نظرة عامة',
     entry_h2:'أدخل بياناتك',
     entry_note:'اختر شهرًا لتعبئته. تُحفظ أرقامك أثناء الكتابة، ويوضح التقويم ما أنجزته حتى الآن.',
@@ -2419,7 +2838,7 @@ const TRANSLATIONS = {
     entry_no_months:'لا توجد أشهر بعد. اختر عدد السنوات أعلاه، ثم اضغط إنشاء جدول الأشهر.',
     ov_empty:'لا يوجد شيء هنا بعد. جهّز أشهرك واملأ الشهر الأول، وستُبنى نظرتك العامة تلقائيًا.',
     ov_empty_cta:'أدخل بياناتك',
-    qa_title:'إضافة مصروف',
+    qa_title:'سجّل ما أنفقته',
     qa_cancel:'إلغاء',
     qa_save:'إضافة',
     qa_income:'الدخل',
@@ -2565,6 +2984,43 @@ function startingSavingsHintText(start, saved, total){
   return 'You start from ' + fmtMoney(start) + '. Adding the ' + fmtMoney(saved) +
          ' saved across these months gives ' + fmtMoney(total) +
          ' before any investment growth. The forecast projects from here.';
+}
+
+function spendBasisText(logged, total){
+  if(lang === 'ar'){
+    if(logged === 0) return 'انتهى هذا الشهر ولم تُسجّل فيه مصروفات، لذا تُحتسب المدّخرات من الخطة.';
+    if(logged >= total) return 'انتهى هذا الشهر، وتُحتسب المدّخرات من مصروفاتك المسجّلة.';
+    return 'انتهى هذا الشهر. تُحتسب ' + logged + ' من ' + total +
+           ' فئات من مصروفاتك المسجّلة، والباقي من الخطة.';
+  }
+  if(logged === 0) return 'This month has ended with nothing logged, so savings are counted from the plan.';
+  if(logged >= total) return 'This month has ended, and savings are counted from what you logged.';
+  return 'This month has ended. ' + logged + ' of ' + total +
+         ' categories count from what you logged; the rest fall back to the plan.';
+}
+
+function confirmClearActualMsg(label){
+  return lang === 'ar'
+    ? ('مسح ما سُجّل في ' + label + '؟ سيعود إلى غير مُسجّل.')
+    : ('Clear what you logged for ' + label + '? It goes back to unlogged.');
+}
+
+function statusText(spent, planned){
+  const st = spendStatus(spent, planned);
+  if(st === 'none') return lang === 'ar' ? 'لا خطة' : 'No plan set';
+  const pct = planned > 0 ? Math.round((spent / planned) * 100) : 0;
+  if(st === 'over'){
+    const over = spent - planned;
+    return lang === 'ar' ? ('تجاوز بمقدار ' + fmtMoney(over)) : ('Over by ' + fmtMoney(over));
+  }
+  if(st === 'warn') return lang === 'ar' ? ('قريب من الخطة · ' + pct + '%') : ('Close to plan · ' + pct + '%');
+  return lang === 'ar' ? ('ضمن الخطة · ' + pct + '%') : ('Within plan · ' + pct + '%');
+}
+
+function actualSubText(spent, planned){
+  if(planned <= 0) return lang === 'ar' ? 'لم تُخطَّط فئات لهذا الشهر بعد' : 'Nothing planned for this month yet';
+  const pct = Math.round((spent / planned) * 100);
+  return lang === 'ar' ? ('أنفقت ' + pct + '% مما خططت له') : ('You have spent ' + pct + '% of what you planned');
 }
 
 function entryFieldsDoneText(done, total){
@@ -2788,6 +3244,8 @@ function normalizeState(s){
   if(Array.isArray(s.months)){
     const keys = ['salary', 'sideIncome', ...(Array.isArray(s.categories) ? s.categories : [])];
     s.months.forEach(m=>{
+      // Budgets saved before actuals existed simply have none logged yet.
+      if(!m.actual || typeof m.actual !== 'object') m.actual = {};
       if(Array.isArray(m.touched)) return;
       m.touched = keys.filter(k=> (Number(m[k]) || 0) !== 0);
     });
@@ -2831,7 +3289,7 @@ function defaultState(){
   const categories = [...DEFAULT_CATEGORY_KEYS];
   const months = [];
   for(let i=0;i<12;i++){
-    const m = { id:'m'+i+'-'+Date.now(), ym: addMonths(startYm, i), salary:0, sideIncome:0, emergency:0 };
+    const m = { id:'m'+i+'-'+Date.now(), ym: addMonths(startYm, i), salary:0, sideIncome:0, emergency:0, actual:{} };
     categories.forEach(c=> m[c]=0);
     months.push(m);
   }
@@ -2953,7 +3411,8 @@ function effectiveCategoryValue(m, key){ return effectiveValue(m, key); }
 
 function monthCalc(m, prevBalance, threshold){
   const incomeVal = effectiveSalary(m) + effectiveSideIncome(m);
-  const expenseSum = state.categories.reduce((s,c)=>s+effectiveCategoryValue(m,c),0);
+  // Actuals take over here once the month is over — see effectiveSpendValue.
+  const expenseSum = state.categories.reduce((s,c)=>s+effectiveSpendValue(m,c),0);
   const surplus = incomeVal - expenseSum;
   let emer;
   if(surplus >= threshold) emer = threshold;
@@ -2979,7 +3438,7 @@ function computeAll(){
     acc.sideIncome += effectiveSideIncome(r.m);
     acc.spend += r.spend;
     acc.savings += r.savings;
-    state.categories.forEach(c=> acc[c] = (acc[c]||0) + effectiveCategoryValue(r.m,c) );
+    state.categories.forEach(c=> acc[c] = (acc[c]||0) + effectiveSpendValue(r.m,c) );
     acc.emergency += r.emergencyContribution;
     return acc;
   }, {salary:0, sideIncome:0, spend:0, savings:0, emergency:0});
@@ -3221,6 +3680,79 @@ function monthFieldsHtml(m, idx){
 }
 
 /* filled = income entered · partial = spending but no income · empty = nothing */
+/* ============================================================================
+   Actual spending
+   Planned lives on the month itself (m.rent); actual lives beside it
+   (m.actual.rent). Keeping them apart means the plan is never overwritten by
+   a day's logging, and either can be read on its own.
+   ============================================================================ */
+function actualOf(m, key){
+  return (m && m.actual && Number(m.actual[key])) || 0;
+}
+function setActual(m, key, value){
+  if(!m.actual) m.actual = {};
+  m.actual[key] = Number(value) || 0;
+}
+function monthActualTotal(m){
+  return state.categories.reduce((s, c)=> s + actualOf(m, c), 0);
+}
+function monthPlannedTotal(m){
+  return state.categories.reduce((s, c)=> s + effectiveCategoryValue(m, c), 0);
+}
+
+/* ---------------------------------------------------------------------------
+   Has this month ended?
+   Compared as a plain year*12+month number so it never depends on timezone,
+   day-of-month or how the device formats dates — only on which calendar month
+   the device believes it is.
+   --------------------------------------------------------------------------- */
+function ymIndex(ym){
+  return (Number(String(ym).slice(0,4)) * 12) + Number(String(ym).slice(5,7));
+}
+function isMonthClosed(m){
+  return ymIndex(m.ym) < ymIndex(currentYm());
+}
+
+/* Was this category ever logged? An explicitly logged 0 is real data — "I
+   spent nothing on entertainment" — so presence of the key is what counts,
+   not whether the value is above zero. */
+function hasLoggedActual(m, key){
+  return !!(m && m.actual && Object.prototype.hasOwnProperty.call(m.actual, key));
+}
+
+/* What the savings calculation should treat as spent.
+   A month still running always uses the plan: it has not finished happening,
+   and counting a partial log against a full month's income would report a
+   surplus that is not real. Once the month is over, whatever was logged is
+   what happened; anything never logged falls back to the plan. */
+function effectiveSpendValue(m, key){
+  if(isMonthClosed(m) && hasLoggedActual(m, key)) return actualOf(m, key);
+  return effectiveCategoryValue(m, key);
+}
+
+/* How a closed month is being counted, for the badge that explains it. */
+function monthSpendBasis(m){
+  if(!isMonthClosed(m)) return { closed:false, logged:0, total:state.categories.length };
+  const logged = state.categories.filter(c=> hasLoggedActual(m, c)).length;
+  return { closed:true, logged, total:state.categories.length };
+}
+
+/* Colour bands. 80% is the point worth warning at: close enough that the
+   remainder matters, far enough that there is still something to do about it. */
+const NEAR_PLAN = 0.8;
+function spendStatus(spent, planned){
+  if(planned <= 0) return spent > 0 ? 'over' : 'none';
+  const ratio = spent / planned;
+  if(ratio > 1) return 'over';
+  if(ratio >= NEAR_PLAN) return 'warn';
+  return 'good';
+}
+/* Bars are capped at 100% width; the number beside them carries the overspend. */
+function barPct(spent, planned){
+  if(planned <= 0) return spent > 0 ? 100 : 0;
+  return Math.max(0, Math.min(100, (spent / planned) * 100));
+}
+
 /* Every field a month card asks for. */
 function monthFieldKeys(){
   return ['salary', 'sideIncome', ...state.categories];
@@ -3440,6 +3972,208 @@ function wireEntryTab(){
   });
 }
 
+/* ============================================================================
+   As-you-go panel
+   A month stepper rather than the plan tab's year calendar: logging spending
+   is about now, so it opens on the current month and stepping is enough.
+   ============================================================================ */
+let actualMonthIdx = -1;
+
+function actualTargetIndex(){
+  if(actualMonthIdx >= 0 && actualMonthIdx < state.months.length) return actualMonthIdx;
+  const now = currentYm();
+  const exact = state.months.findIndex(m=> m.ym === now);
+  if(exact !== -1) return exact;
+  return state.months.length ? state.months.length - 1 : -1;
+}
+
+function renderActualPanel(){
+  const rowsHost = document.getElementById('sp-rows');
+  const totalHost = document.getElementById('sp-total');
+  const monthEl = document.getElementById('sp-month');
+  const subEl = document.getElementById('sp-sub');
+  if(!rowsHost) return;
+
+  const idx = actualTargetIndex();
+  if(idx === -1){
+    monthEl.textContent = '—';
+    subEl.textContent = '';
+    totalHost.innerHTML = '';
+    rowsHost.innerHTML = `<p class="section-note" style="margin:0;">${t('entry_no_months')}</p>`;
+    return;
+  }
+  actualMonthIdx = idx;
+  const m = state.months[idx];
+  monthEl.textContent = monthLabel(m.ym);
+  document.getElementById('sp-prev').disabled = idx <= 0;
+  document.getElementById('sp-next').disabled = idx >= state.months.length - 1;
+
+  const planned = monthPlannedTotal(m);
+  const spent = monthActualTotal(m);
+  const left = planned - spent;
+  const status = spendStatus(spent, planned);
+  subEl.textContent = actualSubText(spent, planned);
+
+  const basis = monthSpendBasis(m);
+  const basisEl = document.getElementById('sp-basis');
+  if(basisEl){
+    if(!basis.closed){
+      basisEl.className = 'sp-basis is-open';
+      basisEl.textContent = t('sp_basis_open');
+    } else {
+      basisEl.className = 'sp-basis is-closed';
+      basisEl.textContent = spendBasisText(basis.logged, basis.total);
+    }
+  }
+
+  totalHost.className = 'sp-total is-' + status;
+  totalHost.innerHTML = `
+    <div class="sp-total-top">
+      <span class="sp-total-k">${t('pvs_spent')}</span>
+      <span class="sp-total-v">${fmtMoney(spent)}</span>
+    </div>
+    <div class="sp-bar"><span style="width:${barPct(spent, planned)}%"></span></div>
+    <div class="sp-total-foot">
+      <span>${t('pvs_planned')} ${fmtMoney(planned)}</span>
+      <span class="sp-left">${left >= 0 ? t('pvs_left') + ' ' + fmtMoney(left) : t('pvs_over') + ' ' + fmtMoney(-left)}</span>
+    </div>`;
+
+  rowsHost.innerHTML = state.categories.map(key=>{
+    const p = effectiveCategoryValue(m, key);
+    const a = actualOf(m, key);
+    const logged = hasLoggedActual(m, key);
+    const st = spendStatus(a, p);
+    return `
+      <div class="sp-row is-${st}">
+        <div class="sp-row-top">
+          <span class="sp-name">${categoryLabel(key)}</span>
+          ${logged ? `<button type="button" class="sp-clear" data-clear="${key}"
+                 title="${t('sp_clear')}" aria-label="${t('sp_clear')} — ${categoryLabel(key)}">↺</button>` : ''}
+        </div>
+        <div class="sp-spent">
+          <span class="sp-spent-v">${fmtMoney(a)}</span>
+          <span class="sp-spent-k">${logged ? t('sp_so_far') : t('sp_none_yet')}</span>
+        </div>
+        <div class="sp-bar"><span style="width:${barPct(a, p)}%"></span></div>
+        <div class="sp-row-foot">
+          <span>${t('pvs_planned')} ${fmtMoney(p)}</span>
+          <span class="sp-status">${statusText(a, p)}</span>
+        </div>
+        <div class="sp-add">
+          <input class="sp-field" type="number" inputmode="decimal" step="any" min="0"
+                 placeholder="0" data-add="${key}"
+                 aria-label="${t('sp_add_aria')} — ${categoryLabel(key)}">
+          <button type="button" class="sp-add-btn" data-addbtn="${key}">${t('sp_add')}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function wireActualPanel(){
+  const rows = document.getElementById('sp-rows');
+  if(!rows) return;
+  const submitAdd = (key)=>{
+    const idx = actualTargetIndex();
+    if(idx === -1) return;
+    const box = rows.querySelector(`input[data-add="${key}"]`);
+    if(!box) return;
+    const amount = Number(box.value);
+    if(!Number.isFinite(amount)) return;
+    const m = state.months[idx];
+    // Adds to the running total. Submitting 0 still registers the category as
+    // logged, which is how "I spent nothing here" is recorded — and that
+    // matters, because an unlogged category falls back to its planned figure
+    // once the month closes.
+    setActual(m, key, actualOf(m, key) + amount);
+    box.value = '';
+    renderActualPanel();
+    renderDashboard();
+    renderAll();
+    scheduleSave();
+    // Put the caret back where the next amount goes.
+    const again = rows.querySelector(`input[data-add="${key}"]`);
+    if(again) again.focus();
+  };
+
+  rows.addEventListener('click', e=>{
+    const add = e.target.closest('button[data-addbtn]');
+    if(add){ submitAdd(add.dataset.addbtn); return; }
+    const clear = e.target.closest('button[data-clear]');
+    if(clear){
+      const idx = actualTargetIndex();
+      if(idx === -1) return;
+      const key = clear.dataset.clear;
+      if(!confirm(confirmClearActualMsg(categoryLabel(key)))) return;
+      delete state.months[idx].actual[key];
+      renderActualPanel();
+      renderDashboard();
+      renderAll();
+      scheduleSave();
+    }
+  });
+
+  // Enter submits, so a whole shop can be logged without leaving the keyboard.
+  rows.addEventListener('keydown', e=>{
+    if(e.key !== 'Enter') return;
+    const box = e.target.closest('input[data-add]');
+    if(!box) return;
+    e.preventDefault();
+    submitAdd(box.dataset.add);
+  });
+  document.getElementById('sp-prev').addEventListener('click', ()=>{
+    if(actualMonthIdx > 0){ actualMonthIdx--; renderActualPanel(); }
+  });
+  document.getElementById('sp-next').addEventListener('click', ()=>{
+    if(actualMonthIdx < state.months.length - 1){ actualMonthIdx++; renderActualPanel(); }
+  });
+}
+
+/* ---------- dashboard: planned against spent ---------- */
+function plannedVsSpent(){
+  const per = state.categories.map(key=>{
+    let planned = 0, spent = 0;
+    state.months.forEach(m=>{
+      planned += effectiveCategoryValue(m, key);
+      spent += actualOf(m, key);
+    });
+    return { key, label: categoryLabel(key), planned, spent, status: spendStatus(spent, planned) };
+  });
+  const planned = per.reduce((s, r)=> s + r.planned, 0);
+  const spent = per.reduce((s, r)=> s + r.spent, 0);
+  return { per, planned, spent, status: spendStatus(spent, planned) };
+}
+
+function renderPlannedVsSpent(){
+  const host = document.getElementById('planned-vs-spent');
+  if(!host) return;
+  const { per, planned, spent, status } = plannedVsSpent();
+
+  if(spent <= 0){
+    host.innerHTML = `<div class="pvs-empty"><p>${t('pvs_empty')}</p>
+      <button type="button" id="pvs-cta">${t('pvs_empty_cta')}</button></div>`;
+    const cta = document.getElementById('pvs-cta');
+    if(cta) cta.addEventListener('click', ()=> switchTab('actual'));
+    return;
+  }
+
+  host.innerHTML = `
+    <div class="pvs-summary is-${status}">
+      <div><p class="k">${t('pvs_planned')}</p><p class="v">${fmtMoney(planned)}</p></div>
+      <div><p class="k">${t('pvs_spent')}</p><p class="v">${fmtMoney(spent)}</p></div>
+      <div><p class="k">${planned - spent >= 0 ? t('pvs_left') : t('pvs_over')}</p>
+           <p class="v accent">${fmtMoney(Math.abs(planned - spent))}</p></div>
+    </div>
+    ${per.map(r=>`
+      <div class="pvs-row is-${r.status}">
+        <div class="pvs-row-top">
+          <span class="pvs-name">${r.label}</span>
+          <span class="pvs-nums">${fmtMoney(r.spent)} <span class="of">/ ${fmtMoney(r.planned)}</span></span>
+        </div>
+        <div class="sp-bar"><span style="width:${barPct(r.spent, r.planned)}%"></span></div>
+        <div class="pvs-row-foot"><span class="sp-status">${statusText(r.spent, r.planned)}</span></div>
+      </div>`).join('')}`;
+}
+
 /* ---------- overview (read-only) ---------- */
 function renderOverviewRows(rows){
   const host = document.getElementById('overview-rows');
@@ -3593,7 +4327,7 @@ function renderBudget(){
       <td><span class="ro-val">${fmtMoney(effectiveSalary(m))}</span></td>
       <td><span class="ro-val">${fmtMoney(effectiveSideIncome(m))}</span></td>`;
     state.categories.forEach(key=>{
-      html += `<td><span class="ro-val">${fmtMoney(effectiveCategoryValue(m,key))}</span></td>`;
+      html += `<td><span class="ro-val">${fmtMoney(effectiveSpendValue(m,key))}</span></td>`;
     });
     html += `
       <td class="calc ${r.emergencyContribution>=0?'pos':'neg'}" data-calc="emg" title="${t('emergency_tooltip')}">${fmtMoney(r.emergencyContribution)}</td>
@@ -3632,6 +4366,7 @@ function renderBudget(){
   renderCurrencyPicker();
   renderStrip(totals);
   renderEntryPanel();
+  renderActualPanel();
 }
 
 /* Dashboard and forecast sit on other panels and are expensive to redraw, so
@@ -3716,6 +4451,8 @@ function qaSelectableCategories(){
 
 function renderQuickAdd(){
   const idx = quickAddTargetIndex();
+  const el = document.getElementById('qa-title');
+  if(el) el.textContent = t('qa_title');
   const label = document.getElementById('qa-month-label');
   if(label) label.textContent = idx === -1 ? '—' : monthLabel(state.months[idx].ym);
 
@@ -3775,8 +4512,9 @@ function qaCommit(){
   const amount = Number(qaDigits);
   if(idx === -1 || !qaCategory || !(amount > 0)) return;
   const m = state.months[idx];
-  m[qaCategory] = (Number(m[qaCategory]) || 0) + amount;
-  markFieldAnswered(m, qaCategory);
+  // The + button is the as-you-go logger, so it records real spending rather
+  // than editing the plan. Editing the plan is a deliberate act on its own tab.
+  setActual(m, qaCategory, actualOf(m, qaCategory) + amount);
   closeQuickAdd();
   renderAll();
   scheduleSave();
@@ -3891,6 +4629,8 @@ function wireBottomNav(){
   });
   const help = document.getElementById('btn-help');
   if(help) help.addEventListener('click', ()=> switchTab('help'));
+  const fcBtn = document.getElementById('btn-forecast');
+  if(fcBtn) fcBtn.addEventListener('click', ()=> switchTab('forecast'));
 }
 
 /* Crossing the phone/desktop boundary swaps which view is rendered. */
@@ -3970,6 +4710,7 @@ function renderChartsNotice(elementId){
 
 function renderDashboard(){
   const {rows, totals} = computeAll();
+  renderPlannedVsSpent();
   document.getElementById('kpi-salary').textContent = fmtMoney(totals.income);
   document.getElementById('kpi-expenses').textContent = fmtMoney(totals.spend);
   document.getElementById('kpi-savings').textContent = fmtMoney(totals.savings);
@@ -4222,7 +4963,7 @@ function buildWorkbook(){
   const aoa = [headerRow];
   rows.forEach(r=>{
     const row = [monthLabel(r.m.ym), effectiveSalary(r.m), effectiveSideIncome(r.m)];
-    state.categories.forEach(c=> row.push(effectiveCategoryValue(r.m,c)));
+    state.categories.forEach(c=> row.push(effectiveSpendValue(r.m,c)));
     row.push(r.emergencyContribution, r.spend, r.savings, Math.round(r.rate*1000)/10, r.emergencyBalance);
     aoa.push(row);
   });
@@ -4515,19 +5256,47 @@ function renderAnnouncementBanner(){
   banner.style.display = 'block';
   banner.textContent = text;
 }
+const WHATS_NEW_KEY = 'planner-whatsnew-version';
+
+function whatsNewSeenVersion(){
+  try{ return Number(localStorage.getItem(WHATS_NEW_KEY)) || 0; }catch(e){ return 0; }
+}
+function markWhatsNewSeen(){
+  try{ localStorage.setItem(WHATS_NEW_KEY, String(WHATS_NEW.version)); }catch(e){}
+}
+
+function renderWhatsNew(){
+  const copy = (lang === 'ar' ? WHATS_NEW.ar : WHATS_NEW.en) || WHATS_NEW.en;
+  const host = document.getElementById('announcement-modal-text');
+  const heading = document.getElementById('announcement-modal-title');
+  if(heading) heading.textContent = copy.title;
+  if(!host) return;
+  host.innerHTML =
+    (copy.intro ? `<p class="wn-intro">${copy.intro}</p>` : '') +
+    `<ul class="wn-list">${copy.items.map(i=> `<li>${i}</li>`).join('')}</ul>` +
+    (copy.more ? `<p class="wn-more">${copy.more}</p>` : '');
+}
+
+// Captured during init BEFORE state.hasSeenHelp is flipped — by the time the
+// popup is considered, that flag has already been set to true, so it cannot be
+// used to tell a first run from a returning one.
+let isFirstRun = false;
+
 function maybeShowAnnouncementPopup(){
-  if(!ANNOUNCEMENT_EN && !ANNOUNCEMENT_AR) return;
-  const signature = (ANNOUNCEMENT_EN||'') + '||' + (ANNOUNCEMENT_AR||'');
-  let seen = null;
-  try{ seen = localStorage.getItem('planner-announcement-seen'); }catch(e){}
-  if(seen === signature) return;
-  document.getElementById('announcement-modal-text').textContent = getAnnouncementText();
+  if(!WHATS_NEW || !WHATS_NEW.version) return;
+  if(whatsNewSeenVersion() >= WHATS_NEW.version) return;
+
+  // A first-time user has no previous version to be told about. Record the
+  // current one as seen and leave them to the How to use page instead.
+  if(isFirstRun){ markWhatsNewSeen(); return; }
+
+  renderWhatsNew();
   document.getElementById('announcement-modal-overlay').style.display = 'flex';
 }
+
 function dismissAnnouncementPopup(){
   document.getElementById('announcement-modal-overlay').style.display = 'none';
-  const signature = (ANNOUNCEMENT_EN||'') + '||' + (ANNOUNCEMENT_AR||'');
-  try{ localStorage.setItem('planner-announcement-seen', signature); }catch(e){}
+  markWhatsNewSeen();
 }
 
 function shareLinkTexts(){
@@ -4542,6 +5311,11 @@ function shareLinkTexts(){
     subject: 'Salary Budget & Savings Planner',
     message: 'Check out this budget planner: ' + url
   };
+}
+
+function refreshWhatsNewIfOpen(){
+  const overlay = document.getElementById('announcement-modal-overlay');
+  if(overlay && overlay.style.display === 'flex') renderWhatsNew();
 }
 
 function refreshCurrencyLabels(){
@@ -4604,6 +5378,7 @@ function applyLanguage(l){
   updateDateTime();
   syncUserNameInput();
   updateShareLinkHrefs();
+  refreshWhatsNewIfOpen();
   renderAnnouncementBanner();
 }
 
@@ -4888,6 +5663,7 @@ function registerServiceWorker(){
   wireBudgetDelegation();
   wireQuickAdd();
   wireEntryTab();
+  wireActualPanel();
   wireBottomNav();
   wireLayoutSwitch();
   wireEvents();
@@ -4906,6 +5682,7 @@ function registerServiceWorker(){
   document.getElementById('btn-share-excel').style.display = 'inline-block';
   applyLanguage(state.lang==='ar' ? 'ar' : 'en');
   if(!state.hasSeenHelp){
+    isFirstRun = true;
     switchTab('help');
     state.hasSeenHelp = true;
     scheduleSave();

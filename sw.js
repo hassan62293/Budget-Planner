@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION on every deploy: activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
  */
-const CACHE_VERSION = 'v19';
+const CACHE_VERSION = 'v30';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is
@@ -30,7 +30,6 @@ const SHELL = [
   './icon-32.png',
   './icon-512-maskable.png',
   './icon-512.png',
-  './icon.svg',
 ];
 
 self.addEventListener('install', event => {
@@ -88,7 +87,10 @@ self.addEventListener('fetch', event => {
     if (hit) return hit;
     try {
       const fresh = await fetch(request);
-      if (fresh.ok) {
+      // Only cache clean URLs. A request carrying a query string is a one-off
+      // — a cache-buster, a tracking parameter — and storing each variant would
+      // grow the cache without bound for files that are already precached.
+      if (fresh.ok && !url.search) {
         const cache = await caches.open(CACHE);
         cache.put(request, fresh.clone());
       }
