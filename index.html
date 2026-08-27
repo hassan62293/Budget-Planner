@@ -493,6 +493,14 @@
     border-radius:3px;padding:5px 6px;width:122px;
   }
   .period-row .period-arrow{color:var(--ink-soft);font-size:12px;}
+  .period-row .period-end-mode{
+    font-family:var(--font-body);font-size:11.5px;
+    border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--ink);
+    border-radius:3px;padding:5px 6px;max-width:100%;
+  }
+  .period-row .period-end-mode:focus-visible{outline:2px solid var(--emerald);outline-offset:1px;}
+  /* hidden is a presentation hint a display rule would otherwise override */
+  .period-row .period-end[hidden]{display:none;}
   .period-row input[type="number"]{
     font-family:var(--font-mono);font-size:11.5px;text-align:right;direction:ltr;
     border:1px solid var(--amber-border);background:var(--amber-bg);
@@ -2616,6 +2624,12 @@ nav.tabs button{ color:var(--ink); }
           <h3>Amounts that never change</h3>
           <p>Some things are the same every month — rent, a subscription. Others move around — groceries, fuel.</p>
           <p style="margin-top:8px;">Under <b>Fixed vs. variable</b>, mark anything steady as <b>fixed</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you can't overwrite them by accident. Leave everything else as <b>variable</b> and enter it month by month.</p>
+          <p style="margin-top:8px;">A fixed amount runs over a <b>period</b>, and you say where that period stops:</p>
+          <ul class="help-list">
+            <li><b>To the end of the plan</b> — it applies for as long as your table runs, and keeps up on its own if the table later stretches to reach a goal.</li>
+            <li><b>Until a month I choose</b> — it stops after the month you pick.</li>
+          </ul>
+          <p style="margin-top:10px;">That is how you record a pay rise or a rent increase. End the old period at the month before the change, press <span class="help-key">+ Add period</span>, and give the new one its own amount. Each month uses whichever period covers it.</p>
         </div>
 
         <div class="help-section">
@@ -2857,6 +2871,12 @@ nav.tabs button{ color:var(--ink); }
           <h3>المبالغ الثابتة</h3>
           <p>بعض البنود ثابتة كل شهر — الإيجار، أو اشتراك ما. وبعضها يتغيّر — البقالة، الوقود.</p>
           <p style="margin-top:8px;">ضمن <b>ثابت أم متغيّر</b>، اجعل الثابت <b>ثابتًا</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ. واترك الباقي <b>متغيّرًا</b> وأدخله شهرًا بشهر.</p>
+          <p style="margin-top:8px;">ويسري المبلغ الثابت على <b>فترة</b>، وأنت تحدّد أين تنتهي هذه الفترة:</p>
+          <ul class="help-list">
+            <li><b>حتى نهاية الخطة</b> — يسري ما دام جدولك ممتدًا، ويواكب ذلك تلقائيًا إن طال الجدول لاحقًا لبلوغ هدف.</li>
+            <li><b>حتى شهر أختاره</b> — يتوقف بعد الشهر الذي تختاره.</li>
+          </ul>
+          <p style="margin-top:10px;">وهكذا تسجّل زيادة في الراتب أو ارتفاعًا في الإيجار: أنهِ الفترة القديمة عند الشهر السابق للتغيير، واضغط <span class="help-key">+ إضافة فترة</span>، وامنح الجديدة مبلغها. ويأخذ كل شهر بالفترة التي تغطّيه.</p>
         </div>
 
         <div class="help-section">
@@ -3082,6 +3102,7 @@ const WHATS_NEW = {
       'It never suggests saving an amount your own budget cannot reach. Where the two disagree, it shows both and names the difference.',
       'Everything you set is now in one place. Goals, the emergency fund and your months all sit on “Enter your budget and plan”, which is now the first tab you land on.',
       'The tab called “Monthly budget” is now “Overview”, which is what it always was — a read-only summary. Tap any month there to jump straight to editing it.',
+      'A fixed amount now says where it stops — either at a month you choose, or at the end of your plan, keeping up on its own if the table stretches to reach a goal.',
       'Add a short note when you log spending — “Car repair”, “Gift for mum”. Each category now lists what its total is made of, which is what finally makes “Other expenses” answerable a month later.',
     ],
     more: 'The How to use page explains all of it in more detail.',
@@ -3098,6 +3119,7 @@ const WHATS_NEW = {
       'ولا يقترح عليك ادخار مبلغ لا تبلغه ميزانيتك. وحين يختلفان يعرض الاثنين ويوضح الفارق.',
       'وصار كل ما تحدّده في مكان واحد: الأهداف وصندوق الطوارئ وأشهرك، جميعها في «أدخل ميزانيتك وخطتك» الذي صار أول تبويب تفتح عليه.',
       'وصار تبويب «الميزانية الشهرية» يسمّى «نظرة عامة»، وهو ما كان عليه دائمًا: ملخّص للقراءة فقط. انقر أي شهر فيه لتنتقل مباشرة إلى تعديله.',
+      'وصار المبلغ الثابت يحدّد أين يتوقّف: إما عند شهر تختاره، وإما عند نهاية خطتك، فيواكبها تلقائيًا إن طال الجدول لبلوغ هدف.',
       'وأضف ملاحظة قصيرة حين تسجّل إنفاقًا — «تصليح السيارة»، «هدية لأمي». وصارت كل فئة تعرض ممّا يتكوّن مجموعها، وهو ما يجعل «مصروفات أخرى» أخيرًا قابلة للجواب بعد شهر.',
     ],
     more: 'وتشرح صفحة «كيفية الاستخدام» ذلك كله بتفصيل أوفى.',
@@ -3233,7 +3255,10 @@ const TRANSLATIONS = {
     min_category_msg:'Keep at least one expense column.',
     planning_mode_title:'Fixed vs. variable',
     planning_mode_note:'Mark an entry as fixed to set an amount for a chosen period — add more periods for a salary raise or a rate change later on. Leave it variable to enter it month by month.',
-    btn_add_period:'+ Add period', period_ongoing:'ongoing',
+    btn_add_period:'+ Add period',
+    period_end_plan:'To the end of the plan',
+    period_end_until:'Until a month I choose',
+    period_end_aria:'When this amount stops applying',
     mode_fixed:'Fixed', mode_variable:'Variable',
     th_month:'Month', th_salary:'Salary', th_sideincome:'Side income', th_rent:'Rent / Housing', th_utilities:'Utilities', th_groceries:'Groceries',
     th_transport:'Transport', th_entertainment:'Entertainment', th_other:'Other expenses', th_emergency:'Emergency',
@@ -3398,7 +3423,10 @@ const TRANSLATIONS = {
     min_category_msg:'يجب الإبقاء على عمود مصروفات واحد على الأقل.',
     planning_mode_title:'ثابت أم متغيّر',
     planning_mode_note:'علّم الإدخال بأنه ثابت لتحديد مبلغ خلال فترة زمنية تحددها — أضف فترات أخرى لتمثيل زيادة راتب أو تغيير لاحق. اتركه متغيّرًا لإدخاله شهرًا بشهر.',
-    btn_add_period:'+ إضافة فترة', period_ongoing:'مستمر',
+    btn_add_period:'+ إضافة فترة',
+    period_end_plan:'حتى نهاية الخطة',
+    period_end_until:'حتى شهر أختاره',
+    period_end_aria:'متى يتوقف سريان هذا المبلغ',
     mode_fixed:'ثابت', mode_variable:'متغيّر',
     th_month:'الشهر', th_salary:'الراتب', th_sideincome:'دخل إضافي', th_rent:'الإيجار / السكن', th_utilities:'المرافق', th_groceries:'البقالة',
     th_transport:'المواصلات', th_entertainment:'الترفيه', th_other:'مصروفات أخرى', th_emergency:'الطوارئ',
@@ -4201,11 +4229,27 @@ function removePeriod(key, pid){
   scheduleSave();
 }
 
+/* The last month the table currently covers, named in the "to the end" option
+   so the choice answers "and when is that?" without being pinned to it. */
+function planLastYm(){
+  const ms = state.months;
+  return ms && ms.length ? ms[ms.length-1].ym : null;
+}
+
 function periodRowHtml(key, p){
+  const open = !p.endYm;
+  const lastYm = planLastYm();
+  const openLabel = lastYm
+    ? t('period_end_plan') + ' (' + monthLabel(lastYm) + ')'
+    : t('period_end_plan');
   return `<div class="period-row" data-key="${key}" data-pid="${p.id}">
     <input type="month" class="period-start" value="${p.startYm}">
     <span class="period-arrow">→</span>
-    <input type="month" class="period-end" value="${p.endYm||''}" placeholder="${t('period_ongoing')}">
+    <select class="period-end-mode" aria-label="${esc(t('period_end_aria'))}">
+      <option value="plan" ${open?'selected':''}>${esc(openLabel)}</option>
+      <option value="until" ${open?'':'selected'}>${esc(t('period_end_until'))}</option>
+    </select>
+    <input type="month" class="period-end" value="${p.endYm||''}" ${open?'hidden':''}>
     <input type="number" class="period-amount" value="${p.amount||0}">
     <button type="button" class="period-remove" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button>
   </div>`;
@@ -4251,6 +4295,16 @@ function renderPlanningModes(){
     const key = row.dataset.key, pid = row.dataset.pid;
     row.querySelector('.period-start').addEventListener('change', e=> updatePeriod(key,pid,'startYm',e.target.value));
     row.querySelector('.period-end').addEventListener('change', e=> updatePeriod(key,pid,'endYm', e.target.value || null));
+    row.querySelector('.period-end-mode').addEventListener('change', e=>{
+      if(e.target.value === 'plan'){ updatePeriod(key, pid, 'endYm', null); return; }
+      // Switching to a chosen month needs one to start from. The table's last
+      // month is the closest thing to "what it was already doing", so picking
+      // "until" and changing nothing else leaves the schedule as it was.
+      const p = (state.fixedSchedules[key]||[]).find(x=>x.id===pid);
+      const seed = planLastYm();
+      const from = (p && p.startYm) || seed;
+      updatePeriod(key, pid, 'endYm', (seed && from && seed >= from) ? seed : from);
+    });
     row.querySelector('.period-amount').addEventListener('change', e=> updatePeriod(key,pid,'amount', Number(e.target.value)||0));
     row.querySelector('.period-remove').addEventListener('click', ()=> removePeriod(key,pid));
   });
