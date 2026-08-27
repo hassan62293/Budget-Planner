@@ -1,0 +1,54 @@
+Copyright © 2026 Hassan Abdulghani Alwehaimid. All rights reserved.
+
+Smart Budget was designed, written and built by Hassan Abdulghani Alwehaimid,
+who holds the copyright to it and to everything in this repository.
+
+
+YOU MAY USE THE APP
+
+Anyone may use Smart Budget for free, for any purpose, personal or
+commercial. Open it, enter your budget, install it to your home screen,
+keep using it offline, share the link with anyone you like. Nothing in
+this licence restricts what you do with the app itself or with the data
+you put into it. Your data is yours, it stays on your device, and no
+permission from anyone is needed to use this software as intended.
+
+
+YOU MAY NOT REUSE THE CODE
+
+All rights in the source code, design, text and artwork are reserved. You
+may not, without prior written permission from the copyright holder:
+
+  - copy, publish or host this code, in whole or in substantial part,
+    anywhere other than its original location;
+  - modify it or create derivative works from it;
+  - sell it, license it, or include it in any product or service;
+  - remove, alter or obscure the authorship and copyright notices in the
+    source, in the page footer, or on the How to use page;
+  - present this work, or any part of it, as your own.
+
+Reading the source is expressly permitted — it is a web page, and viewing
+it is how the privacy claims in PRIVACY.md can be verified. Permission to
+read is not permission to republish.
+
+Forking this repository through GitHub's own interface is permitted, as
+GitHub's Terms of Service provide for. A fork remains subject to this
+licence and must continue to attribute the work to its author.
+
+
+NO WARRANTY
+
+This software is provided "as is", without warranty of any kind, express
+or implied, including but not limited to the warranties of merchantability
+and fitness for a particular purpose. Smart Budget is a planning tool, not
+financial advice. Its forecasts are estimates built from assumptions you
+supply, not predictions or guarantees. In no event shall the author be
+liable for any claim, damages or other liability, whether in an action of
+contract, tort or otherwise, arising from or in connection with this
+software or its use.
+
+
+PERMISSION
+
+To request permission for anything reserved above, contact the copyright
+holder.

@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+<!--
+  Smart Budget
+  Copyright (c) 2026 Hassan Abdulghani Alwehaimid. All rights reserved.
+  Designed, written and built by Hassan Abdulghani Alwehaimid.
+-->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="title">Salary Budget &amp; Savings Planner</title>
+<meta name="author" content="Hassan Abdulghani Alwehaimid">
+<meta name="copyright" content="© 2026 Hassan Abdulghani Alwehaimid. All rights reserved.">
+<title data-i18n="title">Smart Budget</title>
 <!-- PRIVACY LOCKDOWN
      This page makes no network requests at runtime. Webfonts, Chart.js and
      SheetJS are all served from this folder, and the policy below makes that
@@ -168,7 +175,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Budget">
+<meta name="apple-mobile-web-app-title" content="Smart Budget">
 <meta name="mobile-web-app-capable" content="yes">
 
 <style>
@@ -229,14 +236,6 @@
     font-weight:600;
     font-size:30px;
     margin:0;
-  }
-  .brand .stub-no{
-    font-family:var(--font-body);
-    font-size:12px;
-    color:var(--ink-soft);
-    letter-spacing:0.04em;
-    display:block;
-    margin-bottom:6px;
   }
   .lang-switch{display:flex;border:1px solid var(--ink);border-radius:3px;overflow:hidden;height:fit-content;}
   .lang-switch button{
@@ -666,6 +665,15 @@
     font-size:11.5px;color:var(--ink-soft);
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
   }
+
+  .foot .foot-credit{
+    flex-basis:100%;
+    margin-top:14px;padding-top:14px;
+    border-top:1px solid var(--rule);
+    text-align:center;
+    color:var(--ink);
+  }
+  .foot .foot-credit .credit-name{font-weight:600;}
 
   .share-link-wrap{position:relative;display:inline-block;}
   #btn-share-link{
@@ -1116,6 +1124,16 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   background:var(--paper); cursor:pointer;
 }
 .qa-keypad button:active{ background:var(--good-tint); }
+.qa-note{
+  display:block; width:100%; margin-top:12px; min-height:var(--tap);
+  padding:8px 11px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:14px; text-align:start;
+}
+.qa-note::placeholder{ color:var(--ink-soft); opacity:1; }
+.qa-note:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+
 .qa-actions{ display:flex; gap:8px; margin-top:12px; }
 .qa-actions button{
   flex:1 1 auto; min-height:var(--tap); border-radius:12px; border:none;
@@ -1852,8 +1870,62 @@ nav.tabs button{ color:var(--ink); }
 }
 .sp-clear:hover{ background:var(--bad-tint); color:var(--bad-ink); }
 
-.sp-add{ display:flex; gap:7px; margin-top:10px; }
+/* The note takes its own full-width line above the amount and Add button.
+   Three controls abreast fits a laptop and nothing else — at 375px the note
+   would have been squeezed to a few characters, which is where it is most
+   needed. flex-basis:100% wraps it without a media query. */
+.sp-add{ display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
 .sp-add .sp-field{ flex:1 1 auto; width:auto; min-width:0; text-align:start; }
+.sp-note{
+  flex:1 1 100%; min-width:0; width:100%;
+  min-height:var(--tap);
+  padding:8px 11px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:14px; text-align:start;
+}
+.sp-note::placeholder{ color:var(--ink-soft); opacity:1; }
+.sp-note:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+
+/* What a total is made of. Capped in height so a category with thirty entries
+   scrolls inside its own box instead of burying the Add controls below it. */
+.sp-items{
+  margin-top:10px; padding:9px 11px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper);
+  max-height:190px; overflow-y:auto;
+}
+.spi-head{
+  margin:0 0 6px; font-size:11px; font-weight:600;
+  letter-spacing:.03em; text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.sp-items ul{ list-style:none; margin:0; padding:0; }
+.sp-items li{
+  display:flex; align-items:baseline; gap:8px;
+  padding:4px 0; font-size:13px;
+  border-top:1px solid var(--rule);
+}
+.sp-items li:first-of-type{ border-top:none; }
+.spi-note{
+  flex:1 1 auto; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  text-align:start; color:var(--ink);
+}
+.spi-note.is-blank{ color:var(--ink-soft); font-style:italic; }
+.spi-amt{
+  flex:0 0 auto; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ink);
+}
+.sp-items li.is-rest .spi-amt{ font-weight:500; color:var(--ink-soft); }
+.spi-del{
+  flex:0 0 auto;
+  border:none; background:transparent; cursor:pointer;
+  color:var(--ink-soft); font-size:13px; line-height:1;
+  padding:4px 5px; border-radius:5px;
+}
+.spi-del:hover{ background:var(--bad-tint); color:var(--bad-ink); }
+.spi-del:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
 .sp-add-btn{
   flex:0 0 auto; min-height:var(--tap); padding:0 18px;
   border:none; border-radius:8px; cursor:pointer;
@@ -1910,6 +1982,162 @@ nav.tabs button{ color:var(--ink); }
   #announcement-modal-text{ max-height:58vh; }
 }
 
+/* Default salary: hint under the setup fields, and the apply button that only
+   appears when some month actually differs from it. */
+.setup-hint{
+  font-size:12px; line-height:1.55; color:var(--ink-soft); margin:10px 0 0;
+}
+.setup-hint:empty{ display:none; }
+.setup-apply{ display:flex; margin-top:10px; }
+#btn-apply-salary{
+  min-height:var(--tap); padding:0 18px; border:1px solid var(--rule);
+  border-radius:var(--radius-sm); background:var(--paper-raised); color:var(--ink);
+  font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit;
+}
+#btn-apply-salary:hover{ border-color:var(--emerald); color:var(--emerald); }
+
+/* ============================================================================
+   Goals
+   Reuses .sp-bar so a goal reads the same way a spending category does.
+   ============================================================================ */
+.goals{ margin-bottom:26px; }
+.goals-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.goals-head .pvs-title{ margin:26px 0 4px; }
+
+.goal-mode{ display:flex; gap:2px; border:1px solid var(--rule); border-radius:999px; padding:2px; }
+.goal-mode button{
+  border:none; background:transparent; color:var(--ink-soft); cursor:pointer;
+  font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:999px;
+  min-height:36px; font-family:inherit; white-space:nowrap;
+}
+.goal-mode button.on{ background:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .goal-mode button.on{ color:#1A1815; }
+
+/* ---- alerts ---- */
+.goal-alert{
+  border-radius:var(--radius-sm); padding:12px 14px; margin-top:12px;
+  border-inline-start:4px solid var(--ink-soft); background:var(--paper-raised);
+  box-shadow:var(--shadow-sm);
+}
+.goal-alert.is-over{ border-inline-start-color:var(--bad); background:var(--bad-tint); }
+.goal-alert.is-warn{ border-inline-start-color:var(--warn); background:var(--warn-tint); }
+.goal-alert.is-none{ border-inline-start-color:var(--warn); background:var(--warn-tint); }
+.goal-alert.is-info{ border-inline-start-color:var(--good); background:var(--good-tint); }
+.ga-title{ margin:0; font-size:13.5px; font-weight:700; }
+.ga-body{ margin:6px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink); }
+
+/* ---- summary ---- */
+.goal-sum{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:14px 15px; margin-top:12px;
+}
+.goal-sum-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.goal-sum-grid .k{
+  margin:0; font-size:10px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-soft); line-height:1.3;
+}
+.goal-sum-grid .v{
+  margin:3px 0 0; font-size:16px; font-weight:700;
+  letter-spacing:-.015em; font-variant-numeric:tabular-nums;
+}
+.goal-sum-grid .v.good{ color:var(--good-ink); }
+.goal-sum-line{
+  margin:12px 0 0; padding-top:11px; border-top:1px solid var(--rule);
+  font-size:12.5px; line-height:1.6; color:var(--ink-soft);
+}
+
+/* ---- one goal ---- */
+.goal-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+.goal-row{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:12px 14px; min-width:0;
+}
+.goal-row.is-focus{ border-inline-start:4px solid var(--emerald); }
+.goal-row-top{ display:flex; align-items:center; gap:10px; min-width:0; }
+.goal-order{ display:flex; flex-direction:column; gap:2px; flex:0 0 auto; }
+.goal-order button{
+  border:none; background:var(--paper); color:var(--ink-soft); cursor:pointer;
+  width:26px; height:20px; border-radius:5px; font-size:9px; line-height:1; padding:0;
+}
+.goal-order button:hover:not(:disabled){ background:var(--good-tint); color:var(--good-ink); }
+.goal-order button:disabled{ opacity:.3; cursor:default; }
+.goal-id{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.goal-name{ font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.goal-target{ font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+.goal-del{
+  border:none; background:var(--paper); color:var(--ink-soft); cursor:pointer;
+  width:30px; height:30px; min-width:30px; border-radius:50%; font-size:12px; flex:0 0 auto;
+}
+.goal-del:hover{ background:var(--bad-tint); color:var(--bad-ink); }
+
+.goal-row-foot{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  font-size:11.5px; color:var(--ink-soft); min-width:0;
+}
+.goal-when{ font-weight:700; color:var(--good-ink); white-space:nowrap; }
+
+.goal-row-controls{
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:10px;
+  padding-top:10px; border-top:1px solid var(--rule);
+}
+.goal-share, .goal-due{
+  display:flex; align-items:center; gap:6px;
+  font-size:11.5px; color:var(--ink-soft); min-width:0;
+}
+.goal-share input{
+  width:62px; min-width:0; text-align:end; padding:7px 8px; min-height:var(--tap);
+  border:1px solid var(--rule); border-radius:8px; background:var(--paper);
+  color:var(--ink); font-variant-numeric:tabular-nums; font-weight:600;
+}
+.goal-due input{
+  min-width:0; padding:7px 8px; min-height:var(--tap);
+  border:1px solid var(--rule); border-radius:8px; background:var(--paper); color:var(--ink);
+}
+.goal-focus-btn{
+  min-height:var(--tap); padding:0 14px; border:1px solid var(--rule);
+  border-radius:8px; background:var(--paper); color:var(--ink-soft);
+  font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;
+}
+.goal-focus-btn.on{ background:var(--emerald); border-color:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .goal-focus-btn.on{ color:#1A1815; }
+
+.goal-note{ margin:9px 0 0; font-size:11.5px; line-height:1.55; }
+.goal-note.is-gap{ color:var(--warn-ink); }
+.goal-note.is-ok{ color:var(--good-ink); }
+
+/* ---- add + compare ---- */
+.goal-add{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.goal-add input[type="text"]{ flex:2 1 0; min-width:0; }
+.goal-add input[type="number"]{ flex:1 1 0; min-width:0; }
+.goal-add input{
+  padding:9px 11px; min-height:var(--tap);
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper-raised); color:var(--ink);
+}
+#btn-add-goal{
+  flex:0 0 auto; min-height:var(--tap); padding:0 18px; border:none;
+  border-radius:8px; background:var(--emerald); color:var(--paper);
+  font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+}
+:root[data-theme="dark"] #btn-add-goal{ color:#1A1815; }
+
+.goal-compare{
+  margin:12px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink-soft);
+  padding:11px 13px; background:var(--paper-raised);
+  border-radius:var(--radius-sm); box-shadow:var(--shadow-sm);
+}
+.goal-compare:empty{ display:none; }
+
+.goal-empty{
+  background:var(--paper-raised); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); padding:20px 18px; text-align:center; margin-top:12px;
+}
+.goal-empty p{ margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+
+@media (min-width:900px){
+  .goal-list{ display:grid; grid-template-columns:repeat(2,1fr); }
+}
+
 </style>
 </head>
 <body>
@@ -1929,7 +2157,7 @@ nav.tabs button{ color:var(--ink); }
 <header class="top">
   <div class="wrap">
     <div class="title-row">
-      <h1 class="brand"><span class="stub-no" data-i18n="stub_no">Passbook · Personal Ledger</span><span data-i18n="brand_title">Salary budget &amp; savings planner</span></h1>
+      <h1 class="brand"><span data-i18n="brand_title">Smart Budget</span></h1>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="lang-switch" role="group" aria-label="Language">
@@ -1984,17 +2212,17 @@ nav.tabs button{ color:var(--ink); }
 
 <div class="wrap">
   <nav class="tabs">
-    <button data-tab="budget" class="active" data-i18n="tab_budget">Monthly budget</button>
-    <button data-tab="entry" data-i18n="tab_entry">Enter your budget and plan</button>
+    <button data-tab="entry" class="active" data-i18n="tab_entry">Enter your budget and plan</button>
     <button data-tab="actual" data-i18n="tab_actual">Enter your data as you go</button>
+    <button data-tab="budget" data-i18n="tab_budget">Overview</button>
     <button data-tab="dashboard" data-i18n="tab_dashboard">Dashboard</button>
     <button data-tab="forecast" id="tab-forecast-btn" data-i18n="tab_forecast_base">Forecast</button>
     <button data-tab="help" data-i18n="tab_help">How to use</button>
   </nav>
 
   <main>
-    <section class="panel active" id="panel-budget">
-      <h2 class="section-title" data-i18n="budget_h2">Monthly budget tracker</h2>
+    <section class="panel" id="panel-budget">
+      <h2 class="section-title" data-i18n="budget_h2">Your months at a glance</h2>
       <p class="section-note" data-i18n="budget_note">Fill in salary and spending for each month. Totals, savings and savings rate update automatically. Enter 0 for a category that doesn't apply.</p>
       <div class="legend">
         <span><i class="in"></i><span data-i18n="legend_in">Your input</span></span>
@@ -2003,22 +2231,7 @@ nav.tabs button{ color:var(--ink); }
 
       <div id="empty-months-reminder" class="reminder-banner" style="display:none;"></div>
 
-      <div class="rules-box">
-        <div class="field">
-          <label for="emergency-threshold" class="cur-label" data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount</label>
-          <input type="number" id="emergency-threshold" step="1">
-        </div>
-        <div class="field">
-          <label for="emergency-start" class="cur-label" data-i18n="rule_start_label">Starting emergency balance</label>
-          <input type="number" id="emergency-start" step="1">
-        </div>
-        <div class="field">
-          <label for="savings-start" class="cur-label" data-i18n="rule_savings_start_label">Starting savings balance</label>
-          <input type="number" id="savings-start" step="1">
-        </div>
-      </div>
-      <p class="section-note rules-hint" id="savings-start-hint"></p>
-      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
+
 
       <div class="ov-rows" id="overview-rows"></div>
 
@@ -2036,9 +2249,49 @@ nav.tabs button{ color:var(--ink); }
 
     </section>
 
-    <section class="panel" id="panel-entry">
-      <h2 class="section-title" data-i18n="entry_h2">Enter your data</h2>
-      <p class="section-note" data-i18n="entry_note">Pick a month to fill in. Your numbers save as you type, and the calendar shows how far you've got.</p>
+    <section class="panel active" id="panel-entry">
+      <h2 class="section-title" data-i18n="entry_h2">Enter your budget and plan</h2>
+      <p class="section-note" data-i18n="entry_note">Set what you are saving for, then what you earn and expect to spend. Everything else in the app is worked out from here.</p>
+
+      <div class="goals" id="goals">
+        <div class="goals-head">
+          <h3 class="pvs-title" data-i18n="goals_title">Your goals</h3>
+          <div class="goal-mode" id="goal-mode" role="group">
+            <button type="button" data-mode="all" data-i18n="goal_mode_all">Plan for all</button>
+            <button type="button" data-mode="focus" data-i18n="goal_mode_focus">Focus on one</button>
+          </div>
+        </div>
+        <p class="section-note" data-i18n="goals_note">Add what you are saving for. The order is the priority — drag the top one to the top. Everything below is worked out from your own figures.</p>
+
+        <div id="goal-alerts"></div>
+        <div id="goal-summary"></div>
+        <div class="goal-list" id="goal-list"></div>
+
+        <div class="goal-add">
+          <input type="text" id="goal-name" maxlength="40" data-i18n-placeholder="goal_name_ph" placeholder="What are you saving for?">
+          <input type="number" id="goal-target" inputmode="decimal" step="any" min="0" data-i18n-placeholder="goal_target_ph" placeholder="Amount">
+          <button type="button" id="btn-add-goal" data-i18n="goal_add">Add goal</button>
+        </div>
+        <p class="goal-compare" id="goal-compare"></p>
+      </div>
+
+      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
+
+      <div class="rules-box">
+        <div class="field">
+          <label for="emergency-threshold" class="cur-label" data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount</label>
+          <input type="number" id="emergency-threshold" step="1">
+        </div>
+        <div class="field">
+          <label for="emergency-start" class="cur-label" data-i18n="rule_start_label">Starting emergency balance</label>
+          <input type="number" id="emergency-start" step="1">
+        </div>
+        <div class="field">
+          <label for="savings-start" class="cur-label" data-i18n="rule_savings_start_label">Starting savings balance</label>
+          <input type="number" id="savings-start" step="1">
+        </div>
+      </div>
+      <p class="section-note rules-hint" id="savings-start-hint"></p>
 
       <div class="setup-card">
         <h3 data-i18n="setup_title">Set up your table</h3>
@@ -2049,6 +2302,10 @@ nav.tabs button{ color:var(--ink); }
             <input type="number" id="setup-years" min="1" max="20" step="1" value="1">
           </div>
           <div class="field">
+            <label for="setup-salary" class="cur-label" data-i18n="setup_salary_label">Your usual monthly salary</label>
+            <input type="number" id="setup-salary" step="any" min="0">
+          </div>
+          <div class="field">
             <label data-i18n="setup_startmonth_label">Starting month</label>
             <input type="month" id="setup-start-month">
           </div>
@@ -2057,6 +2314,11 @@ nav.tabs button{ color:var(--ink); }
             <select id="setup-currency"></select>
           </div>
           <button id="btn-generate-months" data-i18n="btn_generate">Generate months table</button>
+        </div>
+
+        <p class="setup-hint" id="default-salary-hint"></p>
+        <div class="setup-apply" id="default-salary-apply" style="display:none;">
+          <button type="button" id="btn-apply-salary" data-i18n="btn_apply_salary">Apply to every month</button>
         </div>
 
         <div class="columns-section">
@@ -2124,7 +2386,7 @@ nav.tabs button{ color:var(--ink); }
 
     <section class="panel" id="panel-dashboard">
       <h2 class="section-title" data-i18n="dashboard_h2">Dashboard</h2>
-      <p class="section-note" data-i18n="dashboard_note">Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.</p>
+      <p class="section-note" data-i18n="dashboard_note">Yearly totals, average monthly savings and spending by category — nothing to fill in here, it all comes from what you entered in “Enter your budget and plan”.</p>
 
       <div class="kpis">
         <div class="kpi"><p class="k" data-i18n="kpi_salary">Total income</p><p class="v" id="kpi-salary">$0</p></div>
@@ -2160,6 +2422,8 @@ nav.tabs button{ color:var(--ink); }
       <p class="section-note" data-i18n="forecast_note">Edit the assumptions on the left — everything else recalculates automatically. Contributions grow yearly with (salary growth − expense growth); returns use a mid-year convention.</p>
       <p class="section-note" id="forecast-basis-note" style="margin-top:-10px;"></p>
       <div id="charts-unavailable-forecast" class="reminder-banner" style="display:none;"></div>
+
+
       <div class="fc-cards" id="forecast-cards" role="list"></div>
 
       <div class="forecast-grid">
@@ -2219,29 +2483,31 @@ nav.tabs button{ color:var(--ink); }
       <h2 class="section-title" data-i18n="help_h2">How to use</h2>
 
       <div id="help-content-en" class="help-content">
-        <p class="help-lede">This app keeps track of what you earn, what you spend, and what's left over. Everything stays on your device — no account, no sign-up. Here's how to get going.</p>
+        <p class="help-lede">Smart Budget keeps track of what you earn, what you spend, and what's left over — and works out when you would reach the things you are saving for. Everything stays on your device: no account, no sign-up. Here's how to get going.</p>
 
         <div class="help-section">
-          <h3>Start here — three steps</h3>
+          <h3>Start here — four steps</h3>
           <ol class="help-steps">
-            <li><span class="step-n">1</span><div><b>Plan what you expect</b>
-              <p>Open <span class="help-key">Enter your budget and plan</span>. Choose how many years to plan for and your starting month, press <span class="help-key">Generate months table</span>, then tap a month and fill in what you earn and expect to spend.</p></div></li>
-            <li><span class="step-n">2</span><div><b>Log what you actually spend</b>
+            <li><span class="step-n">1</span><div><b>Say what you are saving for</b>
+              <p>Open <span class="help-key">Enter your budget and plan</span> — your goals are the first thing on it. Add a laptop, a trip, anything. The app works out when you would reach it from your own figures, and tells you if overspending pushes it back.</p></div></li>
+            <li><span class="step-n">2</span><div><b>Plan what you expect</b>
+              <p>Further down the same tab, choose how many years to plan for and your starting month, press <span class="help-key">Generate months table</span>, then tap a month and fill in what you earn and expect to spend.</p></div></li>
+            <li><span class="step-n">3</span><div><b>Log what you actually spend</b>
               <p>Open <span class="help-key">Enter your data as you go</span>. Each time you spend something, type the amount beside that category and press <span class="help-key">Add</span>. It builds up as you go.</p></div></li>
-            <li><span class="step-n">3</span><div><b>See where you stand</b>
+            <li><span class="step-n">4</span><div><b>See where you stand</b>
               <p><span class="help-key">Overview</span> shows what you kept each month. <span class="help-key">Dashboard</span> shows your plan against what you really spent.</p></div></li>
           </ol>
-          <p class="help-tip">That's the whole app: plan it, log it, watch it. Everything below is detail you can come back to.</p>
+          <p class="help-tip">That's the whole app: plan it, log it, watch it, aim at something. Everything below is detail you can come back to.</p>
         </div>
 
         <div class="help-section">
           <h3>Finding your way around</h3>
           <p>On a phone, the bar along the bottom has everything:</p>
           <ul class="help-list">
-            <li><b>Overview</b> — what you saved, month by month</li>
-            <li><b>Plan</b> — what you expect to earn and spend</li>
-            <li><b>+</b> — log something you just spent, in a couple of taps</li>
+            <li><b>Plan</b> — your goals, and what you expect to earn and spend</li>
             <li><b>Spent</b> — what you have actually spent this month</li>
+            <li><b>+</b> — log something you just spent, in a couple of taps</li>
+            <li><b>Overview</b> — what you saved, month by month</li>
             <li><b>Dashboard</b> — your plan against reality, plus charts and totals</li>
           </ul>
           <p style="margin-top:10px;">On a computer these are tabs across the top, along with the forecast. On a phone the forecast sits behind the <span class="help-key">◹</span> button at the top, and this page behind <span class="help-key">?</span>.</p>
@@ -2283,6 +2549,14 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>Remembering what a payment was for</h3>
+          <p>Beside every amount there is a box for a short note — <i>Car repair</i>, <i>Gift for mum</i>. It is optional, and it earns its keep most on <b>Other expenses</b>, the category that otherwise turns into a number with no story behind it.</p>
+          <p style="margin-top:8px;">Each category then lists what its total is made of, so a month later you can see where the money went instead of guessing. The <span class="help-key">✕</span> beside a line removes just that one payment and takes its amount back out of the total — much finer than <span class="help-key">↺</span>, which clears the whole category.</p>
+          <p style="margin-top:8px;">Notes work the same way through the <b>+</b> button, and they come out in the Excel export on their own <b>Spending notes</b> sheet, one row per payment, ready to sort or filter.</p>
+          <p class="help-tip">Spending you logged before notes existed still counts. It appears as a single line called <i>Logged before notes were added</i>, so the itemised lines and the category total can never look like they disagree.</p>
+        </div>
+
+        <div class="help-section">
           <h3>What happens when a month ends</h3>
           <p>While a month is still running, your savings are worked out from your <strong>plan</strong>. That is deliberate: half a month of logged spending set against a full month's income would look like an enormous surplus that isn't real.</p>
           <p style="margin-top:8px;">Once the month is over, what you logged takes over:</p>
@@ -2311,6 +2585,12 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>Type your salary once</h3>
+          <p>In <span class="help-key">Enter your budget and plan</span>, set <b>Your usual monthly salary</b>. Every new month then starts with it already filled in.</p>
+          <p style="margin-top:8px;">It is a starting point, not a lock — change any single month and only that month changes. If your pay goes up, update the figure and press <span class="help-key">Apply to every month</span>; it tells you how many months would change and asks first.</p>
+        </div>
+
+        <div class="help-section">
           <h3>Amounts that never change</h3>
           <p>Some things are the same every month — rent, a subscription. Others move around — groceries, fuel.</p>
           <p style="margin-top:8px;">Under <b>Fixed vs. variable</b>, mark anything steady as <b>fixed</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you can't overwrite them by accident. Leave everything else as <b>variable</b> and enter it month by month.</p>
@@ -2318,7 +2598,7 @@ nav.tabs button{ color:var(--ink); }
 
         <div class="help-section">
           <h3>The emergency fund</h3>
-          <p>A simple rule that sets money aside for you. At the bottom of <span class="help-key">Overview</span>, set how much you'd like to put away each month, and how much you already have.</p>
+          <p>A simple rule that sets money aside for you. In <span class="help-key">Enter your budget and plan</span>, just below your goals, set how much you'd like to put away each month, and how much you already have.</p>
           <p style="margin-top:8px;">Then, every month:</p>
           <ul class="help-list">
             <li>Enough left over? That amount moves into the fund.</li>
@@ -2332,6 +2612,52 @@ nav.tabs button{ color:var(--ink); }
           <h3>Savings you already have</h3>
           <p>If you had money saved before starting, put it in <b>Starting savings balance</b>, beside the emergency settings. The forecast then continues from that figure rather than starting at zero, so it reflects where you actually are.</p>
           <p style="margin-top:8px;">It is the same figure as <b>Starting savings</b> on the forecast page — change either and both move together.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Saving for something</h3>
+          <p>At the top of <span class="help-key">Enter your budget and plan</span>, add what you are saving for, with the amount. Add as many as you like.</p>
+          <p style="margin-top:8px;"><b>The order is the priority.</b> Use the ▲ ▼ arrows to put the most important at the top. The app splits your saving accordingly — with four goals that is 40%, 30%, 20% and 10% — and you can type your own percentage for any of them.</p>
+          <p style="margin-top:8px;">Each goal shows how much is saved toward it, and the month you would reach it. Those dates come from your own budget, not from a guess.</p>
+          <p class="help-tip"><b>When one goal is reached, its share passes to the others.</b> So the later goals arrive sooner than a simple division would suggest, and the dates you see already allow for that.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>One at a time, or all at once</h3>
+          <p><b>Plan for all</b> splits your saving across every goal by priority.</p>
+          <p style="margin-top:8px;"><b>Focus on one</b> puts everything into a single goal until it is done, then moves to the next.</p>
+          <p style="margin-top:8px;">A line underneath compares them on real dates — something like <i>"Focusing on Laptop finishes it by December. Splitting across all of them finishes everything by June."</i> — so you can see the trade-off instead of guessing at it.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Deadlines and side income</h3>
+          <p>Give a goal a <b>By</b> date and the app checks whether your saving gets there in time. If it does not, it tells you the size of the gap:</p>
+          <p style="margin-top:8px;"><i>Needs 640 a month and is getting 400. The gap is 240 a month — the amount a side income would need to cover.</i></p>
+          <p style="margin-top:8px;">A number you can act on, rather than a vague suggestion to earn more.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>When you overspend</h3>
+          <p>Go over on a category and the app says so straight away, and tells you what it cost:</p>
+          <ul class="help-list">
+            <li>How much you are over, and on what.</li>
+            <li>Which goal moved, and by how long.</li>
+            <li>How much unspent plan is left this month, and what you can still spend to bring it back on track.</li>
+          </ul>
+          <p class="help-tip">Going <b>over</b> moves the dates immediately, because that money is spent and the rest of the month cannot un-spend it. Being <b>under</b> so far does not, because the month is not finished and you might still spend it. The dates only move when something is certain.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>How much should I save?</h3>
+          <p>A common starting point is around 25% of what you earn. The app shows that figure next to what your plan actually leaves, so you can see both:</p>
+          <p style="margin-top:8px;"><i>25% rule of thumb: 2,500. Your plan saves: 2,000. Reaching the 25% mark would mean trimming about 500 of planned spending a month.</i></p>
+          <p style="margin-top:8px;">It will never suggest an amount your own budget cannot reach — where the two disagree, it says so and shows what would have to change. It also shows what is left to spend once your goals are funded, but it will not invent an amount for groceries: it has no way of knowing how you live.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>The table grows by itself</h3>
+          <p>If your goals reach further than your months table covers, the app extends it and says so. It only ever adds months — it will never remove one, because that could delete figures you had entered.</p>
+          <p style="margin-top:8px;">If a goal would take more than 20 years at your current rate, it says that plainly instead of showing a date decades away.</p>
         </div>
 
         <div class="help-section">
@@ -2388,32 +2714,41 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">The only two things that ever leave this page are ones you press yourself: <strong>Share this page</strong>, which opens your email or WhatsApp with a link to the app (never your numbers), and the Excel and backup buttons, which write files to a place you choose.</p>
         </div>
 
+        <div class="help-section">
+          <h3>Who made this</h3>
+          <p>Smart Budget was designed, written and built by <strong>Hassan Abdulghani Alwehaimid</strong>, who holds the copyright to it. © 2026, all rights reserved.</p>
+          <p style="margin-top:8px;">Using the app is free and unrestricted — it is the code behind it that is reserved. Please don't republish that as your own work. You're very welcome to share the link with anyone, though; that's what <strong>Share this page</strong> is for.</p>
+          <p style="margin-top:8px;">The full terms are in the <a href="./LICENSE.txt" target="_blank" rel="noopener">LICENSE.txt</a> file that sits beside the app.</p>
+        </div>
+
       </div>
 
       <div id="help-content-ar" class="help-content" dir="rtl" lang="ar" style="display:none;">
-        <p class="help-lede">يتتبّع هذا التطبيق ما تكسبه وما تنفقه وما يتبقّى لك. كل شيء يبقى على جهازك — بلا حساب ولا تسجيل. إليك كيف تبدأ.</p>
+        <p class="help-lede">يتتبّع «الميزانية الذكية» ما تكسبه وما تنفقه وما يتبقّى لك، ويحسب موعد بلوغك لما تدّخر من أجله. وكل شيء يبقى على جهازك: بلا حساب ولا تسجيل. إليك كيف تبدأ.</p>
 
         <div class="help-section">
-          <h3>ابدأ من هنا — ثلاث خطوات</h3>
+          <h3>ابدأ من هنا — أربع خطوات</h3>
           <ol class="help-steps">
-            <li><span class="step-n">١</span><div><b>خطّط لما تتوقعه</b>
-              <p>افتح <span class="help-key">أدخل ميزانيتك وخطتك</span>. اختر عدد السنوات وشهر البداية، واضغط <span class="help-key">إنشاء جدول الأشهر</span>، ثم اضغط شهرًا واملأ دخلك وما تتوقع إنفاقه.</p></div></li>
-            <li><span class="step-n">٢</span><div><b>سجّل ما تنفقه فعليًا</b>
+            <li><span class="step-n">١</span><div><b>حدّد ما تدّخر من أجله</b>
+              <p>افتح <span class="help-key">أدخل ميزانيتك وخطتك</span> — فأهدافك أول ما فيها. أضف حاسوبًا أو رحلة أو أي شيء. يحسب التطبيق موعد بلوغه من أرقامك أنت، ويخبرك إن أخّره تجاوزك في الإنفاق.</p></div></li>
+            <li><span class="step-n">٢</span><div><b>خطّط لما تتوقعه</b>
+              <p>وأسفل التبويب نفسه، اختر عدد السنوات وشهر البداية، واضغط <span class="help-key">إنشاء جدول الأشهر</span>، ثم اضغط شهرًا واملأ دخلك وما تتوقع إنفاقه.</p></div></li>
+            <li><span class="step-n">٣</span><div><b>سجّل ما تنفقه فعليًا</b>
               <p>افتح <span class="help-key">أدخل بياناتك أولًا بأول</span>. وكلما أنفقت شيئًا، اكتب المبلغ بجانب تلك الفئة واضغط <span class="help-key">إضافة</span>، فيتراكم أولًا بأول.</p></div></li>
-            <li><span class="step-n">٣</span><div><b>اطّلع على وضعك</b>
+            <li><span class="step-n">٤</span><div><b>اطّلع على وضعك</b>
               <p>تعرض <span class="help-key">نظرة عامة</span> ما احتفظت به كل شهر، وتعرض <span class="help-key">لوحة المعلومات</span> خطتك مقابل ما أنفقته فعلًا.</p></div></li>
           </ol>
-          <p class="help-tip">هذا هو التطبيق كله: خطّط، وسجّل، وراقب. وكل ما يلي تفاصيل يمكنك العودة إليها.</p>
+          <p class="help-tip">هذا هو التطبيق كله: خطّط، وسجّل، وراقب، واستهدف شيئًا. وكل ما يلي تفاصيل يمكنك العودة إليها.</p>
         </div>
 
         <div class="help-section">
           <h3>التنقّل في التطبيق</h3>
           <p>على الجوال، يحتوي الشريط السفلي على كل شيء:</p>
           <ul class="help-list">
-            <li><b>نظرة عامة</b> — ما ادّخرته، شهرًا بشهر</li>
-            <li><b>الخطة</b> — ما تتوقع أن تكسبه وتنفقه</li>
-            <li><b>+</b> — تسجيل ما أنفقته للتوّ بضغطتين</li>
+            <li><b>الخطة</b> — أهدافك، وما تتوقع أن تكسبه وتنفقه</li>
             <li><b>المصروف</b> — ما أنفقته فعليًا هذا الشهر</li>
+            <li><b>+</b> — تسجيل ما أنفقته للتوّ بضغطتين</li>
+            <li><b>نظرة عامة</b> — ما ادّخرته، شهرًا بشهر</li>
             <li><b>لوحة المعلومات</b> — خطتك أمام الواقع، مع الرسوم والمجاميع</li>
           </ul>
           <p style="margin-top:10px;">على الحاسوب تظهر هذه كتبويبات في الأعلى مع التوقعات. وعلى الجوال تجد التوقعات خلف زر <span class="help-key">◹</span> أعلى الصفحة، وهذه الصفحة خلف <span class="help-key">؟</span>.</p>
@@ -2455,6 +2790,14 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>لتتذكّر علام أنفقت</h3>
+          <p>بجانب كل مبلغ خانةٌ لملاحظة قصيرة — <i>تصليح السيارة</i>، <i>هدية لأمي</i>. وهي اختيارية، وأنفع ما تكون في <b>مصروفات أخرى</b>، وهي الفئة التي تتحول لولا ذلك إلى رقم بلا قصة خلفه.</p>
+          <p style="margin-top:8px;">عندها تعرض كل فئة ممّا يتكوّن مجموعها، فترى بعد شهر أين ذهب المال بدل أن تخمّن. ويحذف زر <span class="help-key">✕</span> بجانب أي سطر ذلك القيد وحده ويخصم مبلغه من المجموع — وهو أدقّ من <span class="help-key">↺</span> الذي يمسح الفئة كلها.</p>
+          <p style="margin-top:8px;">وتعمل الملاحظات بالطريقة نفسها من زر <b>+</b>، وتخرج في تصدير إكسل في ورقة خاصة اسمها <b>ملاحظات الإنفاق</b>، سطرٌ لكل عملية، جاهزة للفرز والتصفية.</p>
+          <p class="help-tip">وما سجّلته قبل وجود الملاحظات يبقى محسوبًا، ويظهر في سطر واحد باسم <i>سُجّل قبل إضافة الملاحظات</i>، حتى لا تبدو السطور المفصّلة ومجموع الفئة مختلفة أبدًا.</p>
+        </div>
+
+        <div class="help-section">
           <h3>ماذا يحدث عند انتهاء الشهر</h3>
           <p>ما دام الشهر جاريًا، تُحتسب مدّخراتك من <strong>خطتك</strong>. وهذا مقصود: فنصف شهر من الإنفاق المسجّل أمام دخل شهر كامل سيبدو فائضًا هائلًا غير حقيقي.</p>
           <p style="margin-top:8px;">وعند انتهاء الشهر يحلّ ما سجّلته محلّها:</p>
@@ -2483,6 +2826,12 @@ nav.tabs button{ color:var(--ink); }
         </div>
 
         <div class="help-section">
+          <h3>اكتب راتبك مرة واحدة</h3>
+          <p>في <span class="help-key">أدخل ميزانيتك وخطتك</span>، حدّد <b>راتبك الشهري المعتاد</b>. عندها يبدأ كل شهر جديد وهو مُعبّأ به.</p>
+          <p style="margin-top:8px;">وهو نقطة بداية لا قيد: غيّر أي شهر بمفرده فيتغيّر ذلك الشهر وحده. وإذا زاد راتبك، حدّث الرقم واضغط <span class="help-key">تطبيق على كل الأشهر</span>؛ سيخبرك بعدد الأشهر التي ستتغيّر ويسألك أولًا.</p>
+        </div>
+
+        <div class="help-section">
           <h3>المبالغ الثابتة</h3>
           <p>بعض البنود ثابتة كل شهر — الإيجار، أو اشتراك ما. وبعضها يتغيّر — البقالة، الوقود.</p>
           <p style="margin-top:8px;">ضمن <b>ثابت أم متغيّر</b>، اجعل الثابت <b>ثابتًا</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ. واترك الباقي <b>متغيّرًا</b> وأدخله شهرًا بشهر.</p>
@@ -2490,7 +2839,7 @@ nav.tabs button{ color:var(--ink); }
 
         <div class="help-section">
           <h3>صندوق الطوارئ</h3>
-          <p>قاعدة بسيطة تدّخر لك تلقائيًا. أسفل <span class="help-key">نظرة عامة</span>، حدّد كم تودّ أن تضع جانبًا كل شهر، وكم لديك بالفعل.</p>
+          <p>قاعدة بسيطة تدّخر لك تلقائيًا. في <span class="help-key">أدخل ميزانيتك وخطتك</span>، أسفل أهدافك مباشرة، حدّد كم تودّ أن تضع جانبًا كل شهر، وكم لديك بالفعل.</p>
           <p style="margin-top:8px;">ثم في كل شهر:</p>
           <ul class="help-list">
             <li>تبقّى لديك ما يكفي؟ يُنقل ذلك المبلغ إلى الصندوق.</li>
@@ -2504,6 +2853,52 @@ nav.tabs button{ color:var(--ink); }
           <h3>مدّخرات لديك بالفعل</h3>
           <p>إن كان لديك مال مدّخر قبل البدء، فضعه في <b>رصيد الادخار الابتدائي</b> بجانب إعدادات الطوارئ. عندها تكمل التوقعات من ذلك الرقم بدل أن تبدأ من الصفر، فتعكس موضعك الحقيقي.</p>
           <p style="margin-top:8px;">وهو الرقم نفسه الموجود في <b>الادخار الابتدائي</b> بصفحة التوقعات — غيّره في أيٍّ منهما فيتغير الآخر معه.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>الادخار من أجل شيء</h3>
+          <p>في أعلى <span class="help-key">أدخل ميزانيتك وخطتك</span>، أضف ما تدّخر من أجله مع المبلغ. وأضف ما شئت من الأهداف.</p>
+          <p style="margin-top:8px;"><b>والترتيب هو الأولوية.</b> استخدم السهمين ▲ ▼ لوضع الأهم في الأعلى. يوزّع التطبيق ادخارك تبعًا لذلك — مع أربعة أهداف تكون النسب 40% و30% و20% و10% — ويمكنك كتابة نسبتك الخاصة لأيٍّ منها.</p>
+          <p style="margin-top:8px;">ويعرض كل هدف ما ادُّخر له والشهر الذي تبلغه فيه. وهذه التواريخ من ميزانيتك أنت، لا من تخمين.</p>
+          <p class="help-tip"><b>وعند بلوغ هدف تنتقل حصته إلى البقية.</b> فتصل الأهداف اللاحقة أسرع مما توحي به القسمة البسيطة، والتواريخ المعروضة تراعي ذلك أصلًا.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>هدف واحد أم الجميع</h3>
+          <p><b>خطّط للجميع</b> يوزّع ادخارك على كل الأهداف حسب الأولوية.</p>
+          <p style="margin-top:8px;"><b>ركّز على واحد</b> يضع كل شيء في هدف واحد حتى يكتمل، ثم ينتقل إلى التالي.</p>
+          <p style="margin-top:8px;">ويقارن سطر أسفلهما بينهما بتواريخ حقيقية، مثل: <i>«بالتركيز على الحاسوب ينتهي في ديسمبر. وبالتوزيع على الكل تكتمل جميعها بحلول يونيو.»</i> — لترى المفاضلة بدل أن تخمّنها.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>المواعيد والدخل الإضافي</h3>
+          <p>حدّد للهدف تاريخًا في خانة <b>بحلول</b>، ليتحقق التطبيق مما إذا كان ادخارك يبلغه في وقته. وإن لم يبلغه أخبرك بحجم الفارق:</p>
+          <p style="margin-top:8px;"><i>يحتاج 640 شهريًا ويحصل على 400. الفارق 240 شهريًا — وهو ما قد يغطيه دخل إضافي.</i></p>
+          <p style="margin-top:8px;">رقم يمكنك التصرّف بناءً عليه، لا اقتراح مبهم بأن تكسب أكثر.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>عند تجاوز الإنفاق</h3>
+          <p>إذا تجاوزت فئة، يخبرك التطبيق فورًا ويوضح ما كلّفك ذلك:</p>
+          <ul class="help-list">
+            <li>كم تجاوزت، وفي أي فئة.</li>
+            <li>أي هدف تأخّر، وبكم.</li>
+            <li>كم بقي من الخطة غير منفق هذا الشهر، وكم يمكنك إنفاقه لتعود إلى المسار.</li>
+          </ul>
+          <p class="help-tip">التجاوز <b>يحرّك</b> التواريخ فورًا، لأن ذلك المال أُنفق ولا تستطيع بقية الشهر إعادته. أما كونك <b>تحت</b> الخطة حتى الآن فلا يحرّكها، لأن الشهر لم ينته وقد تنفق بعد. فالتواريخ لا تتحرك إلا عند اليقين.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>كم ينبغي أن أدّخر؟</h3>
+          <p>من نقاط البداية الشائعة نحو 25% مما تكسب. ويعرض التطبيق هذا الرقم بجانب ما تتركه خطتك فعلًا لترى الاثنين:</p>
+          <p style="margin-top:8px;"><i>قاعدة الـ 25%: 2,500. خطتك تدّخر: 2,000. وبلوغ الـ 25% يعني تقليل نحو 500 من الإنفاق المخطط شهريًا.</i></p>
+          <p style="margin-top:8px;">ولن يقترح عليك مبلغًا لا تبلغه ميزانيتك؛ وحين يختلفان يقول ذلك ويوضح ما ينبغي تغييره. كما يعرض ما يتبقى للإنفاق بعد تمويل أهدافك، لكنه لن يخترع لك مبلغًا للبقالة: فلا سبيل له لمعرفة طريقة عيشك.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>الجدول يمتد تلقائيًا</h3>
+          <p>إذا امتدت أهدافك أبعد مما يغطيه جدول أشهرك، وسّعه التطبيق وأخبرك بذلك. وهو يضيف أشهرًا فقط ولا يحذف شهرًا أبدًا، لأن ذلك قد يمحو أرقامًا أدخلتها.</p>
+          <p style="margin-top:8px;">وإذا كان الهدف يستغرق أكثر من 20 سنة بمعدلك الحالي، قال ذلك صراحةً بدل أن يعرض تاريخًا بعد عقود.</p>
         </div>
 
         <div class="help-section">
@@ -2560,16 +2955,23 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">الشيئان الوحيدان اللذان يغادران هذه الصفحة هما ما تضغط عليه بنفسك: <strong>مشاركة الصفحة</strong>، التي تفتح بريدك أو واتساب برابط التطبيق (وليس أرقامك أبدًا)، وأزرار إكسل والنسخ الاحتياطي، التي تكتب ملفات في مكان تختاره أنت.</p>
         </div>
 
+        <div class="help-section">
+          <h3>من صنع هذا التطبيق</h3>
+          <p>«الميزانية الذكية» من تصميم وكتابة وتطوير <strong>حسن عبدالغني الوحيمد</strong>، وله حقوق النشر كاملةً. © 2026، جميع الحقوق محفوظة.</p>
+          <p style="margin-top:8px;">واستخدام التطبيق مجاني وغير مقيَّد، وإنما المحفوظ هو الشيفرة البرمجية خلفه. فنرجو ألّا يُعاد نشرها على أنها من عمل غيره. ولك أن تشارك الرابط مع من تشاء، فهذا هو الغرض من <strong>مشاركة الصفحة</strong>.</p>
+          <p style="margin-top:8px;">وتجد الشروط كاملةً في ملف <a href="./LICENSE.txt" target="_blank" rel="noopener">LICENSE.txt</a> الموجود بجوار التطبيق.</p>
+        </div>
+
       </div>
     </section>
   </main>
 </div>
 
 <nav class="bottom-nav" id="bottom-nav" aria-label="Sections">
-  <button type="button" data-tab="budget" class="on"><span class="ic" aria-hidden="true">▤</span><span data-i18n="tab_overview_short">Overview</span></button>
-  <button type="button" data-tab="entry"><span class="ic" aria-hidden="true">✎</span><span data-i18n="tab_entry_short">Plan</span></button>
-  <button type="button" id="btn-quick-add" aria-label="Log spending"><span class="fab" aria-hidden="true">+</span></button>
+  <button type="button" data-tab="entry" class="on"><span class="ic" aria-hidden="true">✎</span><span data-i18n="tab_entry_short">Plan</span></button>
   <button type="button" data-tab="actual"><span class="ic" aria-hidden="true">◉</span><span data-i18n="tab_actual_short">Spent</span></button>
+  <button type="button" id="btn-quick-add" aria-label="Log spending"><span class="fab" aria-hidden="true">+</span></button>
+  <button type="button" data-tab="budget"><span class="ic" aria-hidden="true">▤</span><span data-i18n="tab_overview_short">Overview</span></button>
   <button type="button" data-tab="dashboard"><span class="ic" aria-hidden="true">◱</span><span data-i18n="tab_dashboard">Dashboard</span></button>
 </nav>
 
@@ -2586,6 +2988,8 @@ nav.tabs button{ color:var(--ink); }
       <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
       <button type="button" data-key=".">.</button><button type="button" data-key="0">0</button><button type="button" data-key="back" aria-label="Delete">⌫</button>
     </div>
+    <input type="text" id="qa-note" class="qa-note" maxlength="80"
+           data-i18n-placeholder="sp_note_ph" placeholder="What was it? (optional)">
     <div class="qa-actions">
       <button type="button" id="qa-cancel" data-i18n="qa_cancel">Cancel</button>
       <button type="button" id="qa-save" disabled data-i18n="qa_save">Add</button>
@@ -2596,6 +3000,11 @@ nav.tabs button{ color:var(--ink); }
 <footer class="foot">
   <span data-i18n="footer_amber">Amber cells are your inputs. Everything else calculates automatically.</span>
   <span data-i18n="footer_autosave">Data saves automatically in this browser.</span>
+  <span class="foot-credit">
+    <span data-i18n="footer_credit_by">Designed and built by</span>
+    <span class="credit-name" data-i18n="footer_credit_name">Hassan Abdulghani Alwehaimid</span>
+    <span data-i18n="footer_credit_rights">· © 2026, all rights reserved.</span>
+  </span>
 </footer>
 
 <div id="reset-confirm-overlay" class="modal-overlay" style="display:none;">
@@ -2638,34 +3047,38 @@ nav.tabs button{ color:var(--ink); }
    used is noise, and they get the How to use page instead.
    ============================================================================ */
 const WHATS_NEW = {
-  version: 2,
+  version: 3,
   en: {
     title: 'What’s new',
-    intro: 'Two bigger changes, and some smaller fixes.',
+    intro: 'The app is now called Smart Budget, and it can plan toward what you are saving for.',
     items: [
-      'The old “Enter your data” tab is now “Enter your budget and plan” — this is where you set what you expect to spend.',
-      'A new tab, “Enter your data as you go”, is where you record what you actually spend. Type each amount and press Add, and it builds up a running total for that category.',
-      'The Dashboard now shows planned against spent for every category. Amber means you are close to your plan, red means past it.',
-      'When a month ends, whatever you logged replaces the plan in your savings. Anything you never logged keeps its planned figure.',
-      'You can enter savings you already have, so the forecast continues from where you are rather than from zero.',
-      'A currency picker, so amounts show in yours instead of dollars.',
-      'A new app icon. On iPhone it only appears if you remove the app from your Home Screen and add it again — iOS keeps the old one otherwise. Your data is not affected.',
+      'Set savings goals — a laptop, a trip, anything. Put them in order of importance and the app works out when you would reach each one.',
+      'Choose to focus on one goal at a time or split your saving across all of them. It shows you both dates so you can decide.',
+      'Go over on a category and the app says what it cost you — which goal moved, by how long, and how much room is left in the rest of the month.',
+      'Set your usual salary once and every new month starts with it filled in. You can still change any single month.',
+      'The months table now stretches far enough to reach your last goal on its own.',
+      'It never suggests saving an amount your own budget cannot reach. Where the two disagree, it shows both and names the difference.',
+      'Everything you set is now in one place. Goals, the emergency fund and your months all sit on “Enter your budget and plan”, which is now the first tab you land on.',
+      'The tab called “Monthly budget” is now “Overview”, which is what it always was — a read-only summary. Tap any month there to jump straight to editing it.',
+      'Add a short note when you log spending — “Car repair”, “Gift for mum”. Each category now lists what its total is made of, which is what finally makes “Other expenses” answerable a month later.',
     ],
-    more: 'The How to use page has the full detail.',
+    more: 'The How to use page explains all of it in more detail.',
   },
   ar: {
     title: 'ما الجديد',
-    intro: 'تغييران رئيسيان وبعض الإصلاحات الأصغر.',
+    intro: 'صار اسم التطبيق «الميزانية الذكية»، وصار بإمكانه التخطيط لما تدّخر من أجله.',
     items: [
-      'صار تبويب «أدخل بياناتك» السابق باسم «أدخل ميزانيتك وخطتك» — وهو المكان الذي تحدد فيه ما تتوقع إنفاقه.',
-      'وأُضيف تبويب جديد «أدخل بياناتك أولًا بأول» لتسجيل ما تنفقه فعليًا. اكتب كل مبلغ واضغط «إضافة» ليتراكم في مجموع تلك الفئة.',
-      'تعرض لوحة المعلومات الآن المخطط مقابل المصروف لكل فئة. الكهرماني يعني أنك قريب من خطتك، والأحمر يعني أنك تجاوزتها.',
-      'وعند انتهاء الشهر يحلّ ما سجّلته محل الخطة في حساب مدّخراتك، وتبقى الفئات التي لم تسجّلها على أرقامها المخططة.',
-      'ويمكنك إدخال مدّخرات لديك بالفعل، فتكمل التوقعات من حيث أنت بدل أن تبدأ من الصفر.',
-      'وأُضيف اختيار العملة، لتظهر المبالغ بعملتك بدل الدولار.',
-      'وأيقونة جديدة للتطبيق. وعلى الآيفون لن تظهر إلا إذا أزلت التطبيق من الشاشة الرئيسية وأضفته من جديد، إذ يحتفظ iOS بالقديمة. ولا تتأثر بياناتك بذلك.',
+      'حدّد أهداف ادخار — حاسوب، رحلة، أو أي شيء. رتّبها حسب الأهمية ليحسب التطبيق موعد بلوغ كل منها.',
+      'واختر التركيز على هدف واحد أو توزيع ادخارك عليها جميعًا. ويعرض لك التاريخين لتقرّر.',
+      'وإذا تجاوزت فئة، يخبرك بما كلّفك ذلك: أي هدف تأخّر، وكم، وكم بقي لك في بقية الشهر.',
+      'حدّد راتبك المعتاد مرة واحدة ليبدأ كل شهر جديد به مُعبّأً، ويبقى بإمكانك تغيير أي شهر.',
+      'ويمتد جدول الأشهر تلقائيًا بما يكفي لبلوغ آخر أهدافك.',
+      'ولا يقترح عليك ادخار مبلغ لا تبلغه ميزانيتك. وحين يختلفان يعرض الاثنين ويوضح الفارق.',
+      'وصار كل ما تحدّده في مكان واحد: الأهداف وصندوق الطوارئ وأشهرك، جميعها في «أدخل ميزانيتك وخطتك» الذي صار أول تبويب تفتح عليه.',
+      'وصار تبويب «الميزانية الشهرية» يسمّى «نظرة عامة»، وهو ما كان عليه دائمًا: ملخّص للقراءة فقط. انقر أي شهر فيه لتنتقل مباشرة إلى تعديله.',
+      'وأضف ملاحظة قصيرة حين تسجّل إنفاقًا — «تصليح السيارة»، «هدية لأمي». وصارت كل فئة تعرض ممّا يتكوّن مجموعها، وهو ما يجعل «مصروفات أخرى» أخيرًا قابلة للجواب بعد شهر.',
     ],
-    more: 'وتجد التفاصيل الكاملة في صفحة «كيفية الاستخدام».',
+    more: 'وتشرح صفحة «كيفية الاستخدام» ذلك كله بتفصيل أوفى.',
   },
 };
 
@@ -2675,13 +3088,16 @@ const ANNOUNCEMENT_AR = 'شكرا لاستخدامك هذه الاداة';
 
 const TRANSLATIONS = {
   en: {
-    title:'Salary Budget & Savings Planner',
-    stub_no:'Passbook · Personal Ledger',
-    brand_title:'Salary budget & savings planner',
+    title:'Smart Budget',
+    brand_title:'Smart Budget',
     sub:'Track monthly income and spending, watch your savings rate, and project where your balance lands over time.',
     btn_save:'Save now', btn_export:'Export data (.json)', btn_import:'Import data', btn_reset:'Reset all',
     btn_install:'Install app',
     setup_currency_label:'Currency',
+    setup_salary_label:'Your usual monthly salary',
+    setup_salary_hint_empty:'Set this and every new month starts with it filled in — you can still change any month.',
+    setup_salary_hint_all:'Every month is on this amount.',
+    btn_apply_salary:'Apply to every month',
     tab_entry:'Enter your budget and plan',
     tab_entry_short:'Plan',
     tab_actual:'Enter your data as you go',
@@ -2692,10 +3108,47 @@ const TRANSLATIONS = {
     pvs_note:'Every category across all your months, plan against reality. Amber means you are close to the plan; red means past it.',
     sp_add:'Add',
     sp_add_aria:'Amount to add',
+    sp_note_ph:'What was it? (optional)',
+    xl_note_sheet:'Spending notes',
+    xl_note_cat:'Category',
+    xl_note_note:'Note',
+    xl_note_amt:'Amount',
+    sp_note_aria:'Note for this amount',
+    sp_items:'What this is made up of',
+    sp_item_none:'(no note)',
+    sp_item_earlier:'Logged before notes were added',
+    sp_item_remove:'Remove this entry',
     sp_so_far:'spent so far',
     sp_none_yet:'nothing logged yet',
     sp_clear:'Clear',
     sp_basis_open:'This month is still running, so savings are counted from your plan. Once it ends, what you log here takes over.',
+    goals_title:'Your goals',
+    goals_note:'Add what you are saving for. The order is the priority — most important at the top. Everything below is worked out from your own figures.',
+    goal_mode_all:'Plan for all',
+    goal_mode_focus:'Focus on one',
+    goal_name_ph:'What are you saving for?',
+    goal_target_ph:'Amount',
+    goal_add:'Add goal',
+    goal_empty:'No goals yet. Add one above and the app will work out when you would reach it.',
+    goal_unnamed:'Untitled goal',
+    goal_of:'of',
+    goal_share:'Share',
+    goal_by:'By',
+    goal_up:'Move up',
+    goal_down:'Move down',
+    goal_remove:'Remove goal',
+    goal_already:'Already saved',
+    goal_not_yet:'No date yet',
+    goal_focus_this:'Focus on this',
+    goal_focused:'Focused',
+    goal_on_track:'On track for this date.',
+    goal_rule:'25% rule of thumb',
+    goal_plan_leaves:'Your plan saves',
+    goal_ceiling:'Left to spend',
+    goal_no_income:'Add your salary in the planning tab and this fills in.',
+    goal_nothing_title:'Nothing left to save yet',
+    goal_capped_title:'Longer than this planner covers',
+    goal_capped_body:'At the current rate this would take more than 20 years, which is as far as the table goes. Saving more each month, or a smaller target, would bring it into range.',
     pvs_planned:'Planned',
     pvs_spent:'Spent',
     pvs_left:'Left',
@@ -2703,8 +3156,8 @@ const TRANSLATIONS = {
     pvs_empty:'Nothing logged yet. Record what you actually spend and this fills in, showing your plan against reality.',
     pvs_empty_cta:'Enter your data as you go',
     tab_overview_short:'Overview',
-    entry_h2:'Enter your data',
-    entry_note:"Pick a month to fill in. Your numbers save as you type, and the calendar shows how far you've got.",
+    entry_h2:'Enter your budget and plan',
+    entry_note:'Set what you are saving for, then what you earn and expect to spend. Everything else in the app is worked out from here.',
     entry_done:'Done',
     entry_next:'Save & next month',
     entry_finish:'Save & finish',
@@ -2745,9 +3198,9 @@ const TRANSLATIONS = {
     alert_excel_import_error:"Could not read that file — make sure it's a .xlsx export from this planner (or has the same column layout).",
     excel_reconnect_needed:'Permission needed — click to reconnect your linked file.',
     strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Total savings', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
-    tab_budget:'Monthly budget', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
-    budget_h2:'Monthly budget tracker',
-    budget_note:"Fill in salary and spending for each month. Totals, savings and savings rate update automatically. Enter 0 for a category that doesn't apply.",
+    tab_budget:'Overview', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
+    budget_h2:'Your months at a glance',
+    budget_note:'A read-only summary of every month, so nothing here can be typed over by accident. Totals, savings and savings rate are worked out for you. To change a number, open “Enter your budget and plan” — or tap a month below to jump straight to it.',
     legend_in:'Your input', legend_out:'Calculated automatically',
     setup_title:'Set up your table',
     setup_note:'Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.',
@@ -2768,7 +3221,7 @@ const TRANSLATIONS = {
     rule_savings_start_label:'Starting savings balance',
     rule_note:"Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).",
     dashboard_h2:'Dashboard',
-    dashboard_note:'Yearly totals, average monthly savings and spending by category — no data entry needed here, it all pulls from Monthly budget.',
+    dashboard_note:'Yearly totals, average monthly savings and spending by category — nothing to fill in here, it all comes from what you entered in “Enter your budget and plan”.',
     kpi_salary:'Total income', kpi_expenses:'Total expenses', kpi_savings:'Total savings', kpi_rate:'Avg. savings rate',
     kpi_avgsavings:'Avg. monthly savings', kpi_avgsavings_sub:'Months with income entered only',
     chart_category_title:'Spending by category', chart_rate_title:'Savings rate trend', chart_trend_title:'Monthly trend — salary, expenses, savings',
@@ -2783,6 +3236,9 @@ const TRANSLATIONS = {
     forecast_chart_title:'Ending balance by year',
     footer_amber:'Amber cells are your inputs. Everything else calculates automatically.',
     footer_autosave:'Data saves automatically in this browser.',
+    footer_credit_by:'Designed and built by',
+    footer_credit_name:'Hassan Abdulghani Alwehaimid',
+    footer_credit_rights:'· © 2026, all rights reserved.',
     row_delete_title:'Remove month', totals_label:'Total / avg',
     emergency_tooltip:'Auto-funded up to the threshold; withdrawn on deficit months',
     alert_import_error:'Could not read that file — make sure it is a JSON export from this planner.',
@@ -2797,13 +3253,16 @@ const TRANSLATIONS = {
     lang_en:'English', lang_ar:'العربية'
   },
   ar: {
-    title:'مخطط الراتب والميزانية والادخار',
-    stub_no:'دفتر شخصي · كشف حساب',
-    brand_title:'مخطط الراتب والميزانية والادخار',
+    title:'الميزانية الذكية',
+    brand_title:'الميزانية الذكية',
     sub:'تتبّع دخلك ومصروفاتك الشهرية، وراقب معدل ادخارك، وتوقّع رصيدك مع الوقت.',
     btn_save:'احفظ الآن', btn_export:'تصدير البيانات (.json)', btn_import:'استيراد البيانات', btn_reset:'إعادة تعيين الكل',
     btn_install:'تثبيت التطبيق',
     setup_currency_label:'العملة',
+    setup_salary_label:'راتبك الشهري المعتاد',
+    setup_salary_hint_empty:'حدّده ليبدأ كل شهر جديد به مُعبّأً — ويظل بإمكانك تغيير أي شهر.',
+    setup_salary_hint_all:'كل الأشهر على هذا المبلغ.',
+    btn_apply_salary:'تطبيق على كل الأشهر',
     tab_entry:'أدخل ميزانيتك وخطتك',
     tab_entry_short:'الخطة',
     tab_actual:'أدخل بياناتك أولًا بأول',
@@ -2814,10 +3273,47 @@ const TRANSLATIONS = {
     pvs_note:'كل فئة عبر جميع أشهرك، الخطة أمام الواقع. الكهرماني يعني أنك قريب من الخطة، والأحمر يعني أنك تجاوزتها.',
     sp_add:'إضافة',
     sp_add_aria:'المبلغ المراد إضافته',
+    sp_note_ph:'علام أنفقته؟ (اختياري)',
+    xl_note_sheet:'ملاحظات الإنفاق',
+    xl_note_cat:'الفئة',
+    xl_note_note:'الملاحظة',
+    xl_note_amt:'المبلغ',
+    sp_note_aria:'ملاحظة لهذا المبلغ',
+    sp_items:'ممّا يتكوّن هذا المبلغ',
+    sp_item_none:'(بلا ملاحظة)',
+    sp_item_earlier:'سُجّل قبل إضافة الملاحظات',
+    sp_item_remove:'حذف هذا القيد',
     sp_so_far:'أُنفق حتى الآن',
     sp_none_yet:'لم يُسجّل شيء بعد',
     sp_clear:'مسح',
     sp_basis_open:'هذا الشهر ما زال جاريًا، لذا تُحتسب المدّخرات من خطتك. وعند انتهائه يحلّ ما تسجّله هنا محلّها.',
+    goals_title:'أهدافك',
+    goals_note:'أضف ما تدّخر من أجله. والترتيب هو الأولوية — الأهم في الأعلى. وكل ما يلي محسوب من أرقامك أنت.',
+    goal_mode_all:'خطّط للجميع',
+    goal_mode_focus:'ركّز على واحد',
+    goal_name_ph:'ما الذي تدّخر من أجله؟',
+    goal_target_ph:'المبلغ',
+    goal_add:'إضافة هدف',
+    goal_empty:'لا أهداف بعد. أضف واحدًا أعلاه ليحسب التطبيق موعد بلوغه.',
+    goal_unnamed:'هدف بلا اسم',
+    goal_of:'من',
+    goal_share:'الحصة',
+    goal_by:'بحلول',
+    goal_up:'تحريك لأعلى',
+    goal_down:'تحريك لأسفل',
+    goal_remove:'حذف الهدف',
+    goal_already:'مُدّخر بالفعل',
+    goal_not_yet:'لا تاريخ بعد',
+    goal_focus_this:'ركّز على هذا',
+    goal_focused:'قيد التركيز',
+    goal_on_track:'في المسار الصحيح لهذا التاريخ.',
+    goal_rule:'قاعدة الـ 25%',
+    goal_plan_leaves:'خطتك تدّخر',
+    goal_ceiling:'المتبقي للإنفاق',
+    goal_no_income:'أضف راتبك في تبويب التخطيط ليُملأ هذا.',
+    goal_nothing_title:'لا يتبقى شيء للادخار بعد',
+    goal_capped_title:'أطول مما يغطيه هذا المخطط',
+    goal_capped_body:'بالمعدل الحالي سيستغرق هذا أكثر من 20 سنة، وهو أقصى ما يمتد إليه الجدول. زيادة الادخار الشهري أو تقليل المبلغ المستهدف سيجعله ضمن المدى.',
     pvs_planned:'المخطط',
     pvs_spent:'المصروف',
     pvs_left:'المتبقي',
@@ -2825,8 +3321,8 @@ const TRANSLATIONS = {
     pvs_empty:'لم تُسجّل شيئًا بعد. سجّل ما تنفقه فعليًا وسيمتلئ هذا القسم موضحًا خطتك أمام الواقع.',
     pvs_empty_cta:'أدخل بياناتك أولًا بأول',
     tab_overview_short:'نظرة عامة',
-    entry_h2:'أدخل بياناتك',
-    entry_note:'اختر شهرًا لتعبئته. تُحفظ أرقامك أثناء الكتابة، ويوضح التقويم ما أنجزته حتى الآن.',
+    entry_h2:'أدخل ميزانيتك وخطتك',
+    entry_note:'حدّد ما تدّخر من أجله، ثم ما تكسبه وما تتوقع إنفاقه. وكل ما عدا ذلك في التطبيق محسوب من هنا.',
     entry_done:'تم',
     entry_next:'حفظ والشهر التالي',
     entry_finish:'حفظ وإنهاء',
@@ -2867,9 +3363,9 @@ const TRANSLATIONS = {
     alert_excel_import_error:'تعذّرت قراءة هذا الملف — تأكد أنه ملف .xlsx مُصدَّر من هذا المخطط (أو له نفس ترتيب الأعمدة).',
     excel_reconnect_needed:'يلزم إذن — اضغط لإعادة ربط ملفك المرتبط.',
     strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'إجمالي الادخار', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
-    tab_budget:'الميزانية الشهرية', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
-    budget_h2:'متتبّع الميزانية الشهرية',
-    budget_note:'أدخل الراتب والمصروفات لكل شهر. تُحدَّث الإجماليات والادخار ومعدل الادخار تلقائيًا. أدخل 0 لأي فئة لا تنطبق عليك.',
+    tab_budget:'نظرة عامة', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
+    budget_h2:'أشهرك في لمحة',
+    budget_note:'ملخّص للقراءة فقط لكل شهر، فلا يمكن الكتابة فوق شيء هنا بالخطأ. وتُحتسب الإجماليات والادخار ومعدله لك تلقائيًا. ولتغيير أي رقم، افتح «أدخل ميزانيتك وخطتك» — أو انقر شهرًا أدناه لتنتقل إليه مباشرة.',
     legend_in:'إدخالك', legend_out:'يُحسب تلقائيًا',
     setup_title:'إعداد الجدول',
     setup_note:'اختر عدد السنوات التي تريد البدء بها والشهر الأول — سيُنشئ هذا الجدول أدناه. يمكنك إضافة أشهر أو حذفها في أي وقت.',
@@ -2890,7 +3386,7 @@ const TRANSLATIONS = {
     rule_savings_start_label:'رصيد الادخار الابتدائي',
     rule_note:'قاعدة الطوارئ: كل شهر، إذا بلغ الفائض (الراتب ناقص المصروفات) الحد المحدد، يُحفظ هذا المبلغ تلقائيًا في صندوق الطوارئ؛ وإذا كان الفائض أقل، يُحفظ الفائض بالكامل؛ وإذا حدث عجز، يُغطّى تلقائيًا من الصندوق بحسب المتاح فيه.',
     dashboard_h2:'لوحة المعلومات',
-    dashboard_note:'الإجماليات السنوية، ومتوسط الادخار الشهري، والمصروفات حسب الفئة — لا حاجة لإدخال بيانات هنا، فكل شيء يُستمد من الميزانية الشهرية.',
+    dashboard_note:'الإجماليات السنوية، ومتوسط الادخار الشهري، والمصروفات حسب الفئة — لا شيء تملؤه هنا، فكل شيء يُستمد مما أدخلته في «أدخل ميزانيتك وخطتك».',
     kpi_salary:'إجمالي الدخل', kpi_expenses:'إجمالي المصروفات', kpi_savings:'إجمالي الادخار', kpi_rate:'متوسط معدل الادخار',
     kpi_avgsavings:'متوسط الادخار الشهري', kpi_avgsavings_sub:'للأشهر التي أُدخل فيها دخل فقط',
     chart_category_title:'المصروفات حسب الفئة', chart_rate_title:'اتجاه معدل الادخار', chart_trend_title:'الاتجاه الشهري — الراتب والمصروفات والادخار',
@@ -2905,6 +3401,9 @@ const TRANSLATIONS = {
     forecast_chart_title:'الرصيد الختامي حسب السنة',
     footer_amber:'الخلايا الكهرمانية هي إدخالاتك. كل شيء آخر يُحسب تلقائيًا.',
     footer_autosave:'تُحفظ البيانات تلقائيًا في هذا المتصفح.',
+    footer_credit_by:'من تصميم وتطوير',
+    footer_credit_name:'حسن عبدالغني الوحيمد',
+    footer_credit_rights:'· © 2026، جميع الحقوق محفوظة.',
     row_delete_title:'حذف الشهر', totals_label:'الإجمالي / المتوسط',
     emergency_tooltip:'يُموَّل تلقائيًا حتى الحد المحدد، ويُسحب منه عند العجز',
     alert_import_error:'تعذّرت قراءة هذا الملف — تأكّد أنه ملف JSON مُصدَّر من هذا المخطط.',
@@ -2970,6 +3469,18 @@ function arMonths(n){
   if(n>=3 && n<=10) return n+' أشهر';
   return n+' شهرًا';
 }
+function defaultSalaryHintText(differing, total){
+  return lang === 'ar'
+    ? ('يُملأ هذا في كل شهر جديد، ويبقى قابلًا للتعديل. ' + differing + ' من ' + total + ' شهرًا تحمل مبلغًا مختلفًا.')
+    : ('This fills in on every new month, and stays editable. ' + differing + ' of ' + total +
+       (differing === 1 ? ' months currently holds' : ' months currently hold') + ' a different amount.');
+}
+function confirmApplySalaryMsg(count, salary){
+  return lang === 'ar'
+    ? ('تغيير الراتب في ' + count + ' شهرًا إلى ' + fmtMoney(salary) + '؟ سيُستبدل ما أُدخل في تلك الأشهر.')
+    : ('Change the salary on ' + count + ' month' + (count === 1 ? '' : 's') + ' to ' + fmtMoney(salary) + '? What was entered on those months is replaced.');
+}
+
 function confirmRemoveMonthMsg(label){
   return lang === 'ar'
     ? ('إزالة ' + label + '؟ ستُحذف كل الأرقام المُدخلة لهذا الشهر.')
@@ -3003,6 +3514,63 @@ function confirmClearActualMsg(label){
   return lang === 'ar'
     ? ('مسح ما سُجّل في ' + label + '؟ سيعود إلى غير مُسجّل.')
     : ('Clear what you logged for ' + label + '? It goes back to unlogged.');
+}
+
+function goalSummaryLine(rule, actual, ceiling, plannedSpend, overCeiling){
+  const ar = lang === 'ar';
+  if(actual >= rule){
+    return ar
+      ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا، وهو عند قاعدة الـ 25% أو فوقها.')
+      : ('Your plan saves ' + fmtMoney(actual) + ' a month, at or above the 25% mark.');
+  }
+  if(overCeiling > 0){
+    return ar
+      ? ('لبلوغ قاعدة الـ 25% ستحتاج إلى تقليل نحو ' + fmtMoney(rule - actual) + ' من الإنفاق المخطط شهريًا.')
+      : ('Reaching the 25% mark would mean trimming about ' + fmtMoney(rule - actual) + ' of planned spending a month.');
+  }
+  return ar
+    ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا. وقاعدة الـ 25% تعني ' + fmtMoney(rule) + '.')
+    : ('Your plan saves ' + fmtMoney(actual) + ' a month. The 25% rule of thumb would be ' + fmtMoney(rule) + '.');
+}
+function overrunTitle(amount, label){
+  return lang === 'ar'
+    ? ('تجاوزت ' + fmtMoney(amount) + ' على ' + label + ' هذا الشهر.')
+    : ("You're " + fmtMoney(amount) + ' over on ' + label + ' this month.');
+}
+function overrunImpactText(){
+  return lang === 'ar'
+    ? 'هذا المبلغ يخرج من مدّخرات هذا الشهر، وقد أخّر التواريخ أدناه.'
+    : 'That comes out of this month’s saving, and the dates below already account for it.';
+}
+function headroomText(total, names, safeLeft){
+  return lang === 'ar'
+    ? ('ما زال لديك ' + fmtMoney(total) + ' غير منفق في ' + names + '. والبقاء تحت ' + fmtMoney(safeLeft) + ' لبقية الشهر يعيده إلى الخطة.')
+    : ('You still have ' + fmtMoney(total) + ' unspent across ' + names + '. Keeping the rest of the month under ' + fmtMoney(safeLeft) + ' brings it back on plan.');
+}
+function nothingToSaveText(biggest){
+  return lang === 'ar'
+    ? ('خطتك لا تترك شيئًا للادخار بعد، فلا يمكن حساب تاريخ. أكبر بند مخطط لديك هو ' + biggest + '.')
+    : ('Your plan does not leave anything to save yet, so no date can be worked out. Your largest planned category is ' + biggest + '.');
+}
+function goalGapText(need, getting, gap){
+  return lang === 'ar'
+    ? ('يحتاج ' + need + ' شهريًا، ويحصل على ' + getting + '. الفارق ' + gap + ' شهريًا — وهو ما قد يغطيه دخل إضافي.')
+    : ('Needs ' + need + ' a month and is getting ' + getting + '. The gap is ' + gap + ' a month — the amount a side income would need to cover.');
+}
+function goalCompareText(firstName, focusWhen, allWhen){
+  return lang === 'ar'
+    ? ('بالتركيز على «' + firstName + '» ينتهي في ' + focusWhen + '. وبالتوزيع على الكل تكتمل جميعها بحلول ' + allWhen + '.')
+    : ('Focusing on “' + firstName + '” finishes it by ' + focusWhen + '. Splitting across all of them finishes everything by ' + allWhen + '.');
+}
+function tableExtendedText(months){
+  return lang === 'ar'
+    ? ('وُسِّع الجدول إلى ' + months + ' شهرًا ليتّسع لآخر أهدافك.')
+    : ('Table extended to ' + months + ' months so your last goal fits.');
+}
+function confirmRemoveGoalMsg(name){
+  return lang === 'ar'
+    ? ('حذف هدف «' + name + '»؟')
+    : ('Remove the goal “' + name + '”?');
 }
 
 function statusText(spent, planned){
@@ -3052,8 +3620,8 @@ function reminderMissingSalaryText(list){
 function forecastTitle(n){ return lang==='ar' ? ('توقعات الادخار لـ '+arYears(n)) : (n+'-year savings forecast'); }
 function forecastBasisNote(n,m){
   return lang==='ar'
-    ? ('تُسقط التوقعات لمدة '+arYears(n)+'، بناءً على '+arMonths(m)+' تم إدخالها في الميزانية الشهرية.')
-    : ('Projects '+n+' year'+(n===1?'':'s')+' ahead, based on the '+m+' month'+(m===1?'':'s')+' entered in Monthly budget.');
+    ? ('تُسقط التوقعات لمدة '+arYears(n)+'، بناءً على '+arMonths(m)+' تم إدخالها في «أدخل ميزانيتك وخطتك».')
+    : ('Projects '+n+' year'+(n===1?'':'s')+' ahead, based on the '+m+' month'+(m===1?'':'s')+' entered in “Enter your budget and plan”.');
 }
 function forecastResultLabel(n){ return lang==='ar' ? ('الادخار المتوقع خلال '+arYears(n)) : ('Projected savings in '+n+' year'+(n===1?'':'s')); }
 function forecastTabLabel(n){ return lang==='ar' ? ('توقعات '+arYears(n)) : (n+'-year forecast'); }
@@ -3132,6 +3700,14 @@ async function requestPersistentStorage(){
     }
   }catch(e){}
   return false;
+}
+
+/* Everything user-typed passes through this before reaching innerHTML: note
+   text, and category labels, which arrive from restored backups too. */
+function esc(v){
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function categoryLabel(key){
@@ -3236,6 +3812,17 @@ function blankMonth(ym){
 function normalizeState(s){
   // Anyone upgrading from before the picker existed was on dollars.
   if(!s.currency || !CURRENCIES[s.currency]) s.currency = 'USD';
+  if(typeof s.defaultSalary !== 'number') s.defaultSalary = 0;
+  if(!Array.isArray(s.goals)) s.goals = [];
+  s.goals = s.goals.filter(g=> g && typeof g === 'object').map(g=>({
+    id: g.id || ('g' + Math.random().toString(36).slice(2)),
+    name: String(g.name || ''),
+    target: Math.max(0, Number(g.target) || 0),
+    dueYm: g.dueYm || null,
+    pct: (g.pct === null || g.pct === undefined) ? null : Number(g.pct),
+  }));
+  if(s.goalMode !== 'focus') s.goalMode = 'all';
+  if(!s.goals.some(g=> g.id === s.focusGoalId)) s.focusGoalId = s.goals.length ? s.goals[0].id : null;
 
   // Budgets saved before completeness was tracked have no touched list. Infer
   // it from the values present: anything non-zero was clearly entered by hand.
@@ -3246,6 +3833,8 @@ function normalizeState(s){
     s.months.forEach(m=>{
       // Budgets saved before actuals existed simply have none logged yet.
       if(!m.actual || typeof m.actual !== 'object') m.actual = {};
+      // Budgets saved before notes existed have totals but no itemisation.
+      if(!m.log || typeof m.log !== 'object') m.log = {};
       if(Array.isArray(m.touched)) return;
       m.touched = keys.filter(k=> (Number(m[k]) || 0) !== 0);
     });
@@ -3289,7 +3878,7 @@ function defaultState(){
   const categories = [...DEFAULT_CATEGORY_KEYS];
   const months = [];
   for(let i=0;i<12;i++){
-    const m = { id:'m'+i+'-'+Date.now(), ym: addMonths(startYm, i), salary:0, sideIncome:0, emergency:0, actual:{} };
+    const m = { id:'m'+i+'-'+Date.now(), ym: addMonths(startYm, i), salary:0, sideIncome:0, emergency:0, actual:{}, log:{} };
     categories.forEach(c=> m[c]=0);
     months.push(m);
   }
@@ -3305,6 +3894,10 @@ function defaultState(){
     hasSeenHelp: false,
     userName: '',
     lang: (navigator.language||'en').toLowerCase().startsWith('ar') ? 'ar' : 'en',
+    defaultSalary: 0,
+    goals: [],
+    goalMode: 'all',        // 'all' splits by priority, 'focus' funds one at a time
+    focusGoalId: null,
     currency: guessCurrency(),
     emergencyThreshold: 0,
     emergencyStart: 0,
@@ -3458,9 +4051,24 @@ function generateMonths(startYm, numMonths){
   for(let i=0;i<numMonths;i++){
     const ym = addMonths(startYm, i);
     const existing = state.months.find(m=>m.ym===ym);
-    result.push(existing || blankMonth(ym));
+    // A month that already exists keeps whatever was entered — regenerating
+    // the table must never overwrite real figures. Only new months are seeded.
+    result.push(existing || seededMonth(ym));
   }
   return result;
+}
+
+/* A blank month pre-filled with the usual salary, marked answered so the
+   month calendar counts it. Seeded, not locked: every month stays editable,
+   which is the difference between this and "fixed" mode. */
+function seededMonth(ym){
+  const m = blankMonth(ym);
+  const salary = Number(state.defaultSalary) || 0;
+  if(salary > 0){
+    m.salary = salary;
+    markFieldAnswered(m, 'salary');
+  }
+  return m;
 }
 
 /* ---------- rendering: budget table ---------- */
@@ -3693,6 +4301,38 @@ function setActual(m, key, value){
   if(!m.actual) m.actual = {};
   m.actual[key] = Number(value) || 0;
 }
+/* The itemised entries behind a category's total. */
+const NOTE_MAX = 80;
+
+function logOf(m, key){
+  return (m && m.log && Array.isArray(m.log[key])) ? m.log[key] : [];
+}
+function logSum(m, key){
+  return logOf(m, key).reduce((s, e)=> s + (Number(e.a) || 0), 0);
+}
+/* Anything in the total that no entry accounts for. Almost always spending
+   logged before this feature shipped; shown as its own line so the itemised
+   lines and the total can never appear to disagree. */
+function unitemisedOf(m, key){
+  const rest = actualOf(m, key) - logSum(m, key);
+  return rest > 0.005 ? rest : 0;
+}
+function addLogEntry(m, key, amount, note){
+  if(!m.log) m.log = {};
+  if(!Array.isArray(m.log[key])) m.log[key] = [];
+  m.log[key].push({ a: Number(amount) || 0, n: String(note || '').trim().slice(0, NOTE_MAX), t: Date.now() });
+}
+/* Removing one entry takes its amount back out of the total, so the two never
+   drift. Clamped at zero: a total edited by other means could otherwise be
+   pushed negative by removing an entry larger than what is left. */
+function removeLogEntry(m, key, i){
+  const list = logOf(m, key);
+  if(i < 0 || i >= list.length) return;
+  const amt = Number(list[i].a) || 0;
+  list.splice(i, 1);
+  setActual(m, key, Math.max(0, actualOf(m, key) - amt));
+}
+
 function monthActualTotal(m){
   return state.categories.reduce((s, c)=> s + actualOf(m, c), 0);
 }
@@ -3888,6 +4528,42 @@ function applyCurrencyLabels(){
   });
 }
 
+/* Overwrites the salary on every month. Used after a raise, and confirmed
+   first because it discards whatever was entered month by month. */
+function applyDefaultSalaryToAll(){
+  const salary = Number(state.defaultSalary) || 0;
+  const differing = state.months.filter(m=> (Number(m.salary) || 0) !== salary).length;
+  if(differing === 0) return;
+  if(!confirm(confirmApplySalaryMsg(differing, salary))) return;
+  state.months.forEach(m=>{
+    m.salary = salary;
+    markFieldAnswered(m, 'salary');
+  });
+  renderAll();
+  scheduleSave();
+}
+
+function renderDefaultSalary(){
+  const input = document.getElementById('setup-salary');
+  if(input) input.value = Number(state.defaultSalary) || 0;
+
+  const hint = document.getElementById('default-salary-hint');
+  const applyWrap = document.getElementById('default-salary-apply');
+  if(!hint || !applyWrap) return;
+
+  const salary = Number(state.defaultSalary) || 0;
+  if(salary <= 0){
+    hint.textContent = t('setup_salary_hint_empty');
+    applyWrap.style.display = 'none';
+    return;
+  }
+  const differing = state.months.filter(m=> (Number(m.salary) || 0) !== salary).length;
+  hint.textContent = differing === 0
+    ? t('setup_salary_hint_all')
+    : defaultSalaryHintText(differing, state.months.length);
+  applyWrap.style.display = differing > 0 ? 'flex' : 'none';
+}
+
 function renderCurrencyPicker(){
   const sel = document.getElementById('setup-currency');
   if(!sel) return;
@@ -3941,6 +4617,15 @@ function wireEntryTab(){
     if(e.target.closest('#ycal-prev') && pos > 0){ entryYear = years[pos-1]; renderEntryCalendar(); }
     if(e.target.closest('#ycal-next') && pos < years.length-1){ entryYear = years[pos+1]; renderEntryCalendar(); }
   });
+  document.getElementById('setup-salary').addEventListener('change', e=>{
+    state.defaultSalary = Math.max(0, Number(e.target.value) || 0);
+    // Months already carrying the old default follow along; anything edited by
+    // hand is left alone, so a deliberate one-off is never silently reset.
+    renderAll();
+    scheduleSave();
+  });
+  document.getElementById('btn-apply-salary').addEventListener('click', applyDefaultSalaryToAll);
+
   document.getElementById('setup-currency').addEventListener('change', e=>{
     if(!CURRENCIES[e.target.value]) return;
     state.currency = e.target.value;
@@ -4059,14 +4744,47 @@ function renderActualPanel(){
           <span>${t('pvs_planned')} ${fmtMoney(p)}</span>
           <span class="sp-status">${statusText(a, p)}</span>
         </div>
+        ${renderSpendItems(m, key)}
         <div class="sp-add">
+          <input class="sp-note" type="text" maxlength="${NOTE_MAX}"
+                 placeholder="${esc(t('sp_note_ph'))}" data-note="${key}"
+                 aria-label="${esc(t('sp_note_aria'))} — ${esc(categoryLabel(key))}">
           <input class="sp-field" type="number" inputmode="decimal" step="any" min="0"
                  placeholder="0" data-add="${key}"
-                 aria-label="${t('sp_add_aria')} — ${categoryLabel(key)}">
-          <button type="button" class="sp-add-btn" data-addbtn="${key}">${t('sp_add')}</button>
+                 aria-label="${esc(t('sp_add_aria'))} — ${esc(categoryLabel(key))}">
+          <button type="button" class="sp-add-btn" data-addbtn="${key}">${esc(t('sp_add'))}</button>
         </div>
       </div>`;
   }).join('');
+}
+
+/* The list of what made up a category's total. Absent entirely when there is
+   nothing to itemise, so categories nobody annotates look exactly as before. */
+function renderSpendItems(m, key){
+  const list = logOf(m, key);
+  const rest = unitemisedOf(m, key);
+  if(!list.length && !rest) return '';
+
+  const rows = list.map((e, i)=> `
+    <li>
+      <span class="spi-note${e.n ? '' : ' is-blank'}">${e.n ? esc(e.n) : esc(t('sp_item_none'))}</span>
+      <span class="spi-amt">${fmtMoney(Number(e.a) || 0)}</span>
+      <button type="button" class="spi-del" data-del="${key}" data-i="${i}"
+              title="${esc(t('sp_item_remove'))}"
+              aria-label="${esc(t('sp_item_remove'))} — ${esc(e.n || t('sp_item_none'))}">✕</button>
+    </li>`).join('');
+
+  const restRow = rest ? `
+    <li class="is-rest">
+      <span class="spi-note is-blank">${esc(t('sp_item_earlier'))}</span>
+      <span class="spi-amt">${fmtMoney(rest)}</span>
+    </li>` : '';
+
+  return `
+    <div class="sp-items">
+      <p class="spi-head">${esc(t('sp_items'))}</p>
+      <ul>${rows}${restRow}</ul>
+    </div>`;
 }
 
 function wireActualPanel(){
@@ -4084,8 +4802,12 @@ function wireActualPanel(){
     // logged, which is how "I spent nothing here" is recorded — and that
     // matters, because an unlogged category falls back to its planned figure
     // once the month closes.
+    const noteBox = rows.querySelector(`input[data-note="${key}"]`);
+    const note = noteBox ? noteBox.value : '';
     setActual(m, key, actualOf(m, key) + amount);
+    addLogEntry(m, key, amount, note);
     box.value = '';
+    if(noteBox) noteBox.value = '';
     renderActualPanel();
     renderDashboard();
     renderAll();
@@ -4098,6 +4820,17 @@ function wireActualPanel(){
   rows.addEventListener('click', e=>{
     const add = e.target.closest('button[data-addbtn]');
     if(add){ submitAdd(add.dataset.addbtn); return; }
+    const del = e.target.closest('button[data-del]');
+    if(del){
+      const idx = actualTargetIndex();
+      if(idx === -1) return;
+      removeLogEntry(state.months[idx], del.dataset.del, Number(del.dataset.i));
+      renderActualPanel();
+      renderDashboard();
+      renderAll();
+      scheduleSave();
+      return;
+    }
     const clear = e.target.closest('button[data-clear]');
     if(clear){
       const idx = actualTargetIndex();
@@ -4105,6 +4838,7 @@ function wireActualPanel(){
       const key = clear.dataset.clear;
       if(!confirm(confirmClearActualMsg(categoryLabel(key)))) return;
       delete state.months[idx].actual[key];
+      if(state.months[idx].log) delete state.months[idx].log[key];
       renderActualPanel();
       renderDashboard();
       renderAll();
@@ -4116,9 +4850,9 @@ function wireActualPanel(){
   rows.addEventListener('keydown', e=>{
     if(e.key !== 'Enter') return;
     const box = e.target.closest('input[data-add]');
-    if(!box) return;
-    e.preventDefault();
-    submitAdd(box.dataset.add);
+    if(box){ e.preventDefault(); submitAdd(box.dataset.add); return; }
+    const noteBox = e.target.closest('input[data-note]');
+    if(noteBox){ e.preventDefault(); submitAdd(noteBox.dataset.note); }
   });
   document.getElementById('sp-prev').addEventListener('click', ()=>{
     if(actualMonthIdx > 0){ actualMonthIdx--; renderActualPanel(); }
@@ -4172,6 +4906,507 @@ function renderPlannedVsSpent(){
         <div class="sp-bar"><span style="width:${barPct(r.spent, r.planned)}%"></span></div>
         <div class="pvs-row-foot"><span class="sp-status">${statusText(r.spent, r.planned)}</span></div>
       </div>`).join('')}`;
+}
+
+/* ============================================================================
+   GOALS
+   ============================================================================ */
+const GOAL_MAX_MONTHS = 240;          // 20 years, matching the table's own cap
+const RULE_OF_THUMB = 0.25;           // a common starting point, not advice
+/* A goal funded by an exact division lands a fraction of a cent short of its
+   target — 1333.333… × 6 is 7999.999…, not 8000 — and would be reported a
+   whole month late. Half a cent of tolerance removes that, and is far too
+   small to let a genuinely unfunded goal count as met. */
+const GOAL_EPSILON = 0.005;
+
+function goalById(id){ return state.goals.find(g=> g.id === id) || null; }
+
+/* Default share from position: with n goals the top one gets n parts, the next
+   n-1, and so on. Four goals therefore split 40/30/20/10. Explainable from the
+   order alone, which is why the order is the only thing anyone has to set. */
+function defaultShares(count){
+  if(count <= 0) return [];
+  const weights = Array.from({length: count}, (_, i)=> count - i);
+  const total = weights.reduce((a, b)=> a + b, 0);
+  return weights.map(w=> w / total);
+}
+
+/* Shares actually used: a manual percentage wins where one is set, and the
+   remainder is divided among the rest by their default weighting. */
+function goalShares(){
+  const goals = state.goals;
+  const n = goals.length;
+  if(!n) return [];
+  const base = defaultShares(n);
+  const manual = goals.map(g=> (g.pct === null || g.pct === undefined) ? null : Math.max(0, g.pct) / 100);
+  const manualTotal = manual.reduce((s, v)=> s + (v || 0), 0);
+  const autoIdx = manual.map((v, i)=> v === null ? i : -1).filter(i=> i >= 0);
+  const autoWeight = autoIdx.reduce((s, i)=> s + base[i], 0);
+  const remaining = Math.max(0, 1 - manualTotal);
+
+  return goals.map((g, i)=>{
+    if(manual[i] !== null) return manual[i];
+    if(autoWeight <= 0) return 0;
+    return remaining * (base[i] / autoWeight);
+  });
+}
+
+/* The share each goal actually receives, which depends on the mode. In focus
+   mode the chosen goal takes everything — including the existing balance, so
+   the progress bar, the percentage on screen and the projected date all agree.
+   Splitting the balance by priority while claiming 100% on screen was the
+   inconsistency this replaces. */
+function effectiveShares(mode){
+  const m = mode || state.goalMode;
+  if(m !== 'focus') return goalShares();
+  const goals = state.goals;
+  if(!goals.length) return [];
+  let idx = goals.findIndex(g=> g.id === state.focusGoalId);
+  if(idx < 0) idx = 0;
+  return goals.map((g, i)=> i === idx ? 1 : 0);
+}
+
+/* This month's confirmed overspend. Only categories already past their plan
+   count: that amount is spent and no remaining part of the month undoes it.
+   Categories still under plan contribute nothing, because the month is not
+   over and being under so far is not evidence of finishing under. */
+function currentMonthIndex(){
+  return state.months.findIndex(m=> m.ym === currentYm());
+}
+function confirmedOverrun(){
+  const i = currentMonthIndex();
+  if(i === -1) return 0;
+  const m = state.months[i];
+  return state.categories.reduce((s, c)=>
+    s + Math.max(0, actualOf(m, c) - effectiveCategoryValue(m, c)), 0);
+}
+/* Plan not yet spent this month — the headroom that is still in their hands. */
+function remainingPlan(){
+  const i = currentMonthIndex();
+  if(i === -1) return 0;
+  const m = state.months[i];
+  return state.categories.reduce((s, c)=>
+    s + Math.max(0, effectiveCategoryValue(m, c) - actualOf(m, c)), 0);
+}
+function overrunCategories(){
+  const i = currentMonthIndex();
+  if(i === -1) return [];
+  const m = state.months[i];
+  return state.categories
+    .map(c=>({ key:c, label:categoryLabel(c), over: actualOf(m, c) - effectiveCategoryValue(m, c) }))
+    .filter(x=> x.over > 0)
+    .sort((a, b)=> b.over - a.over);
+}
+function headroomCategories(){
+  const i = currentMonthIndex();
+  if(i === -1) return [];
+  const m = state.months[i];
+  return state.categories
+    .map(c=>({ key:c, label:categoryLabel(c), left: effectiveCategoryValue(m, c) - actualOf(m, c) }))
+    .filter(x=> x.left > 0)
+    .sort((a, b)=> b.left - a.left);
+}
+
+/* Average monthly income and what is actually saved, both from the figures the
+   rest of the app already computes — so closed months use what really happened
+   and months ahead use the plan. */
+function goalBasis(){
+  const { rows, totals } = computeAll();
+  const withIncome = rows.filter(r=> r.income > 0);
+  const avgIncome = withIncome.length
+    ? withIncome.reduce((s, r)=> s + r.income, 0) / withIncome.length : 0;
+  return { avgIncome, avgSavings: totals.avgSavings || 0, months: rows.length };
+}
+
+/* What has actually been saved up to now. Distinct from the simulation's
+   accumulator, which is a projection of where each goal ENDS — using that for
+   a progress bar showed every goal at 100% before a penny was saved. */
+function savedToDate(){
+  const { rows } = computeAll();
+  const banked = rows
+    .filter(r=> isMonthClosed(r.m))
+    .reduce((sum, r)=> sum + r.savings, 0);
+  return Math.max(0, (Number(state.forecast.start) || 0) + banked - confirmedOverrun());
+}
+
+/* The month-by-month projection. A simulation rather than target ÷ rate,
+   because a completed goal hands its share to the others and every later date
+   depends on that. */
+function simulateGoals(mode){
+  const goals = state.goals;
+  const result = { done: goals.map(()=> null), acc: goals.map(()=> 0),
+                   monthly: 0, capped: false, reachable: false };
+  if(!goals.length) return result;
+
+  const { avgSavings } = goalBasis();
+  const monthly = Math.max(0, avgSavings);
+  result.monthly = monthly;
+
+  const shares = effectiveShares(mode);
+  // Everything banked so far — opening balance plus finished months, less any
+  // overspend already committed this month — split the way ongoing savings are.
+  const pool = savedToDate();
+  goals.forEach((g, i)=>{ result.acc[i] = pool * (shares[i] || 0); });
+  goals.forEach((g, i)=>{ if(g.target > 0 && result.acc[i] >= g.target - GOAL_EPSILON) result.done[i] = 0; });
+
+  if(monthly <= 0){
+    result.reachable = result.done.some(d=> d !== null);
+    return result;
+  }
+  result.reachable = true;
+
+  const focusOrder = goals.map((g, i)=> i);
+  for(let month = 1; month <= GOAL_MAX_MONTHS; month++){
+    const active = goals.map((g, i)=> result.done[i] === null && g.target > 0);
+    if(!active.some(Boolean)) break;
+
+    if(mode === 'focus'){
+      // The goal actually chosen goes first; when it is done the others follow
+      // in priority order.
+      const chosen = goals.findIndex(g=> g.id === state.focusGoalId);
+      const target = (chosen >= 0 && active[chosen])
+        ? chosen
+        : focusOrder.find(i=> active[i]);
+      if(target === undefined) break;
+      result.acc[target] += monthly;
+    } else {
+      // Split among those still running, reweighted so a finished goal's share
+      // passes to the rest rather than going nowhere.
+      const liveWeight = shares.reduce((s, v, i)=> s + (active[i] ? v : 0), 0);
+      if(liveWeight <= 0) break;
+      goals.forEach((g, i)=>{
+        if(!active[i]) return;
+        result.acc[i] += monthly * (shares[i] / liveWeight);
+      });
+    }
+
+    goals.forEach((g, i)=>{
+      if(result.done[i] === null && g.target > 0 && result.acc[i] >= g.target - GOAL_EPSILON) result.done[i] = month;
+    });
+  }
+
+  result.capped = goals.some((g, i)=> g.target > 0 && result.done[i] === null);
+  return result;
+}
+
+/* How many months the table needs to cover for every goal to land. */
+function goalHorizonMonths(){
+  const sim = simulateGoals(state.goalMode);
+  const finished = sim.done.filter(d=> d !== null);
+  if(!finished.length) return 0;
+  return Math.min(GOAL_MAX_MONTHS, Math.max(...finished));
+}
+
+/* What the goals require each month, when any of them carries a deadline. */
+function requiredMonthlyForDeadlines(){
+  const now = ymIndex(currentYm());
+  const shares = effectiveShares();
+  let required = 0;
+  state.goals.forEach((g, i)=>{
+    if(!g.dueYm || !(g.target > 0)) return;
+    const monthsLeft = Math.max(1, ymIndex(g.dueYm) - now);
+    const already = Math.max(0, (Number(state.forecast.start) || 0) * (shares[i] || 0));
+    required += Math.max(0, g.target - already) / monthsLeft;
+  });
+  return required;
+}
+
+/* Grows the table so the last goal fits. Only ever adds — contracting would
+   delete months that may hold entered figures. */
+let lastAutoExtendTo = 0;
+function autoExtendForGoals(){
+  if(!state.goals.length) return null;
+  const horizon = goalHorizonMonths();
+  if(horizon <= 0) return null;
+  const have = state.months.length;
+  const needed = Math.min(GOAL_MAX_MONTHS, horizon + 1);   // +1 so the final month is visible
+  if(needed <= have) return null;
+  if(needed === lastAutoExtendTo) return null;
+
+  const startYm = state.months.length ? state.months[0].ym : currentYm();
+  state.months = generateMonths(startYm, needed);
+  lastAutoExtendTo = needed;
+  return { from: have, to: needed };
+}
+
+/* ---------- goals: rendering ---------- */
+function monthsFromNowLabel(n){
+  if(n === null || n === undefined) return null;
+  if(n <= 0) return t('goal_already');
+  return monthLabel(addMonths(currentYm(), n));
+}
+
+function renderGoalSummary(){
+  const host = document.getElementById('goal-summary');
+  if(!host) return;
+  const { avgIncome, avgSavings } = goalBasis();
+  const ruleAmount = avgIncome * RULE_OF_THUMB;
+  const required = requiredMonthlyForDeadlines();
+  const targetSaving = required > 0 ? required : Math.max(avgSavings, 0);
+  const ceiling = Math.max(0, avgIncome - targetSaving);
+  const plannedSpend = Math.max(0, avgIncome - avgSavings);
+
+  if(avgIncome <= 0){
+    host.innerHTML = `<div class="goal-sum"><p class="goal-sum-line">${t('goal_no_income')}</p></div>`;
+    return;
+  }
+
+  // Both figures, side by side, and the gap named — never a suggestion the
+  // app's own numbers contradict.
+  const overCeiling = plannedSpend - ceiling;
+  host.innerHTML = `
+    <div class="goal-sum">
+      <div class="goal-sum-grid">
+        <div><p class="k">${t('goal_rule')}</p><p class="v">${fmtMoney(ruleAmount)}</p></div>
+        <div><p class="k">${t('goal_plan_leaves')}</p><p class="v ${avgSavings >= ruleAmount ? 'good' : ''}">${fmtMoney(avgSavings)}</p></div>
+        <div><p class="k">${t('goal_ceiling')}</p><p class="v">${fmtMoney(ceiling)}</p></div>
+      </div>
+      <p class="goal-sum-line">${goalSummaryLine(ruleAmount, avgSavings, ceiling, plannedSpend, overCeiling)}</p>
+    </div>`;
+}
+
+function renderGoalAlerts(){
+  const host = document.getElementById('goal-alerts');
+  if(!host) return;
+  const parts = [];
+
+  const over = confirmedOverrun();
+  if(over > 0){
+    const cats = overrunCategories();
+    const head = headroomCategories();
+    const headTotal = head.reduce((s, x)=> s + x.left, 0);
+    const names = head.slice(0, 3).map(x=> x.label).join(lang === 'ar' ? '، ' : ', ');
+    parts.push(`<div class="goal-alert is-over">
+      <p class="ga-title">${overrunTitle(over, cats[0] ? cats[0].label : '')}</p>
+      <p class="ga-body">${overrunImpactText()}</p>
+      ${headTotal > 0 ? `<p class="ga-body">${headroomText(headTotal, names, Math.max(0, headTotal - over))}</p>` : ''}
+    </div>`);
+  }
+
+  const sim = simulateGoals(state.goalMode);
+  if(state.goals.length && sim.monthly <= 0){
+    const { rows } = computeAll();
+    const biggest = state.categories
+      .map(c=>({ label: categoryLabel(c), amount: rows.reduce((s, r)=> s + effectiveSpendValue(r.m, c), 0) }))
+      .sort((a, b)=> b.amount - a.amount)[0];
+    parts.push(`<div class="goal-alert is-none">
+      <p class="ga-title">${t('goal_nothing_title')}</p>
+      <p class="ga-body">${nothingToSaveText(biggest ? biggest.label : '')}</p>
+    </div>`);
+  } else if(sim.capped){
+    parts.push(`<div class="goal-alert is-warn">
+      <p class="ga-title">${t('goal_capped_title')}</p>
+      <p class="ga-body">${t('goal_capped_body')}</p>
+    </div>`);
+  }
+
+  if(lastExtendNotice){
+    parts.push(`<div class="goal-alert is-info"><p class="ga-body">${lastExtendNotice}</p></div>`);
+  }
+
+  host.innerHTML = parts.join('');
+}
+
+function renderGoalList(){
+  const host = document.getElementById('goal-list');
+  if(!host) return;
+  if(!state.goals.length){
+    host.innerHTML = `<div class="goal-empty"><p>${t('goal_empty')}</p></div>`;
+    return;
+  }
+  const sim = simulateGoals(state.goalMode);
+  const shares = effectiveShares();
+  const focusId = state.focusGoalId;
+  const banked = savedToDate();
+
+  host.innerHTML = state.goals.map((g, i)=>{
+    // Saved SO FAR, not where the projection ends.
+    const saved = Math.min(g.target, banked * (shares[i] || 0));
+    const pct = g.target > 0 ? Math.min(100, (saved / g.target) * 100) : 0;
+    const when = sim.done[i] === null ? null : monthsFromNowLabel(sim.done[i]);
+    const isFocus = state.goalMode === 'focus' && g.id === focusId;
+    const sharePct = Math.round((shares[i] || 0) * 1000) / 10;
+
+    return `
+      <div class="goal-row${isFocus ? ' is-focus' : ''}" data-goal="${g.id}">
+        <div class="goal-row-top">
+          <div class="goal-order">
+            <button type="button" data-up="${g.id}" ${i === 0 ? 'disabled' : ''} aria-label="${t('goal_up')}">▲</button>
+            <button type="button" data-down="${g.id}" ${i === state.goals.length - 1 ? 'disabled' : ''} aria-label="${t('goal_down')}">▼</button>
+          </div>
+          <div class="goal-id">
+            <span class="goal-name">${g.name || t('goal_unnamed')}</span>
+            <span class="goal-target">${fmtMoney(g.target)}</span>
+          </div>
+          <button type="button" class="goal-del" data-del-goal="${g.id}" aria-label="${t('goal_remove')}">✕</button>
+        </div>
+
+        <div class="sp-bar"><span style="width:${pct}%"></span></div>
+
+        <div class="goal-row-foot">
+          <span>${fmtMoney(saved)} ${t('goal_of')} ${fmtMoney(g.target)}</span>
+          <span class="goal-when">${when ? when : t('goal_not_yet')}</span>
+        </div>
+
+        <div class="goal-row-controls">
+          <label class="goal-share">
+            <span>${t('goal_share')}</span>
+            <input type="number" inputmode="decimal" step="any" min="0" max="100"
+                   value="${sharePct}" data-share="${g.id}" ${state.goalMode === 'focus' ? 'disabled' : ''}>
+            <span>%</span>
+          </label>
+          <label class="goal-due">
+            <span>${t('goal_by')}</span>
+            <input type="month" value="${g.dueYm || ''}" data-due="${g.id}">
+          </label>
+          ${state.goalMode === 'focus'
+            ? `<button type="button" class="goal-focus-btn${isFocus ? ' on' : ''}" data-focus="${g.id}">${isFocus ? t('goal_focused') : t('goal_focus_this')}</button>`
+            : ''}
+        </div>
+        ${goalDeadlineNote(g, i, sim)}
+      </div>`;
+  }).join('');
+}
+
+/* Side income appears only when a deadline cannot be met — as a number, not a
+   suggestion to "earn more". */
+function goalDeadlineNote(g, i, sim){
+  if(!g.dueYm || !(g.target > 0)) return '';
+  const monthsLeft = ymIndex(g.dueYm) - ymIndex(currentYm());
+  if(monthsLeft <= 0) return '';
+  const shares = effectiveShares();
+  const already = savedToDate() * (shares[i] || 0);
+  const need = Math.max(0, g.target - already) / monthsLeft;
+  const getting = sim.monthly * (shares[i] || 0);
+  const gap = need - getting;
+  if(gap <= 0.01) return `<p class="goal-note is-ok">${t('goal_on_track')}</p>`;
+  return `<p class="goal-note is-gap">${goalGapText(fmtMoney(need), fmtMoney(getting), fmtMoney(gap))}</p>`;
+}
+
+function renderGoalCompare(){
+  const el = document.getElementById('goal-compare');
+  if(!el) return;
+  if(state.goals.length < 2){ el.textContent = ''; return; }
+  const all = simulateGoals('all');
+  const focus = simulateGoals('focus');
+  const allLast = Math.max(...all.done.map(d=> d === null ? Infinity : d));
+  const focusFirst = focus.done[0];
+  if(!isFinite(allLast) || focusFirst === null){ el.textContent = ''; return; }
+  el.textContent = goalCompareText(
+    state.goals[0].name || t('goal_unnamed'),
+    monthsFromNowLabel(focusFirst),
+    monthsFromNowLabel(allLast));
+}
+
+function renderGoalModeButtons(){
+  document.querySelectorAll('#goal-mode button').forEach(b=>
+    b.classList.toggle('on', b.dataset.mode === state.goalMode));
+}
+
+let lastExtendNotice = '';
+function renderGoals(){
+  if(!document.getElementById('goals')) return;
+  ensureFocusValid();
+  renderGoalModeButtons();
+  renderGoalAlerts();
+  renderGoalSummary();
+  renderGoalList();
+  renderGoalCompare();
+}
+
+/* ---------- goals: interaction ---------- */
+function wireGoals(){
+  const list = document.getElementById('goal-list');
+  if(!list) return;
+
+  document.getElementById('btn-add-goal').addEventListener('click', ()=>{
+    const nameEl = document.getElementById('goal-name');
+    const targetEl = document.getElementById('goal-target');
+    const target = Math.max(0, Number(targetEl.value) || 0);
+    if(!(target > 0)){ targetEl.focus(); return; }
+    state.goals.push({
+      id: 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: (nameEl.value || '').trim(),
+      target, dueYm: null, pct: null,
+    });
+    if(!state.focusGoalId) state.focusGoalId = state.goals[0].id;
+    nameEl.value = ''; targetEl.value = '';
+    applyGoalsAndRender();
+    nameEl.focus();
+  });
+
+  document.getElementById('goal-mode').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-mode]');
+    if(!b) return;
+    state.goalMode = b.dataset.mode === 'focus' ? 'focus' : 'all';
+    applyGoalsAndRender();
+  });
+
+  list.addEventListener('click', e=>{
+    const up = e.target.closest('button[data-up]');
+    const down = e.target.closest('button[data-down]');
+    const del = e.target.closest('button[data-del-goal]');
+    const foc = e.target.closest('button[data-focus]');
+
+    if(up || down){
+      const id = (up || down).dataset.up || (up || down).dataset.down;
+      const i = state.goals.findIndex(g=> g.id === id);
+      const j = up ? i - 1 : i + 1;
+      if(i < 0 || j < 0 || j >= state.goals.length) return;
+      [state.goals[i], state.goals[j]] = [state.goals[j], state.goals[i]];
+      applyGoalsAndRender();
+      return;
+    }
+    if(del){
+      const g = goalById(del.dataset.delGoal);
+      if(!g) return;
+      if(!confirm(confirmRemoveGoalMsg(g.name || t('goal_unnamed')))) return;
+      state.goals = state.goals.filter(x=> x.id !== g.id);
+      if(state.focusGoalId === g.id) state.focusGoalId = state.goals.length ? state.goals[0].id : null;
+      applyGoalsAndRender();
+      return;
+    }
+    if(foc){
+      state.focusGoalId = foc.dataset.focus;
+      applyGoalsAndRender();
+    }
+  });
+
+  list.addEventListener('change', e=>{
+    const share = e.target.closest('input[data-share]');
+    const due = e.target.closest('input[data-due]');
+    if(share){
+      const g = goalById(share.dataset.share);
+      if(!g) return;
+      const v = Number(share.value);
+      g.pct = Number.isFinite(v) && share.value !== '' ? Math.max(0, Math.min(100, v)) : null;
+      applyGoalsAndRender();
+      return;
+    }
+    if(due){
+      const g = goalById(due.dataset.due);
+      if(!g) return;
+      g.dueYm = due.value || null;
+      applyGoalsAndRender();
+    }
+  });
+}
+
+/* Extends the table if the goals now reach further than it does, then redraws
+   everything. Only ever adds months. */
+function ensureFocusValid(){
+  if(!state.goals.length){ state.focusGoalId = null; return; }
+  if(!state.goals.some(g=> g.id === state.focusGoalId)){
+    state.focusGoalId = state.goals[0].id;
+  }
+}
+
+function applyGoalsAndRender(){
+  ensureFocusValid();
+  const extended = autoExtendForGoals();
+  lastExtendNotice = extended ? tableExtendedText(extended.to) : '';
+  renderAll();
+  scheduleSave();
 }
 
 /* ---------- overview (read-only) ---------- */
@@ -4364,9 +5599,11 @@ function renderBudget(){
   renderCategoryManager();
   renderPlanningModes();
   renderCurrencyPicker();
+  renderDefaultSalary();
   renderStrip(totals);
   renderEntryPanel();
   renderActualPanel();
+  renderGoals();
 }
 
 /* Dashboard and forecast sit on other panels and are expensive to redraw, so
@@ -4484,6 +5721,8 @@ function renderQuickAdd(){
 
 function openQuickAdd(){
   qaDigits = '';
+  const noteEl = document.getElementById('qa-note');
+  if(noteEl) noteEl.value = '';
   const cats = qaSelectableCategories();
   qaCategory = cats.length ? cats[0] : null;
   renderQuickAdd();
@@ -4514,7 +5753,9 @@ function qaCommit(){
   const m = state.months[idx];
   // The + button is the as-you-go logger, so it records real spending rather
   // than editing the plan. Editing the plan is a deliberate act on its own tab.
+  const noteEl = document.getElementById('qa-note');
   setActual(m, qaCategory, actualOf(m, qaCategory) + amount);
+  addLogEntry(m, qaCategory, amount, noteEl ? noteEl.value : '');
   closeQuickAdd();
   renderAll();
   scheduleSave();
@@ -5001,6 +6242,23 @@ function buildWorkbook(){
   applyMoneyFormat(ws3, forecastAoa.length - 1, [1, 2, 3, 4]);
   XLSX.utils.book_append_sheet(wb, ws3, t('tab_forecast_base').slice(0,31));
 
+  /* One row per logged amount, newest month last. Skipped when there is
+     nothing itemised rather than exporting an empty sheet. */
+  const noteAoa = [[t('th_month'), t('xl_note_cat'), t('xl_note_note'), t('xl_note_amt')]];
+  state.months.forEach(m=>{
+    state.categories.forEach(key=>{
+      logOf(m, key).forEach(e=>{
+        noteAoa.push([monthLabel(m.ym), categoryLabel(key), e.n || '', Number(e.a) || 0]);
+      });
+    });
+  });
+  if(noteAoa.length > 1){
+    const ws4 = XLSX.utils.aoa_to_sheet(noteAoa);
+    ws4['!cols'] = [{wch:14},{wch:20},{wch:38},{wch:12}];
+    applyMoneyFormat(ws4, noteAoa.length - 1, [3]);
+    XLSX.utils.book_append_sheet(wb, ws4, t('xl_note_sheet').slice(0,31));
+  }
+
   return wb;
 }
 
@@ -5303,13 +6561,13 @@ function shareLinkTexts(){
   const url = PLANNER_SHARE_URL;
   if(lang==='ar'){
     return {
-      subject: 'مخطط الراتب والميزانية والادخار',
-      message: 'جرّب مخطط الراتب والميزانية والادخار: ' + url
+      subject: 'الميزانية الذكية',
+      message: 'جرّب تطبيق الميزانية الذكية: ' + url
     };
   }
   return {
-    subject: 'Salary Budget & Savings Planner',
-    message: 'Check out this budget planner: ' + url
+    subject: 'Smart Budget',
+    message: 'Check out Smart Budget: ' + url
   };
 }
 
@@ -5464,7 +6722,8 @@ function wireEvents(){
   document.getElementById('btn-add-month').addEventListener('click', ()=>{
     const last = state.months[state.months.length-1];
     const nextYm = last ? addMonths(last.ym,1) : (new Date()).getFullYear()+'-01';
-    state.months.push(blankMonth(nextYm));
+    // Seeded, so a month added by hand arrives pre-filled like a generated one.
+    state.months.push(seededMonth(nextYm));
     renderAll();
     scheduleSave();
   });
@@ -5664,6 +6923,7 @@ function registerServiceWorker(){
   wireQuickAdd();
   wireEntryTab();
   wireActualPanel();
+  wireGoals();
   wireBottomNav();
   wireLayoutSwitch();
   wireEvents();

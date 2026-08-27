@@ -1,7 +1,7 @@
 {
-  "name": "Salary Budget & Savings Planner",
-  "short_name": "Budget",
-  "description": "Track monthly income and spending, watch your savings rate, and project where your balance lands over time. Everything stays on your device.",
+  "name": "Smart Budget",
+  "short_name": "Smart Budget",
+  "description": "Plan what you expect to spend, log what you actually spend, and see when your savings goals land. Everything stays on your device.",
   "id": "/Budget-Planner/",
   "start_url": "./",
   "scope": "./",
