@@ -2138,6 +2138,28 @@ nav.tabs button{ color:var(--ink); }
   .goal-list{ display:grid; grid-template-columns:repeat(2,1fr); }
 }
 
+/* ---------------------------------------------------------------------------
+   Directional glyphs in Arabic
+
+   Unicode mirrors brackets and parentheses automatically in RTL, but arrows
+   and chevrons are NOT in the Bidi_Mirrored set. So the layout around them
+   flips and they do not: "previous" correctly moves to the right-hand side
+   and carries on pointing left, which reads as the opposite of what it does.
+
+   Every one of these already has an aria-label, so the glyph is decorative
+   and mirroring it costs nothing semantically. Six of them, all reported by
+   one — the range arrow between a period's start and end month.
+   --------------------------------------------------------------------------- */
+[dir="rtl"] .period-arrow,
+[dir="rtl"] .ov-chev{
+  display:inline-block;      /* transform does not apply to display:inline */
+  transform:scaleX(-1);
+}
+[dir="rtl"] .ycal-nav,       /* year calendar AND the month stepper */
+[dir="rtl"] .entry-back{
+  transform:scaleX(-1);
+}
+
 </style>
 </head>
 <body>
