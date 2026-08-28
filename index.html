@@ -2529,6 +2529,49 @@ nav.tabs button{ color:var(--ink); }
   .choose-card{ flex:1 1 0; min-width:0; }
 }
 
+/* ---------------------------------------------------------------------------
+   Several goals in the guided plan
+   --------------------------------------------------------------------------- */
+.planner-goals{ display:flex; flex-direction:column; gap:9px; }
+.planner-goal-row{ display:flex; align-items:center; gap:7px; }
+.planner-goal-row input[type="text"]{ flex:1 1 auto; min-width:0; }
+.planner-goal-row input[type="number"]{ flex:0 0 104px; width:104px; text-align:end; }
+.planner-goal-row input{
+  min-height:var(--tap); padding:9px 11px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:14.5px;
+}
+.planner-goal-row input:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+.planner-goal-del{
+  flex:0 0 auto; width:32px; height:32px; padding:0;
+  border:none; border-radius:50%;
+  background:var(--rule); color:var(--ink-soft);
+  font-size:12px; line-height:1; cursor:pointer;
+}
+.planner-goal-del:hover{ background:var(--bad-tint); color:var(--bad-ink); }
+.planner-goal-spacer{ flex:0 0 auto; width:32px; }
+.planner-add{
+  margin-top:10px; min-height:var(--tap); padding:0 15px;
+  border:1px dashed var(--emerald); border-radius:20px;
+  background:transparent; color:var(--emerald-deep);
+  font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+}
+.planner-add:hover{ background:var(--good-tint); }
+.planner-add:focus-visible,
+.planner-goal-del:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+.planner-goal-dates{ list-style:none; margin:0 0 12px; padding:0; }
+.planner-goal-dates li{
+  display:flex; align-items:baseline; gap:9px;
+  padding:7px 0; border-top:1px solid var(--rule);
+  font-size:13.5px;
+}
+.planner-goal-dates li:first-child{ border-top:none; }
+.pg-n{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink); }
+.pg-a{ flex:0 0 auto; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+.pg-d{ flex:0 0 auto; font-weight:700; color:var(--emerald-deep); }
+
 </style>
 </head>
 <body>
@@ -2934,6 +2977,10 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">The answer comes back in plain words: <i>"Putting aside 1,980 a month, you reach 50,000 in 26 months — around October 2028."</i> Accept it and every empty month is filled in for you. Months you have already filled are left exactly as they are.</p>
           <p style="margin-top:8px;">Saying whether you are a student, on a fixed salary, or paid a different amount each month changes what it asks and what it sets up for you. A fixed salary gets filled into every month by itself. If your pay varies it asks for a <b>normal</b> month rather than your best one, so the plan still holds in a quiet month.</p>
           <p class="help-tip">If the goal is out of reach, it says so — and says what would change it, using your own numbers. Sometimes the honest answer is that a smaller goal first is the better place to start.</p>
+          <p style="margin-top:8px;"><b>Adding a goal later.</b> Goals do not all have to start together. If you save toward a car for six months and then decide you also want a trip, the money you have already put away stays with the car — the trip starts from nothing, because it was not in the plan for those six months. From the day you add it, the two share what you save from then on, and the app works both dates out again.</p>
+          <p style="margin-top:8px;"><b>Where the amounts come from.</b> The first time, the boxes are empty — you put in roughly what each thing costs you, and a rough number is fine. The app does not guess on your behalf. Once you have three finished months of logged spending for a category, it fills that box with <b>your own average</b> instead, and says so. A category you have not logged enough of keeps whatever you set last time.</p>
+          <p style="margin-top:8px;"><b>More than one thing at once.</b> Add as many goals as you like in the first step — the order is the priority. The app funds the top one hardest and passes its share on the moment it is paid off, so it shows you a date for each rather than one date for everything. A small goal low down the list often arrives first simply because it needs less.</p>
+          <p style="margin-top:8px;">Running the plan again brings all your answers back already filled in — your income, your categories, your amounts and the goals you have. Adding a second goal is a matter of typing the goal, not your whole budget again. The month you pick as the start becomes the table's first month, so the two can never disagree.</p>
           <p style="margin-top:8px;"><b>How far ahead it will speak.</b> If you are a student it asks roughly when you finish studying. A plan that runs past that date is built on an income that stops, so instead of asserting a date years out it tells you what you would actually have banked by the time you graduate — and suggests coming back once you know what you will be earning. It will not invent a graduate salary for you.</p>
           <p style="margin-top:8px;"><b>When your plan turns out to be wrong.</b> Once a category has three finished months of logged spending, the app compares what you planned against what you actually spent. If they disagree by more than a little, it says so and offers your real average — <i>"Groceries: you planned 900, and have averaged 1,340 over 6 months."</i> Accepting it changes this month onwards only; finished months keep what actually happened.</p>
           <p style="margin-top:8px;"><b>When things change.</b> The app remembers what your plan assumed. If a raise, a pay cut or a change in your spending moves what you put aside each month, a note appears at the top of the plan tab with the new date and a button to plan again. Small wobbles are ignored — it only speaks up when the date actually moves.</p>
@@ -3192,6 +3239,10 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">ويأتيك الجواب بكلام واضح: <i>«بادّخار ١٬٩٨٠ شهريًا تبلغ ٥٠٬٠٠٠ خلال ٢٦ شهرًا — قرابة أكتوبر ٢٠٢٨.»</i> اعتمدها ليُملأ كل شهر فارغ، وتُترك الأشهر التي ملأتها كما هي تمامًا.</p>
           <p style="margin-top:8px;">وقولك إن كنت طالبًا أو موظّفًا براتب ثابت أو بدخل متغيّر يغيّر ما يسألك عنه وما يُعدّه لك. فالراتب الثابت يُملأ في كل شهر تلقائيًا، وإن كان دخلك متغيّرًا سألك عن شهر <b>عادي</b> لا أفضل شهر، لتصمد الخطة في شهر هادئ.</p>
           <p class="help-tip">وإن كان الهدف بعيد المنال قال ذلك صراحة، وذكر ما يغيّره بأرقامك أنت. وقد يكون الجواب الصريح أن البدء بهدف أصغر أولى.</p>
+          <p style="margin-top:8px;"><b>إضافة هدف لاحقًا.</b> ليس لزامًا أن تبدأ الأهداف معًا. فإن ادّخرت لسيارة ستة أشهر ثم رغبت في رحلة أيضًا، بقي ما ادّخرته للسيارة، وبدأت الرحلة من الصفر لأنها لم تكن في الخطة طوال تلك الأشهر. ومن يوم إضافتها يتقاسمان ما تدّخره بعد ذلك، ويعيد التطبيق حساب التاريخين.</p>
+          <p style="margin-top:8px;"><b>من أين تأتي المبالغ.</b> في المرة الأولى تكون الخانات فارغة، فتدخل ما يكلّفك كل بند تقريبًا، والرقم التقريبي يكفي. ولا يخمّن التطبيق نيابة عنك. فإذا صار لفئة ثلاثة أشهر منتهية مسجّل فيها إنفاقك، ملأ خانتها <b>بمتوسطك أنت</b> وأخبرك بذلك. وما لم تسجّل منه ما يكفي يبقى على ما حددته سابقًا.</p>
+          <p style="margin-top:8px;"><b>أكثر من هدف معًا.</b> أضف ما شئت من الأهداف في الخطوة الأولى، والترتيب هو الأولوية. يموّل التطبيق الأعلى أولًا، ثم يمرّر حصته إلى غيره متى اكتمل، ولذلك يعرض لك تاريخًا لكل هدف لا تاريخًا واحدًا للجميع. وكثيرًا ما يأتي الهدف الصغير أولًا وإن كان أدنى ترتيبًا، لأنه يحتاج أقل.</p>
+          <p style="margin-top:8px;">وتعود إجاباتك كلها معبّأة حين تعيد التخطيط: دخلك وفئاتك ومبالغك وأهدافك الحالية، فإضافة هدف ثانٍ لا تعني إعادة كتابة ميزانيتك كلها. ويصير الشهر الذي تختاره للبدء أول أشهر الجدول، فلا يختلفان أبدًا.</p>
           <p style="margin-top:8px;"><b>إلى أي مدى يتكلّم.</b> إن كنت طالبًا سألك متى تنهي الدراسة تقريبًا. فالخطة التي تمتد بعد ذلك التاريخ مبنية على دخل سيتوقف، ولذلك لا يجزم بتاريخ بعيد، بل يخبرك كم ستكون قد ادّخرت فعلًا عند تخرّجك، ويقترح أن تعود حين تعرف دخلك القادم. ولن يخترع لك راتبًا بعد التخرّج.</p>
           <p style="margin-top:8px;"><b>وحين تتبيّن أن خطتك خاطئة.</b> متى صار لفئة ثلاثة أشهر منتهية مسجّل فيها إنفاقك، قارن التطبيق ما خطّطته بما أنفقته فعلًا. وإن اختلفا بأكثر من قليل أخبرك وعرض عليك متوسطك الحقيقي — <i>«البقالة: خطّطت لـ ٩٠٠، ومتوسطك ١٬٣٤٠ خلال ٦ أشهر.»</i> وقبوله يغيّر هذا الشهر وما بعده فقط، وتبقى الأشهر المنتهية على ما حدث فيها.</p>
           <p style="margin-top:8px;"><b>وحين تتغيّر الأمور.</b> يحفظ التطبيق ما قامت عليه خطتك. فإن غيّرت زيادة في الراتب أو خفض أو تبدّل في إنفاقك ما تدّخره شهريًا، ظهرت ملاحظة أعلى تبويب الخطة بالتاريخ الجديد وزر للتخطيط من جديد. ويتجاهل التذبذب اليسير، فلا يتكلّم إلاّ حين يتحرّك التاريخ فعلًا.</p>
@@ -3699,6 +3750,10 @@ const TRANSLATIONS = {
     strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Total savings', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
     tab_budget:'Overview', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
 planner_open:'Plan this for me',
+    planner_goal_add:'+ Add another goal',
+    planner_goal_remove:'Remove this goal',
+    planner_goal_order:'The order is the priority. The app funds the top one hardest, and passes its share on once it is paid off.',
+    planner_ok_multi:'Putting aside {amount} a month, all {count} are paid for by {date}. Here is when each one lands:',
     planner_start:'When does this plan start?',
     planner_start_note:'Months before this are left exactly as they are.',
     choose_title:'How would you like to start?',
@@ -3751,7 +3806,11 @@ planner_open:'Plan this for me',
     planner_q_which:'Which of these do you actually spend on?',
     planner_q_which_note:'Tap to add or remove. Only keep the ones that apply to you.',
     planner_q_amounts:'Roughly how much, each month?',
-    planner_q_amounts_note:'These are starting points worked out from your income, not recommendations. Change any of them to what you really spend — a rough number is fine.',
+    planner_q_amounts_note:'Put in roughly what each one costs you in a normal month. A rough number is fine — once you have logged a few months, the app will fill this in from what you actually spend.',
+    planner_q_amounts_actual:'These are your own averages, from the months you have logged. Change any of them if something has changed.',
+    planner_q_amounts_plan:'These are what you set last time. Change any of them.',
+    planner_no_spend:'You have not put in any spending yet.',
+    planner_no_spend_note:'With nothing here the app would assume you spend nothing at all and save every penny, which would give you a date that cannot happen. Go back and put in roughly what each one costs you — a rough number is fine, and you can change it any time.',
     planner_left:'Left over to save: {amount}',
     planner_left_none:'You are {amount} over what comes in. Nothing is left to save.',
     planner_result:'Here is your plan',
@@ -3944,6 +4003,10 @@ planner_open:'Plan this for me',
     strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'إجمالي الادخار', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
     tab_budget:'نظرة عامة', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
 planner_open:'خطّط لي',
+    planner_goal_add:'+ أضف هدفًا آخر',
+    planner_goal_remove:'حذف هذا الهدف',
+    planner_goal_order:'والترتيب هو الأولوية. يموّل التطبيق الأعلى أولًا، ثم يمرّر حصته إلى غيره متى اكتمل.',
+    planner_ok_multi:'بادّخار {amount} شهريًا تكتمل الأهداف الـ{count} جميعها بحلول {date}. وهذه مواعيد كل منها:',
     planner_start:'من أي شهر تبدأ هذه الخطة؟',
     planner_start_note:'وتبقى الأشهر السابقة له كما هي تمامًا.',
     choose_title:'كيف تودّ أن تبدأ؟',
@@ -3996,7 +4059,11 @@ planner_open:'خطّط لي',
     planner_q_which:'على أيٍّ من هذه تنفق فعلًا؟',
     planner_q_which_note:'اضغط للإضافة أو الإزالة، وأبقِ ما ينطبق عليك فقط.',
     planner_q_amounts:'كم تقريبًا في الشهر؟',
-    planner_q_amounts_note:'هذه نقاط بداية محسوبة من دخلك، وليست توصيات. غيّر أيًّا منها إلى ما تنفقه فعلًا، والرقم التقريبي يكفي.',
+    planner_q_amounts_note:'أدخل ما يكلّفك كل بند تقريبًا في شهر عادي. والرقم التقريبي يكفي — ومتى سجّلت بضعة أشهر، ملأ التطبيق هذه الخانات مما تنفقه فعلًا.',
+    planner_q_amounts_actual:'هذه متوسطاتك أنت، من الأشهر التي سجّلتها. غيّر أيًّا منها إن تغيّر شيء.',
+    planner_q_amounts_plan:'هذه ما حدّدته في المرة السابقة. غيّر أيًّا منها.',
+    planner_no_spend:'لم تُدخل أي إنفاق بعد.',
+    planner_no_spend_note:'وبلا شيء هنا سيفترض التطبيق أنك لا تنفق شيئًا وتدّخر كل ريال، فيعطيك تاريخًا لا يمكن أن يقع. ارجع وأدخل ما يكلّفك كل بند تقريبًا؛ والرقم التقريبي يكفي، ويمكنك تغييره متى شئت.',
     planner_left:'المتبقي للادخار: {amount}',
     planner_left_none:'تجاوزت ما يدخل عليك بمقدار {amount}، فلم يبقَ شيء للادخار.',
     planner_result:'هذه خطتك',
@@ -4414,24 +4481,14 @@ const CURRENCIES = {
 
 /* Region of the browser's locale, only ever used to pick a sensible default
    the very first time. Once state exists this is never consulted again. */
-const REGION_CURRENCY = {
-  SA:'SAR', AE:'AED', QA:'QAR', KW:'KWD', BH:'BHD', OM:'OMR', JO:'JOD',
-  EG:'EGP', MA:'MAD', TN:'TND', DZ:'DZD', TR:'TRY', IN:'INR', PK:'PKR',
-  JP:'JPY', CN:'CNY', CA:'CAD', AU:'AUD', CH:'CHF', GB:'GBP',
-  DE:'EUR', FR:'EUR', ES:'EUR', IT:'EUR', NL:'EUR', IE:'EUR', PT:'EUR',
-};
-function guessCurrency(){
-  try{
-    const region = (new Intl.Locale(navigator.language)).region;
-    if(region && REGION_CURRENCY[region] && CURRENCIES[REGION_CURRENCY[region]]) {
-      return REGION_CURRENCY[region];
-    }
-  }catch(e){}
-  return 'USD';
-}
+
+
+/* What a new budget starts in. Anyone can change it in the picker, and a
+   budget that already has a currency keeps it. */
+const DEFAULT_CURRENCY = 'SAR';
 
 function currencyDef(){
-  return (state && CURRENCIES[state.currency]) || CURRENCIES.USD;
+  return (state && CURRENCIES[state.currency]) || CURRENCIES[DEFAULT_CURRENCY];
 }
 function currencySymbol(){ return currencyDef().symbol; }
 
@@ -4470,7 +4527,7 @@ function blankMonth(ym){
 
 function normalizeState(s){
   // Anyone upgrading from before the picker existed was on dollars.
-  if(!s.currency || !CURRENCIES[s.currency]) s.currency = 'USD';
+  if(!s.currency || !CURRENCIES[s.currency]) s.currency = DEFAULT_CURRENCY;
   if(typeof s.defaultSalary !== 'number') s.defaultSalary = 0;
   if(!Array.isArray(s.goals)) s.goals = [];
   s.goals = s.goals.filter(g=> g && typeof g === 'object').map(g=>({
@@ -4559,7 +4616,7 @@ function defaultState(){
     goals: [],
     goalMode: 'all',        // 'all' splits by priority, 'focus' funds one at a time
     focusGoalId: null,
-    currency: guessCurrency(),
+    currency: DEFAULT_CURRENCY,
     emergencyThreshold: 0,
     emergencyStart: 0,
     // Every assumption starts at zero. A pre-filled 3% pay rise and 6% return
@@ -5770,6 +5827,49 @@ function savedToDate(){
 /* The month-by-month projection. A simulation rather than target ÷ rate,
    because a completed goal hands its share to the others and every later date
    depends on that. */
+/* A goal with no recorded start has been there since the table began — true of
+   every goal that predates this being recorded at all. */
+function goalStartYm(g){
+  return (g && g.startYm) || (state.months[0] && state.months[0].ym) || currentYm();
+}
+
+/* What each goal has actually banked, replayed rather than divided.
+   Each closed month's saving goes only to the goals that existed that month and
+   had not already been paid off. */
+function goalOpeningAcc(mode){
+  const goals = state.goals;
+  const acc = goals.map(()=> 0);
+  if(!goals.length) return acc;
+
+  const shares = effectiveShares(mode);
+  const { rows } = computeAll();
+
+  const give = (amount, atYm)=>{
+    if(!(amount > 0)) return;
+    const at = ymIndex(atYm);
+    const live = goals.map((g, i)=>
+      g.target > 0 &&
+      ymIndex(goalStartYm(g)) <= at &&
+      acc[i] < g.target - GOAL_EPSILON);
+    const weight = shares.reduce((sum, v, i)=> sum + (live[i] ? v : 0), 0);
+    if(weight <= 0) return;          // nothing live yet: the money is just saved
+    goals.forEach((g, i)=>{ if(live[i]) acc[i] += amount * (shares[i] / weight); });
+  };
+
+  const firstYm = (state.months[0] && state.months[0].ym) || currentYm();
+  give(Number(state.forecast.start) || 0, firstYm);
+  rows.filter(r=> isMonthClosed(r.m)).forEach(r=> give(r.savings, r.m.ym));
+
+  // This month's overspend is money already gone, taken off in proportion to
+  // what each goal is holding.
+  const over = confirmedOverrun();
+  if(over > 0){
+    const total = acc.reduce((sum, v)=> sum + v, 0);
+    if(total > 0) goals.forEach((g, i)=>{ acc[i] = Math.max(0, acc[i] - over * (acc[i] / total)); });
+  }
+  return acc;
+}
+
 function simulateGoals(mode){
   const goals = state.goals;
   const result = { done: goals.map(()=> null), acc: goals.map(()=> 0),
@@ -5781,10 +5881,9 @@ function simulateGoals(mode){
   result.monthly = monthly;
 
   const shares = effectiveShares(mode);
-  // Everything banked so far — opening balance plus finished months, less any
-  // overspend already committed this month — split the way ongoing savings are.
-  const pool = savedToDate();
-  goals.forEach((g, i)=>{ result.acc[i] = pool * (shares[i] || 0); });
+  // Replayed month by month rather than divided in one go, so a goal added in
+  // March gets no part of what was saved in January.
+  result.acc = goalOpeningAcc(mode);
   goals.forEach((g, i)=>{ if(g.target > 0 && result.acc[i] >= g.target - GOAL_EPSILON) result.done[i] = 0; });
 
   if(monthly <= 0){
@@ -6077,6 +6176,7 @@ function wireGoals(){
       id: 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       name: (nameEl.value || '').trim(),
       target, dueYm: null, pct: null,
+      startYm: currentYm(),
     });
     if(!state.focusGoalId) state.focusGoalId = state.goals[0].id;
     nameEl.value = ''; targetEl.value = '';
@@ -7555,8 +7655,22 @@ function wireHelpToc(){
    leaving 30% — a little above the 25% the app already uses as a rule of thumb,
    so the first plan someone sees is a reachable one rather than a flattering
    one. Not advice, and every figure is editable. */
-const PLANNER_SHARE = { rent:0.30, utilities:0.06, groceries:0.12, transport:0.10, entertainment:0.06, other:0.06 };
-const PLANNER_SHARE_OTHER = 0.05;
+/* What this category has actually cost, averaged over the closed months it was
+   logged in. null until there are enough of them to mean anything — the same
+   threshold the "your plan is wrong" card uses, so the app has one idea of when
+   a habit is a habit. */
+function plannerActualAverage(key){
+  const rows = learnRowsFor(key);
+  if(rows.length < LEARN_MIN_MONTHS) return null;
+  const avg = rows.reduce((sum, m)=> sum + actualOf(m, key), 0) / rows.length;
+  return Math.max(0, Math.round(avg / 10) * 10);
+}
+
+/* Where the amounts on the step came from, so the note can say so. */
+function plannerAmountSource(d){
+  if((d.chosen || []).some(k=> plannerActualAverage(k) !== null)) return 'actual';
+  return state.plan ? 'plan' : 'blank';
+}
 
 /* Rent is not pre-selected for a student: plenty live at home, and a budget
    that opens by assuming a rent they do not pay is one they will not trust. */
@@ -7574,8 +7688,19 @@ let plannerDraft = null;
 function plannerNum(v){ const n = Number(v); return Number.isFinite(n) && n > 0 ? n : 0; }
 
 function newPlannerDraft(){
-  return {
-    goalName: '', goalTarget: 0,
+  const p = state.plan;
+  // Re-running is the same person in the same month. Everything they already
+  // told the app comes back filled in; only the new goal has to be typed.
+  const remembered = p ? {
+    work: p.work || 'fixed',
+    gradYm: p.gradYm || null,
+    income: Number(p.salary) || Number(state.defaultSalary) || 0,
+    side: Number(p.side) || 0,
+    chosen: p.cats ? state.categories.filter(k=> p.cats[k] !== undefined) : null,
+    cats: p.cats ? Object.assign({}, p.cats) : {},
+  } : {};
+  return Object.assign({
+    goals: (state.goals || []).map(g=> ({ name: g.name || '', target: Number(g.target) || 0 })),
     work: 'fixed',
     startYm: (state.months[0] && ymIndex(state.months[0].ym) > ymIndex(currentYm()))
       ? state.months[0].ym : currentYm(),
@@ -7583,7 +7708,45 @@ function newPlannerDraft(){
     income: state.defaultSalary || 0, side: 0,
     chosen: null,          // set from occupation on first sight of step 4
     cats: {},
-  };
+  }, remembered);
+}
+
+function plannerLiveGoals(d){
+  return (d.goals || []).filter(g=> String(g.name || '').trim() && plannerNum(g.target) > 0);
+}
+
+/* Funded by priority, with a finished goal handing its share on — the same rule
+   simulateGoals applies to the real table. Month by month because the handover
+   is what makes later goals arrive sooner than a division would suggest. */
+function plannerGoalDates(d, o){
+  const goals = plannerLiveGoals(d);
+  const save = Math.max(0, o.save);
+  if(!goals.length || save <= 0) return goals.map(g=> ({ name:g.name, target:plannerNum(g.target), months:null, ym:null }));
+
+  // Goals already in the app bring their progress with them, or re-running to
+  // add a second goal would show the first one starting from nothing.
+  const existingAcc = goalOpeningAcc(state.goalMode);
+  const acc = goals.map(g=>{
+    const key = String(g.name || '').trim().toLowerCase();
+    const i = (state.goals || []).findIndex(x=> String(x.name || '').trim().toLowerCase() === key);
+    return i >= 0 ? (existingAcc[i] || 0) : 0;
+  });
+  const done = goals.map((g, i)=> acc[i] >= plannerNum(g.target) - GOAL_EPSILON ? 0 : null);
+  for(let mo = 1; mo <= GOAL_MAX_MONTHS; mo++){
+    const open = [];
+    goals.forEach((g, i)=>{ if(done[i] === null) open.push(i); });
+    if(!open.length) break;
+    const shares = defaultShares(open.length);
+    open.forEach((gi, k)=>{
+      acc[gi] += save * shares[k];
+      if(acc[gi] >= plannerNum(goals[gi].target) - GOAL_EPSILON && done[gi] === null) done[gi] = mo;
+    });
+  }
+  const from = d.startYm || currentYm();
+  return goals.map((g, i)=> ({
+    name: g.name, target: plannerNum(g.target), months: done[i],
+    ym: done[i] ? addMonths(from, done[i]) : null,
+  }));
 }
 
 function plannerCatalogue(){
@@ -7595,11 +7758,6 @@ function plannerDefaultChosen(work){
   const want = PLANNER_WORK_CATS[work] || PLANNER_WORK_CATS.fixed;
   const picked = all.filter(k=> want.includes(k));
   return picked.length ? picked : all.slice();
-}
-
-function plannerSuggest(key, income){
-  const share = PLANNER_SHARE[key] !== undefined ? PLANNER_SHARE[key] : PLANNER_SHARE_OTHER;
-  return Math.round((income * share) / 10) * 10;
 }
 
 function plannerChosenSum(d){
@@ -7620,7 +7778,9 @@ function plannerOutcome(d){
   const income = plannerNum(d.income) + plannerNum(d.side);
   const spend = plannerChosenSum(d);
   const save = income - spend;
-  const target = plannerNum(d.goalTarget);
+  // Every month's saving goes to some goal, so everything is paid for exactly
+  // when the total is — the split changes the order, not the finish.
+  const target = plannerLiveGoals(d).reduce((sum, g)=> sum + plannerNum(g.target), 0);
   const o = { income, spend, save, target, rate: income > 0 ? save / income : 0 };
 
   if(save <= 0){ o.kind = 'none'; o.deficit = spend - income; return o; }
@@ -7911,12 +8071,19 @@ function renderPlanner(){
 
   if(plannerStep === 1){
     title.textContent = t('planner_q_goal');
+    if(!d.goals.length) d.goals = [{ name:'', target:0 }];
     body.innerHTML =
       '<p class="planner-note">' + esc(t('planner_q_goal_note')) + '</p>' +
-      '<div class="planner-field"><label for="pl-goal-name">' + esc(t('planner_goal_name')) + '</label>' +
-      '<input type="text" id="pl-goal-name" maxlength="40" value="' + esc(d.goalName) + '" placeholder="' + esc(t('planner_goal_ph')) + '"></div>' +
-      '<div class="planner-field"><label for="pl-goal-target">' + esc(t('planner_goal_amount')) + ' (' + esc(currencyDef().symbol) + ')</label>' +
-      '<input type="number" id="pl-goal-target" inputmode="decimal" min="0" value="' + (d.goalTarget || '') + '"></div>';
+      '<div class="planner-goals">' + d.goals.map((g, i)=>
+        '<div class="planner-goal-row">' +
+          '<input type="text" data-gname="' + i + '" maxlength="40" value="' + esc(g.name) + '" placeholder="' + esc(t('planner_goal_ph')) + '">' +
+          '<input type="number" data-gtarget="' + i + '" inputmode="decimal" min="0" value="' + (g.target || '') + '" placeholder="' + esc(t('planner_goal_amount')) + '">' +
+          (d.goals.length > 1
+            ? '<button type="button" class="planner-goal-del" data-gdel="' + i + '" aria-label="' + esc(t('planner_goal_remove')) + '">✕</button>'
+            : '<span class="planner-goal-spacer"></span>') +
+        '</div>').join('') + '</div>' +
+      '<button type="button" id="pl-goal-add" class="planner-add">' + esc(t('planner_goal_add')) + '</button>' +
+      (d.goals.length > 1 ? '<p class="planner-sub">' + esc(t('planner_goal_order')) + '</p>' : '');
 
   } else if(plannerStep === 2){
     title.textContent = t('planner_q_work');
@@ -7959,9 +8126,24 @@ function renderPlanner(){
   } else if(plannerStep === 5){
     if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
     title.textContent = t('planner_q_amounts');
-    d.chosen.forEach(k=>{ if(d.cats[k] === undefined) d.cats[k] = plannerSuggest(k, plannerNum(d.income) + plannerNum(d.side)); });
+    // Real spending beats a remembered plan, and both beat a blank — but only
+    // once. After that the boxes are the person's to edit, and re-entering the
+    // step must not undo what they just typed.
+    if(!d.fromActuals){
+      d.chosen.forEach(k=>{
+        const actual = plannerActualAverage(k);
+        if(actual !== null) d.cats[k] = actual;
+      });
+      d.fromActuals = true;
+    }
+    d.chosen.forEach(k=>{ if(d.cats[k] === undefined) d.cats[k] = 0; });
     body.innerHTML =
-      '<p class="planner-note">' + esc(t('planner_q_amounts_note')) + '</p>' +
+      '<p class="planner-note">' + esc(
+        plannerAmountSource(d) === 'actual'
+          ? t('planner_q_amounts_actual').replace('{months}', LEARN_MIN_MONTHS)
+          : plannerAmountSource(d) === 'plan'
+            ? t('planner_q_amounts_plan')
+            : t('planner_q_amounts_note')) + '</p>' +
       '<div class="planner-rows">' + d.chosen.map(k=>
         '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(categoryLabel(k)) + '</label>' +
         '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '"></div>').join('') +
@@ -7997,12 +8179,31 @@ function plannerResultHtml(d, o){
       esc(t('planner_nogoal').replace('{amount}', fmtMoney(o.save))) + '</p>';
   }
 
+  // Straight through the amounts step without typing anything. Reporting a
+  // date from that would be reporting a date for a person who spends nothing.
+  if(o.spend === 0 && (d.chosen || []).length){
+    return rows + '<p class="planner-headline is-warn">' + esc(t('planner_no_spend')) + '</p>' +
+      '<p class="planner-note">' + esc(t('planner_no_spend_note')) + '</p>';
+  }
+
   if(o.kind === 'ok'){
-    const headline = t('planner_ok')
-      .replace('{amount}', fmtMoney(o.save))
-      .replace('{target}', fmtMoney(o.target))
-      .replace('{months}', o.months)
-      .replace('{date}', monthLabel(o.ym));
+    const dates = plannerGoalDates(d, o);
+    const list = dates.length > 1
+      ? '<ul class="planner-goal-dates">' + dates.map(g=>
+          '<li><span class="pg-n">' + esc(g.name) + '</span>' +
+          '<span class="pg-a">' + fmtMoney(g.target) + '</span>' +
+          '<span class="pg-d">' + (g.ym ? esc(monthLabel(g.ym)) : '—') + '</span></li>').join('') + '</ul>'
+      : '';
+    const headline = dates.length > 1
+      ? t('planner_ok_multi')
+          .replace('{amount}', fmtMoney(o.save))
+          .replace('{count}', dates.length)
+          .replace('{date}', monthLabel(o.ym))
+      : t('planner_ok')
+          .replace('{amount}', fmtMoney(o.save))
+          .replace('{target}', fmtMoney(o.target))
+          .replace('{months}', o.months)
+          .replace('{date}', monthLabel(o.ym));
     const note = d.work === 'variable' ? t('planner_ok_note_variable') : t('planner_ok_note');
     const hz = plannerHorizon(d, o);
     // A date past graduation is a date built on an income that stops. Say what
@@ -8017,7 +8218,7 @@ function plannerResultHtml(d, o){
           .replace('{target}', fmtMoney(o.target))
           .replace('{grad}', monthLabel(hz.gradYm))) + '</p>'
       : '';
-    return rows + '<p class="planner-headline is-good">' + esc(headline) + '</p>' +
+    return rows + '<p class="planner-headline is-good">' + esc(headline) + '</p>' + list +
       horizon + '<p class="planner-note">' + esc(note) + '</p>';
   }
 
@@ -8061,10 +8262,14 @@ function plannerCapture(){
   const d = plannerDraft;
   if(!d) return;
   if(plannerStep === 1){
-    const n = document.getElementById('pl-goal-name');
-    const v = document.getElementById('pl-goal-target');
-    if(n) d.goalName = n.value.trim();
-    if(v) d.goalTarget = plannerNum(v.value);
+    document.querySelectorAll('#planner-body input[data-gname]').forEach(el=>{
+      const i = Number(el.dataset.gname);
+      if(d.goals[i]) d.goals[i].name = el.value.trim();
+    });
+    document.querySelectorAll('#planner-body input[data-gtarget]').forEach(el=>{
+      const i = Number(el.dataset.gtarget);
+      if(d.goals[i]) d.goals[i].target = plannerNum(el.value);
+    });
   } else if(plannerStep === 3){
     const i = document.getElementById('pl-income');
     const sd = document.getElementById('pl-side');
@@ -8113,20 +8318,39 @@ function applyPlannerPlan(){
   }
 
   const startYm = d.startYm || currentYm();
-  // A start before the table begins means the table has to begin there.
-  // generateMonths reuses any month it already has for a given ym, so the
-  // existing ones come through untouched.
-  if(state.months.length && ymIndex(startYm) < ymIndex(state.months[0].ym)){
-    const extra = ymIndex(state.months[0].ym) - ymIndex(startYm);
-    state.months = generateMonths(startYm, state.months.length + extra);
+
+  // Judged on categories, not salary. A seeded month carries a salary the app
+  // put there and nothing else; treating that as filled is what left a decade
+  // of zero-spending months un-repairable by re-running the plan. Spending
+  // logged against a month counts as work too, even with no plan behind it.
+  const userBudgeted = m =>
+    d.chosen.some(k=> (Number(m[k]) || 0) !== 0)
+    || state.categories.some(k=> (Number(m[k]) || 0) !== 0)
+    || (m.actual && Object.keys(m.actual).length > 0);
+
+  if(state.months.length){
+    const firstIdx = ymIndex(state.months[0].ym);
+    const startIdx = ymIndex(startYm);
+    if(startIdx < firstIdx){
+      // Starting earlier than the table: reach back. generateMonths matches on
+      // ym and reuses what it already has, so existing months come through
+      // untouched.
+      state.months = generateMonths(startYm, state.months.length + (firstIdx - startIdx));
+    } else if(startIdx > firstIdx){
+      // Starting later: drop the months in front, but stop at the first one
+      // holding anything of the user's. Trimming past that would delete a
+      // record to tidy up a date.
+      let cut = 0;
+      while(cut < state.months.length
+            && ymIndex(state.months[cut].ym) < startIdx
+            && !userBudgeted(state.months[cut])){
+        cut++;
+      }
+      if(cut > 0) state.months = state.months.slice(cut);
+    }
   }
 
   let filled = 0, skipped = 0;
-  // Judged on categories, not salary. A seeded month carries a salary the app
-  // put there and nothing else; treating that as filled is what left a decade
-  // of zero-spending months un-repairable by re-running the plan.
-  const userBudgeted = m => d.chosen.some(k=> (Number(m[k]) || 0) !== 0)
-    || state.categories.some(k=> (Number(m[k]) || 0) !== 0);
   state.months.forEach(m=>{
     // Anything before the chosen start is none of this plan's business.
     if(ymIndex(m.ym) < ymIndex(startYm)) return;
@@ -8143,21 +8367,23 @@ function applyPlannerPlan(){
     filled++;
   });
 
-  if(d.goalName && plannerNum(d.goalTarget) > 0){
-    if(!Array.isArray(state.goals)) state.goals = [];
-    const key = d.goalName.trim().toLowerCase();
-    const existing = state.goals.find(g=> String(g.name || '').trim().toLowerCase() === key);
+  if(!Array.isArray(state.goals)) state.goals = [];
+  plannerLiveGoals(d).forEach((g, i)=>{
+    const key = String(g.name).trim().toLowerCase();
+    const existing = state.goals.find(x=> String(x.name || '').trim().toLowerCase() === key);
     if(existing){
       // Same goal, revised. Its priority and any manual share stay as they are;
       // only the amount is what the plan was just asked about.
-      existing.target = plannerNum(d.goalTarget);
+      existing.target = plannerNum(g.target);
     } else {
       state.goals.push({
-        id: 'g' + Date.now() + '-' + Math.random().toString(36).slice(2,5),
-        name: d.goalName.trim(), target: plannerNum(d.goalTarget), dueYm: null, pct: null,
+        id: 'g' + Date.now() + '-' + i + '-' + Math.random().toString(36).slice(2,5),
+        name: String(g.name).trim(), target: plannerNum(g.target), dueYm: null, pct: null,
+        // A goal joins the plan at the month the plan starts from.
+        startYm: d.startYm || currentYm(),
       });
     }
-  }
+  });
 
   // Stored so the app can later notice that reality has moved away from it.
   // Measured through planNowFigures, the same function the check uses, and
@@ -8171,7 +8397,7 @@ function applyPlannerPlan(){
     income: base.income,
     spend: base.spend,
     save: base.save,
-    goalName: d.goalName || '',
+    goalName: (plannerLiveGoals(d)[0] || {}).name || '',
     ackSave: base.save,
     // Kept so months created later — by the goal stretching the table, or by
     // "+ Add month" — are budgeted rather than blank.
@@ -8213,6 +8439,20 @@ function wirePlanner(){
   });
 
   overlay.addEventListener('click', e=>{
+    const gdel = e.target.closest('button[data-gdel]');
+    if(gdel){
+      plannerCapture();
+      plannerDraft.goals.splice(Number(gdel.dataset.gdel), 1);
+      if(!plannerDraft.goals.length) plannerDraft.goals = [{ name:'', target:0 }];
+      renderPlanner();
+      return;
+    }
+    if(e.target.closest('#pl-goal-add')){
+      plannerCapture();
+      plannerDraft.goals.push({ name:'', target:0 });
+      renderPlanner();
+      return;
+    }
     const pick = e.target.closest('.planner-pick');
     if(pick){
       plannerDraft.work = pick.dataset.work;
