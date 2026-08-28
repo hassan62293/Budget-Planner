@@ -2572,6 +2572,26 @@ nav.tabs button{ color:var(--ink); }
 .pg-a{ flex:0 0 auto; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
 .pg-d{ flex:0 0 auto; font-weight:700; color:var(--emerald-deep); }
 
+/* ---------------------------------------------------------------------------
+   Free, always — the line that travels with a copy
+   --------------------------------------------------------------------------- */
+.foot .foot-free{
+  flex-basis:100%;
+  margin-top:14px; padding-top:14px;
+  border-top:1px solid var(--rule);
+  text-align:center;
+  color:var(--ink);
+  display:flex; flex-wrap:wrap; justify-content:center; gap:6px;
+}
+.foot .foot-free-url{
+  color:var(--emerald-deep); font-weight:600; text-decoration:none;
+  word-break:break-all;
+}
+.foot .foot-free-url:hover{ text-decoration:underline; }
+.foot .foot-free-url:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+/* The credit sits under it now, so it gives up the rule it used to draw. */
+.foot .foot-credit{ margin-top:8px; padding-top:0; border-top:none; }
+
 </style>
 </head>
 <body>
@@ -3210,6 +3230,7 @@ nav.tabs button{ color:var(--ink); }
           <h3>Who made this</h3>
           <p>Smart Budget was designed, written and built by <strong>Hassan Abdulghani Alwehaimid</strong>, who holds the copyright to it. © 2026, all rights reserved.</p>
           <p style="margin-top:8px;">Using the app is free and unrestricted — it is the code behind it that is reserved. Please don't republish that as your own work. You're very welcome to share the link with anyone, though; that's what <strong>Share this page</strong> is for.</p>
+          <p style="margin-top:8px;"><b>It is free, and it always will be.</b> If anyone ever charged you for Smart Budget, you paid for something that is given away. You can get it — and every update to it — for nothing at <a href="https://hassan62293.github.io/Budget-Planner/" target="_blank" rel="noopener">hassan62293.github.io/Budget-Planner</a>.</p>
           <p style="margin-top:8px;">The full terms are in the <a href="./LICENSE.txt" target="_blank" rel="noopener">LICENSE.txt</a> file that sits beside the app.</p>
         </div>
 
@@ -3472,6 +3493,7 @@ nav.tabs button{ color:var(--ink); }
           <h3>من صنع هذا التطبيق</h3>
           <p>«الميزانية الذكية» من تصميم وكتابة وتطوير <strong>حسن عبدالغني الوحيمد</strong>، وله حقوق النشر كاملةً. © 2026، جميع الحقوق محفوظة.</p>
           <p style="margin-top:8px;">واستخدام التطبيق مجاني وغير مقيَّد، وإنما المحفوظ هو الشيفرة البرمجية خلفه. فنرجو ألّا يُعاد نشرها على أنها من عمل غيره. ولك أن تشارك الرابط مع من تشاء، فهذا هو الغرض من <strong>مشاركة الصفحة</strong>.</p>
+          <p style="margin-top:8px;"><b>وهو مجاني، وسيبقى كذلك.</b> فإن طلب منك أحد مالًا مقابل «الميزانية الذكية»، فقد دفعت ثمن شيء يُعطى مجانًا. ويمكنك الحصول عليه وعلى كل تحديثاته بلا مقابل من <a href="https://hassan62293.github.io/Budget-Planner/" target="_blank" rel="noopener">hassan62293.github.io/Budget-Planner</a>.</p>
           <p style="margin-top:8px;">وتجد الشروط كاملةً في ملف <a href="./LICENSE.txt" target="_blank" rel="noopener">LICENSE.txt</a> الموجود بجوار التطبيق.</p>
         </div>
 
@@ -3513,6 +3535,10 @@ nav.tabs button{ color:var(--ink); }
 <footer class="foot">
   <span data-i18n="footer_amber">Amber cells are your inputs. Everything else calculates automatically.</span>
   <span data-i18n="footer_autosave">Data saves automatically in this browser.</span>
+  <span class="foot-free">
+    <span data-i18n="footer_free">Thank you for using Smart Budget — it is free, always.</span>
+    <a class="foot-free-url" id="foot-free-url" href="https://hassan62293.github.io/Budget-Planner/">hassan62293.github.io/Budget-Planner</a>
+  </span>
   <span class="foot-credit">
     <span data-i18n="footer_credit_by">Designed and built by</span>
     <span class="credit-name" data-i18n="footer_credit_name">Hassan Abdulghani Alwehaimid</span>
@@ -3874,6 +3900,7 @@ planner_open:'Plan this for me',
     forecast_chart_title:'Ending balance by year',
     footer_amber:'Amber cells are your inputs. Everything else calculates automatically.',
     footer_autosave:'Data saves automatically in this browser.',
+    footer_free:'Thank you for using Smart Budget — it is free, always.',
     footer_credit_by:'Designed and built by',
     footer_credit_name:'Hassan Abdulghani Alwehaimid',
     footer_credit_rights:'· © 2026, all rights reserved.',
@@ -4127,6 +4154,7 @@ planner_open:'خطّط لي',
     forecast_chart_title:'الرصيد الختامي حسب السنة',
     footer_amber:'الخلايا الكهرمانية هي إدخالاتك. كل شيء آخر يُحسب تلقائيًا.',
     footer_autosave:'تُحفظ البيانات تلقائيًا في هذا المتصفح.',
+    footer_free:'شكرًا لاستخدامك «الميزانية الذكية» — وهي مجانية دائمًا.',
     footer_credit_by:'من تصميم وتطوير',
     footer_credit_name:'حسن عبدالغني الوحيمد',
     footer_credit_rights:'· © 2026، جميع الحقوق محفوظة.',
@@ -8412,6 +8440,15 @@ function applyPlannerPlan(){
   return { filled, skipped };
 }
 
+/* Both the href and the visible text come from the same constant the share
+   button uses, so the two can never name different places. */
+function setFreeUrl(){
+  const a = document.getElementById('foot-free-url');
+  if(!a) return;
+  a.href = PLANNER_SHARE_URL;
+  a.textContent = PLANNER_SHARE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
 function wirePlanner(){
   const overlay = document.getElementById('planner-overlay');
   if(!overlay) return;
@@ -8503,6 +8540,7 @@ function initSetupFold(){
 function wireEvents(){
   renderHelpTocs();
   wireHelpToc();
+  setFreeUrl();
   wirePlanner();
   wirePlanChoose();
   wirePlanLearn();
