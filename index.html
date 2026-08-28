@@ -2168,6 +2168,367 @@ nav.tabs button{ color:var(--ink); }
   transform:scaleX(-1);
 }
 
+/* ---------------------------------------------------------------------------
+   How to use — contents index
+   --------------------------------------------------------------------------- */
+.help-toc{
+  margin:0 0 26px;
+  border:1px solid var(--rule); border-radius:10px;
+  background:var(--paper-raised);
+  overflow:hidden;
+}
+.help-toc > summary{
+  list-style:none; cursor:pointer;
+  padding:13px 15px;
+  font-family:var(--font-body); font-size:14px; font-weight:600;
+  color:var(--emerald-deep);
+  display:flex; align-items:center; gap:8px;
+  min-height:var(--tap);
+}
+.help-toc > summary::-webkit-details-marker{ display:none; }
+/* The disclosure triangle is drawn rather than inherited, so it can be turned
+   under RTL and rotated on open without fighting the UA's own marker. */
+.help-toc > summary::before{
+  content:'▸'; font-size:11px; line-height:1;
+  transition:transform .15s ease;
+}
+[dir="rtl"] .help-toc > summary::before{ content:'◂'; }
+.help-toc[open] > summary::before{ transform:rotate(90deg); }
+[dir="rtl"] .help-toc[open] > summary::before{ transform:rotate(-90deg); }
+@media (prefers-reduced-motion:reduce){
+  .help-toc > summary::before{ transition:none; }
+}
+.help-toc > summary:hover{ background:var(--good-tint); }
+.help-toc > summary:focus-visible{ outline:2px solid var(--emerald); outline-offset:-2px; }
+.help-toc-n{
+  margin-inline-start:auto;
+  font-weight:500; font-size:12px; color:var(--ink-soft);
+}
+.help-toc ol{
+  margin:0; padding:4px 0 10px;
+  list-style:none;
+  border-top:1px solid var(--rule);
+}
+.help-toc li{ margin:0; }
+.help-toc a{
+  /* flex rather than block so min-height can hold the row to a full tap
+     target without the text drifting off centre on one-line topics */
+  display:flex; align-items:center; min-height:var(--tap);
+  padding:8px 15px;
+  font-size:13.5px; line-height:1.4;
+  color:var(--ink); text-decoration:none;
+}
+.help-toc a:hover{ background:var(--good-tint); color:var(--emerald-deep); }
+.help-toc a:focus-visible{ outline:2px solid var(--emerald); outline-offset:-2px; }
+
+.help-back{
+  display:inline-block; margin-top:12px;
+  font-size:12px; color:var(--ink-soft); text-decoration:none;
+}
+.help-back:hover{ color:var(--emerald-deep); text-decoration:underline; }
+.help-back:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+@media (min-width:700px){
+  .help-toc ol{ columns:2; column-gap:8px; }
+  .help-toc li{ break-inside:avoid; }
+}
+
+/* ---------------------------------------------------------------------------
+   How to use — "Show me in the app", and the ring it leaves on the control
+   --------------------------------------------------------------------------- */
+.help-goto{
+  display:inline-flex; align-items:center; min-height:var(--tap);
+  margin-top:12px; margin-inline-end:14px;
+  padding:8px 15px;
+  border:1px solid var(--emerald); border-radius:20px;
+  background:transparent; color:var(--emerald-deep);
+  font-family:var(--font-body); font-size:12.5px; font-weight:600;
+  cursor:pointer; text-align:start;
+}
+.help-goto:hover{ background:var(--good-tint); }
+.help-goto:active{ transform:scale(.98); }
+.help-goto:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+@media (prefers-reduced-motion:reduce){ .help-goto:active{ transform:none; } }
+
+/* The ring that says "this is the thing you just read about". Outline rather
+   than box-shadow so it takes the theme's own accent and never repaints a
+   background the control is relying on. */
+@keyframes spotlight-ring{
+  0%   { outline-color:var(--emerald); outline-offset:2px; }
+  60%  { outline-color:var(--emerald); outline-offset:7px; }
+  100% { outline-color:transparent;    outline-offset:7px; }
+}
+.spotlight{
+  outline:3px solid transparent;
+  border-radius:10px;
+  animation:spotlight-ring 1.3s ease-out 2;
+}
+@media (prefers-reduced-motion:reduce){
+  .spotlight{ animation:none; outline-color:var(--emerald); outline-offset:4px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Folded configuration on the Plan tab
+   --------------------------------------------------------------------------- */
+.fold{
+  margin:18px 0 0;
+  border:1px solid var(--rule); border-radius:10px;
+  background:var(--paper-raised);
+}
+.fold > summary{
+  list-style:none; cursor:pointer;
+  display:flex; align-items:center; gap:9px;
+  min-height:var(--tap); padding:12px 15px;
+  font-family:var(--font-body); font-size:13.5px; font-weight:600;
+  color:var(--ink);
+}
+.fold > summary::-webkit-details-marker{ display:none; }
+.fold > summary::before{
+  content:'▸'; font-size:11px; line-height:1; color:var(--ink-soft);
+  transition:transform .15s ease;
+}
+[dir="rtl"] .fold > summary::before{ content:'◂'; }
+.fold[open] > summary::before{ transform:rotate(90deg); }
+[dir="rtl"] .fold[open] > summary::before{ transform:rotate(-90deg); }
+@media (prefers-reduced-motion:reduce){ .fold > summary::before{ transition:none; } }
+.fold > summary:hover{ background:var(--good-tint); }
+.fold > summary:focus-visible{ outline:2px solid var(--emerald); outline-offset:-2px; }
+.fold-body{
+  padding:4px 15px 16px;
+  border-top:1px solid var(--rule);
+}
+/* The setup card already draws its own frame; inside a fold that is a box in a
+   box, so it gives up the border and keeps only its spacing. */
+.fold-body .setup-card{
+  border:none; background:transparent; padding:0; margin:0;
+}
+.fold-body .rules-box{ margin-top:10px; }
+
+/* ---------------------------------------------------------------------------
+   The guided plan
+   --------------------------------------------------------------------------- */
+.planner-card{
+  max-width:460px; width:100%;
+  max-height:88vh; overflow-y:auto;
+  padding:22px 22px 18px;
+}
+.planner-step{
+  margin:0 0 4px; font-size:11px; font-weight:600;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft);
+}
+.planner-card h3{ color:var(--ink); margin:0 0 10px; }
+.planner-note{ margin:0 0 14px; font-size:13px; line-height:1.55; color:var(--ink-soft); }
+
+.planner-field{ margin-bottom:14px; }
+.planner-field label{
+  display:block; margin-bottom:5px;
+  font-size:12.5px; font-weight:600; color:var(--ink);
+}
+.planner-field input{
+  width:100%; min-height:var(--tap); padding:9px 12px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:15px; text-align:start;
+}
+.planner-field input:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+
+/* Occupation: full-width rows, because the sub-line is the part that tells you
+   which one you are. */
+.planner-picks{ display:flex; flex-direction:column; gap:9px; }
+.planner-pick{
+  display:flex; flex-direction:column; gap:3px; text-align:start;
+  padding:12px 14px; min-height:var(--tap);
+  border:1px solid var(--rule); border-radius:10px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; cursor:pointer;
+}
+.planner-pick .pk-t{ font-size:14px; font-weight:600; }
+.planner-pick .pk-s{ font-size:12px; color:var(--ink-soft); line-height:1.4; }
+.planner-pick:hover{ border-color:var(--emerald); }
+.planner-pick.on{ border-color:var(--emerald); background:var(--good-tint); }
+.planner-pick.on .pk-t{ color:var(--emerald-deep); }
+.planner-pick:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+
+.planner-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.planner-chip{
+  min-height:var(--tap); padding:8px 14px;
+  border:1px solid var(--rule); border-radius:20px;
+  background:var(--paper); color:var(--ink-soft);
+  font-family:inherit; font-size:13px; cursor:pointer;
+}
+.planner-chip.on{ border-color:var(--emerald); background:var(--good-tint); color:var(--emerald-deep); font-weight:600; }
+.planner-chip:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+
+.planner-rows{ display:flex; flex-direction:column; gap:9px; }
+.planner-row{ display:flex; align-items:center; gap:10px; }
+.planner-row label{ flex:1 1 auto; min-width:0; font-size:13.5px; color:var(--ink); }
+.planner-row input{
+  flex:0 0 120px; width:120px; min-height:var(--tap);
+  padding:8px 11px; border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:15px; text-align:end;
+}
+.planner-row input:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+
+.planner-left{
+  margin:14px 0 0; padding:11px 13px; border-radius:8px;
+  font-size:13.5px; font-weight:600;
+}
+.planner-left.is-good{ background:var(--good-tint); color:var(--good-ink); }
+.planner-left.is-bad{ background:var(--bad-tint); color:var(--bad-ink); }
+
+.planner-sum{ display:flex; gap:9px; margin-bottom:14px; }
+.planner-sum > div{
+  flex:1 1 0; min-width:0; padding:10px;
+  border:1px solid var(--rule); border-radius:9px; background:var(--paper);
+}
+.planner-sum .k{ margin:0 0 3px; font-size:11px; color:var(--ink-soft); }
+.planner-sum .v{ margin:0; font-size:14px; font-weight:700; color:var(--ink); }
+.planner-sum .v.good{ color:var(--good-ink); }
+.planner-sum .v.bad{ color:var(--bad-ink); }
+
+.planner-headline{ margin:0 0 10px; font-size:15px; line-height:1.5; font-weight:600; }
+.planner-headline.is-good{ color:var(--emerald-deep); }
+.planner-headline.is-bad{ color:var(--bad-ink); }
+.planner-levers{ margin:0; padding-inline-start:20px; }
+.planner-levers li{ font-size:13.5px; line-height:1.6; color:var(--ink); margin-bottom:6px; }
+
+.planner-actions{ display:flex; align-items:center; gap:9px; margin-top:20px; }
+.planner-actions #planner-next{
+  margin-inline-start:auto;
+  min-height:var(--tap); padding:0 20px;
+  border:none; border-radius:8px;
+  background:var(--emerald); color:var(--paper);
+  font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+}
+:root[data-theme="dark"] .planner-actions #planner-next{ color:#1A1815; }
+.planner-ghost{
+  min-height:var(--tap); padding:0 10px;
+  border:none; background:transparent; color:var(--ink-soft);
+  font-family:inherit; font-size:13px; cursor:pointer;
+}
+.planner-ghost:hover{ color:var(--emerald-deep); text-decoration:underline; }
+.planner-ghost:focus-visible,
+.planner-actions #planner-next:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+.replan-btn{
+  display:block; width:100%; min-height:var(--tap);
+  margin-bottom:14px; padding:11px 16px;
+  border:1px dashed var(--emerald); border-radius:10px;
+  background:transparent; color:var(--emerald-deep);
+  font-family:var(--font-body); font-size:13.5px; font-weight:600; cursor:pointer;
+}
+.replan-btn:hover{ background:var(--good-tint); }
+.replan-btn:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+@media (max-width:420px){
+  .planner-sum{ flex-direction:column; }
+}
+
+/* ---------------------------------------------------------------------------
+   Plan realism: the horizon note, and the drift banner
+   --------------------------------------------------------------------------- */
+.planner-headline.is-warn{ color:var(--warn-ink); }
+.planner-sub{
+  margin:5px 0 0; font-size:11.5px; line-height:1.5; color:var(--ink-soft);
+}
+.planner-field input[type="month"]{
+  width:100%; min-height:var(--tap); padding:9px 12px;
+  border:1px solid var(--rule); border-radius:8px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:15px;
+}
+
+.drift{
+  margin:0 0 14px; padding:13px 15px;
+  border:1px solid var(--rule); border-inline-start-width:3px;
+  border-radius:10px; background:var(--paper-raised);
+}
+.drift.is-good{ border-inline-start-color:var(--good); }
+.drift.is-warn{ border-inline-start-color:var(--warn); }
+.drift-line{ margin:0; font-size:13.5px; line-height:1.6; color:var(--ink); }
+.drift-actions{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.drift-actions #drift-replan{
+  min-height:var(--tap); padding:0 16px;
+  border:none; border-radius:8px;
+  background:var(--emerald); color:var(--paper);
+  font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+}
+:root[data-theme="dark"] .drift-actions #drift-replan{ color:#1A1815; }
+.drift-ghost{
+  min-height:var(--tap); padding:0 10px;
+  border:none; background:transparent; color:var(--ink-soft);
+  font-family:inherit; font-size:13px; cursor:pointer;
+}
+.drift-ghost:hover{ color:var(--emerald-deep); text-decoration:underline; }
+.drift-actions button:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+/* ---------------------------------------------------------------------------
+   Plans that learn from actuals
+   --------------------------------------------------------------------------- */
+.learn{
+  margin:0 0 14px; padding:13px 15px;
+  border:1px solid var(--rule); border-inline-start:3px solid var(--warn);
+  border-radius:10px; background:var(--paper-raised);
+}
+.learn-head{
+  margin:0 0 9px; font-size:13.5px; font-weight:600; color:var(--ink);
+}
+.learn-list{ list-style:none; margin:0; padding:0; }
+.learn-list li{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:8px 0; border-top:1px solid var(--rule);
+}
+.learn-list li:first-child{ border-top:none; }
+.learn-text{ flex:1 1 190px; min-width:0; font-size:13px; line-height:1.55; color:var(--ink); }
+.learn-use{
+  flex:0 0 auto; min-height:var(--tap); padding:0 15px;
+  border:1px solid var(--emerald); border-radius:8px;
+  background:transparent; color:var(--emerald-deep);
+  font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+}
+.learn-use:hover{ background:var(--good-tint); }
+.learn-all{
+  margin-top:10px; min-height:var(--tap); padding:0 16px;
+  border:none; border-radius:8px;
+  background:var(--emerald); color:var(--paper);
+  font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+}
+:root[data-theme="dark"] .learn-all{ color:#1A1815; }
+.learn-note{ margin:10px 0 0; font-size:11.5px; line-height:1.5; color:var(--ink-soft); }
+.learn button:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+/* ---------------------------------------------------------------------------
+   The two ways to start
+   --------------------------------------------------------------------------- */
+.choose{
+  margin:0 0 18px; padding:16px;
+  border:1px solid var(--rule); border-radius:12px;
+  background:var(--paper-raised);
+}
+.choose h3{
+  margin:0 0 12px;
+  font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--ink);
+}
+.choose-cards{ display:flex; flex-direction:column; gap:10px; }
+.choose-card{
+  display:flex; flex-direction:column; gap:5px; text-align:start;
+  padding:14px 15px;
+  border:1px solid var(--rule); border-radius:10px;
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; cursor:pointer;
+}
+.choose-card .ch-t{ font-size:14.5px; font-weight:700; }
+.choose-card .ch-s{ font-size:12.5px; line-height:1.5; color:var(--ink-soft); }
+.choose-card:hover{ border-color:var(--emerald); }
+.choose-card:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+.choose-card.is-primary{ border-color:var(--emerald); background:var(--good-tint); }
+.choose-card.is-primary .ch-t{ color:var(--emerald-deep); }
+@media (min-width:640px){
+  .choose-cards{ flex-direction:row; }
+  .choose-card{ flex:1 1 0; min-width:0; }
+}
+
 </style>
 </head>
 <body>
@@ -2283,6 +2644,26 @@ nav.tabs button{ color:var(--ink); }
       <h2 class="section-title" data-i18n="entry_h2">Enter your budget and plan</h2>
       <p class="section-note" data-i18n="entry_note">Set what you are saving for, then what you earn and expect to spend. Everything else in the app is worked out from here.</p>
 
+      <div id="plan-choose" class="choose" style="display:none;">
+        <h3 data-i18n="choose_title">How would you like to start?</h3>
+        <div class="choose-cards">
+          <button type="button" id="choose-smart" class="choose-card is-primary">
+            <span class="ch-t" data-i18n="choose_smart">Smart budget planner</span>
+            <span class="ch-s" data-i18n="choose_smart_sub">Answer five short questions and the app builds the whole plan — your months, your categories and your goal.</span>
+          </button>
+          <button type="button" id="choose-manual" class="choose-card">
+            <span class="ch-t" data-i18n="choose_manual">Set it up myself</span>
+            <span class="ch-s" data-i18n="choose_manual_sub">Choose your own categories and amounts, month by month.</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="plan-learn" class="learn" style="display:none;"></div>
+
+      <div id="plan-drift" class="drift" style="display:none;"></div>
+
+      <button type="button" id="btn-replan" class="replan-btn" data-i18n="planner_open">Plan this for me</button>
+
       <div class="goals" id="goals">
         <div class="goals-head">
           <h3 class="pvs-title" data-i18n="goals_title">Your goals</h3>
@@ -2305,24 +2686,40 @@ nav.tabs button{ color:var(--ink); }
         <p class="goal-compare" id="goal-compare"></p>
       </div>
 
-      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
 
-      <div class="rules-box">
-        <div class="field">
-          <label for="emergency-threshold" class="cur-label" data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount</label>
-          <input type="number" id="emergency-threshold" step="1">
-        </div>
-        <div class="field">
-          <label for="emergency-start" class="cur-label" data-i18n="rule_start_label">Starting emergency balance</label>
-          <input type="number" id="emergency-start" step="1">
-        </div>
-        <div class="field">
-          <label for="savings-start" class="cur-label" data-i18n="rule_savings_start_label">Starting savings balance</label>
-          <input type="number" id="savings-start" step="1">
+
+
+
+
+
+      <div class="entry-view" id="entry-grid-view">
+        <div class="ycal" id="entry-calendar"></div>
+        <p class="ycal-progress" id="entry-progress"></p>
+        <div class="table-actions">
+          <button id="btn-add-month" data-i18n="table_add_month">+ Add month</button>
+          <button id="btn-remove-month" data-i18n="table_remove_month">− Remove last month</button>
         </div>
       </div>
-      <p class="section-note rules-hint" id="savings-start-hint"></p>
 
+      <div class="entry-view" id="entry-form-view" hidden>
+        <div class="entry-form-head">
+          <button type="button" class="entry-back" id="entry-back" aria-label="Back to the month calendar">‹</button>
+          <div>
+            <div class="entry-form-title" id="entry-form-title"></div>
+            <div class="entry-form-sub" id="entry-form-sub"></div>
+          </div>
+        </div>
+        <div id="entry-form-body"></div>
+        <div class="entry-actions">
+          <button type="button" id="entry-delete" class="danger-link" data-i18n="entry_delete">Remove this month</button>
+          <button type="button" id="entry-done" data-i18n="entry_done">Done</button>
+          <button type="button" id="entry-next" data-i18n="entry_next">Save &amp; next month</button>
+        </div>
+        <span class="entry-saved-flag" id="entry-saved-flag" data-i18n="msg_saved">Saved</span>
+      </div>
+      <details class="fold" id="setup-fold">
+        <summary><span data-i18n="fold_setup">Set up your table, categories and fixed amounts</span></summary>
+        <div class="fold-body">
       <div class="setup-card">
         <h3 data-i18n="setup_title">Set up your table</h3>
         <p class="section-note" style="margin:0 0 14px;" data-i18n="setup_note">Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.</p>
@@ -2368,37 +2765,38 @@ nav.tabs button{ color:var(--ink); }
           <div id="planning-mode-list" class="planning-mode-list"></div>
         </div>
       </div>
+        </div>
+      </details>
 
-      <div class="entry-view" id="entry-grid-view">
-        <div class="ycal" id="entry-calendar"></div>
-        <p class="ycal-progress" id="entry-progress"></p>
-        <div class="table-actions">
-          <button id="btn-add-month" data-i18n="table_add_month">+ Add month</button>
-          <button id="btn-remove-month" data-i18n="table_remove_month">− Remove last month</button>
+      <details class="fold" id="rules-fold">
+        <summary><span data-i18n="fold_rules">Emergency fund and starting balances</span></summary>
+        <div class="fold-body">
+      <p class="section-note" style="margin-top:10px;" data-i18n="rule_note">Emergency rule: each month, if salary minus expenses meets the threshold, that amount is auto-saved to the emergency fund; if the surplus is smaller, the whole surplus goes in; if you're short, the shortfall is auto-covered from the fund (up to what's available).</p>
+
+      <div class="rules-box">
+        <div class="field">
+          <label for="emergency-threshold" class="cur-label" data-i18n="rule_threshold_label">Min. surplus threshold — emergency amount</label>
+          <input type="number" id="emergency-threshold" step="1">
+        </div>
+        <div class="field">
+          <label for="emergency-start" class="cur-label" data-i18n="rule_start_label">Starting emergency balance</label>
+          <input type="number" id="emergency-start" step="1">
+        </div>
+        <div class="field">
+          <label for="savings-start" class="cur-label" data-i18n="rule_savings_start_label">Starting savings balance</label>
+          <input type="number" id="savings-start" step="1">
         </div>
       </div>
-
-      <div class="entry-view" id="entry-form-view" hidden>
-        <div class="entry-form-head">
-          <button type="button" class="entry-back" id="entry-back" aria-label="Back to the month calendar">‹</button>
-          <div>
-            <div class="entry-form-title" id="entry-form-title"></div>
-            <div class="entry-form-sub" id="entry-form-sub"></div>
-          </div>
+      <p class="section-note rules-hint" id="savings-start-hint"></p>
         </div>
-        <div id="entry-form-body"></div>
-        <div class="entry-actions">
-          <button type="button" id="entry-delete" class="danger-link" data-i18n="entry_delete">Remove this month</button>
-          <button type="button" id="entry-done" data-i18n="entry_done">Done</button>
-          <button type="button" id="entry-next" data-i18n="entry_next">Save &amp; next month</button>
-        </div>
-        <span class="entry-saved-flag" id="entry-saved-flag" data-i18n="msg_saved">Saved</span>
-      </div>
+      </details>
     </section>
 
     <section class="panel" id="panel-actual">
       <h2 class="section-title" data-i18n="actual_h2">Enter your data as you go</h2>
       <p class="section-note" data-i18n="actual_note">Record what you actually spend, whenever you spend it. Each bar fills as you approach what you planned for that category.</p>
+
+      <div id="spend-alerts" class="goal-alerts"></div>
 
       <div class="sp-head">
         <button type="button" class="ycal-nav" id="sp-prev" aria-label="Previous month">‹</button>
@@ -2518,16 +2916,27 @@ nav.tabs button{ color:var(--ink); }
         <div class="help-section">
           <h3>Start here — four steps</h3>
           <ol class="help-steps">
-            <li><span class="step-n">1</span><div><b>Say what you are saving for</b>
+            <li data-goto="goals"><span class="step-n">1</span><div><b>Say what you are saving for</b>
               <p>Open <span class="help-key">Enter your budget and plan</span> — your goals are the first thing on it. Add a laptop, a trip, anything. The app works out when you would reach it from your own figures, and tells you if overspending pushes it back.</p></div></li>
-            <li><span class="step-n">2</span><div><b>Plan what you expect</b>
+            <li data-goto="setup"><span class="step-n">2</span><div><b>Plan what you expect</b>
               <p>Further down the same tab, choose how many years to plan for and your starting month, press <span class="help-key">Generate months table</span>, then tap a month and fill in what you earn and expect to spend.</p></div></li>
-            <li><span class="step-n">3</span><div><b>Log what you actually spend</b>
+            <li data-goto="spent"><span class="step-n">3</span><div><b>Log what you actually spend</b>
               <p>Open <span class="help-key">Enter your data as you go</span>. Each time you spend something, type the amount beside that category and press <span class="help-key">Add</span>. It builds up as you go.</p></div></li>
-            <li><span class="step-n">4</span><div><b>See where you stand</b>
+            <li data-goto="overview"><span class="step-n">4</span><div><b>See where you stand</b>
               <p><span class="help-key">Overview</span> shows what you kept each month. <span class="help-key">Dashboard</span> shows your plan against what you really spent.</p></div></li>
           </ol>
           <p class="help-tip">That's the whole app: plan it, log it, watch it, aim at something. Everything below is detail you can come back to.</p>
+        </div>
+
+        <div class="help-section" data-goto="planner">
+          <h3>Or let the app plan it for you</h3>
+          <p>If you would rather not work any of that out yourself, press <span class="help-key">Plan this for me</span> at the top of the plan tab. It asks five short questions — what you are saving for, what you do, what comes in and when you want to start, what you spend on, and roughly how much — and does the rest.</p>
+          <p style="margin-top:8px;">The answer comes back in plain words: <i>"Putting aside 1,980 a month, you reach 50,000 in 26 months — around October 2028."</i> Accept it and every empty month is filled in for you. Months you have already filled are left exactly as they are.</p>
+          <p style="margin-top:8px;">Saying whether you are a student, on a fixed salary, or paid a different amount each month changes what it asks and what it sets up for you. A fixed salary gets filled into every month by itself. If your pay varies it asks for a <b>normal</b> month rather than your best one, so the plan still holds in a quiet month.</p>
+          <p class="help-tip">If the goal is out of reach, it says so — and says what would change it, using your own numbers. Sometimes the honest answer is that a smaller goal first is the better place to start.</p>
+          <p style="margin-top:8px;"><b>How far ahead it will speak.</b> If you are a student it asks roughly when you finish studying. A plan that runs past that date is built on an income that stops, so instead of asserting a date years out it tells you what you would actually have banked by the time you graduate — and suggests coming back once you know what you will be earning. It will not invent a graduate salary for you.</p>
+          <p style="margin-top:8px;"><b>When your plan turns out to be wrong.</b> Once a category has three finished months of logged spending, the app compares what you planned against what you actually spent. If they disagree by more than a little, it says so and offers your real average — <i>"Groceries: you planned 900, and have averaged 1,340 over 6 months."</i> Accepting it changes this month onwards only; finished months keep what actually happened.</p>
+          <p style="margin-top:8px;"><b>When things change.</b> The app remembers what your plan assumed. If a raise, a pay cut or a change in your spending moves what you put aside each month, a note appears at the top of the plan tab with the new date and a button to plan again. Small wobbles are ignored — it only speaks up when the date actually moves.</p>
         </div>
 
         <div class="help-section">
@@ -2543,7 +2952,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">On a computer these are tabs across the top, along with the forecast. On a phone the forecast sits behind the <span class="help-key">◹</span> button at the top, and this page behind <span class="help-key">?</span>.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="calendar">
           <h3>Planning a month</h3>
           <p>Tap any month in the calendar to open it. Each row is one thing to fill in — your salary first, then each kind of spending. You don't have to complete everything; leave anything that doesn't apply at 0.</p>
           <p style="margin-top:8px;">Three numbers at the top update as you type: what came <b>in</b>, what went <b>out</b>, and what you <b>saved</b>.</p>
@@ -2555,7 +2964,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip"><b>Your numbers save by themselves.</b> If your phone locks or you close the app halfway through a month, nothing is lost. The Save button is there to move you along, not to protect your work.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="calendar">
           <h3>What the colours mean</h3>
           <ul class="help-list">
             <li><b>Green, with a ✓</b> — income entered. That month is done.</li>
@@ -2565,7 +2974,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">Under the calendar you'll see how many months you've completed so far.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>Logging what you actually spend</h3>
           <p>The <span class="help-key">Enter your data as you go</span> tab is where real spending goes. Each category shows what you planned, what you have spent so far, and a bar that fills as you approach the plan.</p>
           <p style="margin-top:8px;"><b>It adds up.</b> Type an amount, press <span class="help-key">Add</span>, and it joins the running total for that category. Three shops at 120, 85 and 240 leave you at 445. The box empties ready for the next one, and pressing Enter does the same as pressing Add.</p>
@@ -2573,12 +2982,12 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">Spent nothing at all on something? Enter <strong>0</strong> and press Add. That records it as genuinely nothing, which is not the same as never logging it — see below.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>The + button</h3>
           <p>The same thing, quicker. Tap <b>+</b> at the bottom, choose the category, type the amount, press Add. It goes to the current month and joins that category's running total, exactly as the tab does.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>Remembering what a payment was for</h3>
           <p>Beside every amount there is a box for a short note — <i>Car repair</i>, <i>Gift for mum</i>. It is optional, and it earns its keep most on <b>Other expenses</b>, the category that otherwise turns into a number with no story behind it.</p>
           <p style="margin-top:8px;">Each category then lists what its total is made of, so a month later you can see where the money went instead of guessing. The <span class="help-key">✕</span> beside a line removes just that one payment and takes its amount back out of the total — much finer than <span class="help-key">↺</span>, which clears the whole category.</p>
@@ -2586,7 +2995,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">Spending you logged before notes existed still counts. It appears as a single line called <i>Logged before notes were added</i>, so the itemised lines and the category total can never look like they disagree.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="basis">
           <h3>What happens when a month ends</h3>
           <p>While a month is still running, your savings are worked out from your <strong>plan</strong>. That is deliberate: half a month of logged spending set against a full month's income would look like an enormous surplus that isn't real.</p>
           <p style="margin-top:8px;">Once the month is over, what you logged takes over:</p>
@@ -2598,7 +3007,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">This is why entering <strong>0</strong> matters. A category left untouched falls back to its plan; one where you entered 0 counts as nothing spent.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="compare">
           <h3>Plan against reality</h3>
           <p>The <span class="help-key">Dashboard</span> shows every category with what you planned beside what you spent, across all your months.</p>
           <ul class="help-list">
@@ -2609,18 +3018,18 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">The same colours appear on each category as you log it, so a category getting tight is visible before the month is out.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="categories">
           <h3>Choosing what you track</h3>
           <p>In <span class="help-key">Enter your budget and plan</span>, under <b>Table columns</b>, you decide the categories. Remove any you don't need and add your own — Subscriptions, school fees, whatever fits your life. If a category already has numbers in it, you'll be asked before it goes.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="salary">
           <h3>Type your salary once</h3>
           <p>In <span class="help-key">Enter your budget and plan</span>, set <b>Your usual monthly salary</b>. Every new month then starts with it already filled in.</p>
           <p style="margin-top:8px;">It is a starting point, not a lock — change any single month and only that month changes. If your pay goes up, update the figure and press <span class="help-key">Apply to every month</span>; it tells you how many months would change and asks first.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="fixed">
           <h3>Amounts that never change</h3>
           <p>Some things are the same every month — rent, a subscription. Others move around — groceries, fuel.</p>
           <p style="margin-top:8px;">Under <b>Fixed vs. variable</b>, mark anything steady as <b>fixed</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you can't overwrite them by accident. Leave everything else as <b>variable</b> and enter it month by month.</p>
@@ -2632,7 +3041,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">That is how you record a pay rise or a rent increase. End the old period at the month before the change, press <span class="help-key">+ Add period</span>, and give the new one its own amount. Each month uses whichever period covers it.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="emergency">
           <h3>The emergency fund</h3>
           <p>A simple rule that sets money aside for you. In <span class="help-key">Enter your budget and plan</span>, just below your goals, set how much you'd like to put away each month, and how much you already have.</p>
           <p style="margin-top:8px;">Then, every month:</p>
@@ -2644,13 +3053,13 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">You never have to do anything — it tracks alongside your budget.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="emergency">
           <h3>Savings you already have</h3>
           <p>If you had money saved before starting, put it in <b>Starting savings balance</b>, beside the emergency settings. The forecast then continues from that figure rather than starting at zero, so it reflects where you actually are.</p>
           <p style="margin-top:8px;">It is the same figure as <b>Starting savings</b> on the forecast page — change either and both move together.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>Saving for something</h3>
           <p>At the top of <span class="help-key">Enter your budget and plan</span>, add what you are saving for, with the amount. Add as many as you like.</p>
           <p style="margin-top:8px;"><b>The order is the priority.</b> Use the ▲ ▼ arrows to put the most important at the top. The app splits your saving accordingly — with four goals that is 40%, 30%, 20% and 10% — and you can type your own percentage for any of them.</p>
@@ -2658,21 +3067,21 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip"><b>When one goal is reached, its share passes to the others.</b> So the later goals arrive sooner than a simple division would suggest, and the dates you see already allow for that.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>One at a time, or all at once</h3>
           <p><b>Plan for all</b> splits your saving across every goal by priority.</p>
           <p style="margin-top:8px;"><b>Focus on one</b> puts everything into a single goal until it is done, then moves to the next.</p>
           <p style="margin-top:8px;">A line underneath compares them on real dates — something like <i>"Focusing on Laptop finishes it by December. Splitting across all of them finishes everything by June."</i> — so you can see the trade-off instead of guessing at it.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>Deadlines and side income</h3>
           <p>Give a goal a <b>By</b> date and the app checks whether your saving gets there in time. If it does not, it tells you the size of the gap:</p>
           <p style="margin-top:8px;"><i>Needs 640 a month and is getting 400. The gap is 240 a month — the amount a side income would need to cover.</i></p>
           <p style="margin-top:8px;">A number you can act on, rather than a vague suggestion to earn more.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>When you overspend</h3>
           <p>Go over on a category and the app says so straight away, and tells you what it cost:</p>
           <ul class="help-list">
@@ -2683,20 +3092,20 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">Going <b>over</b> moves the dates immediately, because that money is spent and the rest of the month cannot un-spend it. Being <b>under</b> so far does not, because the month is not finished and you might still spend it. The dates only move when something is certain.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>How much should I save?</h3>
           <p>A common starting point is around 25% of what you earn. The app shows that figure next to what your plan actually leaves, so you can see both:</p>
           <p style="margin-top:8px;"><i>25% rule of thumb: 2,500. Your plan saves: 2,000. Reaching the 25% mark would mean trimming about 500 of planned spending a month.</i></p>
           <p style="margin-top:8px;">It will never suggest an amount your own budget cannot reach — where the two disagree, it says so and shows what would have to change. It also shows what is left to spend once your goals are funded, but it will not invent an amount for groceries: it has no way of knowing how you live.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="setup">
           <h3>The table grows by itself</h3>
           <p>If your goals reach further than your months table covers, the app extends it and says so. It only ever adds months — it will never remove one, because that could delete figures you had entered.</p>
           <p style="margin-top:8px;">If a goal would take more than 20 years at your current rate, it says that plainly instead of showing a date decades away.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="forecast">
           <h3>Dashboard and Forecast</h3>
           <p><b>Dashboard</b> adds everything up: your plan against what you spent, totals, your average savings rate, and where the money actually goes, as charts.</p>
           <p style="margin-top:8px;"><b>Forecast</b> looks ahead. Tell it what you expect for pay rises, rising costs and investment returns, and it estimates where your balance lands. It's an estimate built on your assumptions, not a promise.</p>
@@ -2713,7 +3122,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip warn"><b>On an iPhone this genuinely protects your data.</b> Safari deletes saved website data after 7 days without a visit. An app on your home screen isn't treated as a website, so your budget stays put. Installed, it also works with no internet at all.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="backup">
           <h3>Keep a backup</h3>
           <p>Everything lives on this device and nowhere else. That's what keeps it private — but it also means a lost or reset phone takes your budget with it.</p>
           <p style="margin-top:8px;">Every so often:</p>
@@ -2724,7 +3133,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">To restore it on a new phone, or after a reset, open the app and use <span class="help-key">Import data</span> with that file. Everything comes back exactly as it was.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="backup">
           <h3>Working with Excel</h3>
           <ul class="help-list">
             <li><span class="help-key">Export to Excel (.xlsx)</span> downloads a workbook with your budget, dashboard and forecast.</li>
@@ -2736,7 +3145,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;"><b>Share button not working?</b> It only works over a real <code>https://</code> link — not on a file opened from your downloads, or inside another app's file viewer.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="language">
           <h3>Light, dark, and language</h3>
           <p>The <span class="help-key">◐</span> button at the top cycles between matching your device, always light, and always dark.</p>
           <p style="margin-top:8px;"><b>English / العربية</b> switches language at any time, including full right-to-left layout. Your data stays exactly as it is.</p>
@@ -2765,16 +3174,27 @@ nav.tabs button{ color:var(--ink); }
         <div class="help-section">
           <h3>ابدأ من هنا — أربع خطوات</h3>
           <ol class="help-steps">
-            <li><span class="step-n">١</span><div><b>حدّد ما تدّخر من أجله</b>
+            <li data-goto="goals"><span class="step-n">١</span><div><b>حدّد ما تدّخر من أجله</b>
               <p>افتح <span class="help-key">أدخل ميزانيتك وخطتك</span> — فأهدافك أول ما فيها. أضف حاسوبًا أو رحلة أو أي شيء. يحسب التطبيق موعد بلوغه من أرقامك أنت، ويخبرك إن أخّره تجاوزك في الإنفاق.</p></div></li>
-            <li><span class="step-n">٢</span><div><b>خطّط لما تتوقعه</b>
+            <li data-goto="setup"><span class="step-n">٢</span><div><b>خطّط لما تتوقعه</b>
               <p>وأسفل التبويب نفسه، اختر عدد السنوات وشهر البداية، واضغط <span class="help-key">إنشاء جدول الأشهر</span>، ثم اضغط شهرًا واملأ دخلك وما تتوقع إنفاقه.</p></div></li>
-            <li><span class="step-n">٣</span><div><b>سجّل ما تنفقه فعليًا</b>
+            <li data-goto="spent"><span class="step-n">٣</span><div><b>سجّل ما تنفقه فعليًا</b>
               <p>افتح <span class="help-key">أدخل بياناتك أولًا بأول</span>. وكلما أنفقت شيئًا، اكتب المبلغ بجانب تلك الفئة واضغط <span class="help-key">إضافة</span>، فيتراكم أولًا بأول.</p></div></li>
-            <li><span class="step-n">٤</span><div><b>اطّلع على وضعك</b>
+            <li data-goto="overview"><span class="step-n">٤</span><div><b>اطّلع على وضعك</b>
               <p>تعرض <span class="help-key">نظرة عامة</span> ما احتفظت به كل شهر، وتعرض <span class="help-key">لوحة المعلومات</span> خطتك مقابل ما أنفقته فعلًا.</p></div></li>
           </ol>
           <p class="help-tip">هذا هو التطبيق كله: خطّط، وسجّل، وراقب، واستهدف شيئًا. وكل ما يلي تفاصيل يمكنك العودة إليها.</p>
+        </div>
+
+        <div class="help-section" data-goto="planner">
+          <h3>أو دع التطبيق يخطّط لك</h3>
+          <p>إن آثرت ألاّ تحسب ذلك بنفسك، فاضغط <span class="help-key">خطّط لي</span> أعلى تبويب الخطة. يسألك خمسة أسئلة قصيرة — ما تدّخر من أجله، وما عملك، وما يدخل عليك ومتى تريد البدء، وعلام تنفق، وكم تقريبًا — ثم يتولّى الباقي.</p>
+          <p style="margin-top:8px;">ويأتيك الجواب بكلام واضح: <i>«بادّخار ١٬٩٨٠ شهريًا تبلغ ٥٠٬٠٠٠ خلال ٢٦ شهرًا — قرابة أكتوبر ٢٠٢٨.»</i> اعتمدها ليُملأ كل شهر فارغ، وتُترك الأشهر التي ملأتها كما هي تمامًا.</p>
+          <p style="margin-top:8px;">وقولك إن كنت طالبًا أو موظّفًا براتب ثابت أو بدخل متغيّر يغيّر ما يسألك عنه وما يُعدّه لك. فالراتب الثابت يُملأ في كل شهر تلقائيًا، وإن كان دخلك متغيّرًا سألك عن شهر <b>عادي</b> لا أفضل شهر، لتصمد الخطة في شهر هادئ.</p>
+          <p class="help-tip">وإن كان الهدف بعيد المنال قال ذلك صراحة، وذكر ما يغيّره بأرقامك أنت. وقد يكون الجواب الصريح أن البدء بهدف أصغر أولى.</p>
+          <p style="margin-top:8px;"><b>إلى أي مدى يتكلّم.</b> إن كنت طالبًا سألك متى تنهي الدراسة تقريبًا. فالخطة التي تمتد بعد ذلك التاريخ مبنية على دخل سيتوقف، ولذلك لا يجزم بتاريخ بعيد، بل يخبرك كم ستكون قد ادّخرت فعلًا عند تخرّجك، ويقترح أن تعود حين تعرف دخلك القادم. ولن يخترع لك راتبًا بعد التخرّج.</p>
+          <p style="margin-top:8px;"><b>وحين تتبيّن أن خطتك خاطئة.</b> متى صار لفئة ثلاثة أشهر منتهية مسجّل فيها إنفاقك، قارن التطبيق ما خطّطته بما أنفقته فعلًا. وإن اختلفا بأكثر من قليل أخبرك وعرض عليك متوسطك الحقيقي — <i>«البقالة: خطّطت لـ ٩٠٠، ومتوسطك ١٬٣٤٠ خلال ٦ أشهر.»</i> وقبوله يغيّر هذا الشهر وما بعده فقط، وتبقى الأشهر المنتهية على ما حدث فيها.</p>
+          <p style="margin-top:8px;"><b>وحين تتغيّر الأمور.</b> يحفظ التطبيق ما قامت عليه خطتك. فإن غيّرت زيادة في الراتب أو خفض أو تبدّل في إنفاقك ما تدّخره شهريًا، ظهرت ملاحظة أعلى تبويب الخطة بالتاريخ الجديد وزر للتخطيط من جديد. ويتجاهل التذبذب اليسير، فلا يتكلّم إلاّ حين يتحرّك التاريخ فعلًا.</p>
         </div>
 
         <div class="help-section">
@@ -2790,7 +3210,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">على الحاسوب تظهر هذه كتبويبات في الأعلى مع التوقعات. وعلى الجوال تجد التوقعات خلف زر <span class="help-key">◹</span> أعلى الصفحة، وهذه الصفحة خلف <span class="help-key">؟</span>.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="calendar">
           <h3>التخطيط لشهر</h3>
           <p>اضغط أي شهر في التقويم لفتحه. كل سطر بند تملؤه — راتبك أولًا، ثم أنواع المصروفات. لست مضطرًا لتعبئة كل شيء؛ اترك ما لا ينطبق عليك على 0.</p>
           <p style="margin-top:8px;">تتحدّث ثلاثة أرقام في الأعلى أثناء كتابتك: ما <b>دخل</b>، وما <b>خرج</b>، وما <b>ادّخرت</b>.</p>
@@ -2802,7 +3222,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip"><b>أرقامك تُحفظ تلقائيًا.</b> إذا قُفل هاتفك أو أغلقت التطبيق في منتصف الشهر، لن يضيع شيء. زر الحفظ موجود ليمضي بك قُدمًا، لا ليحمي عملك.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="calendar">
           <h3>ماذا تعني الألوان</h3>
           <ul class="help-list">
             <li><b>أخضر مع ✓</b> — أُدخل الدخل. هذا الشهر مكتمل.</li>
@@ -2812,7 +3232,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">أسفل التقويم ترى عدد الأشهر التي أكملتها حتى الآن.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>تسجيل ما تنفقه فعليًا</h3>
           <p>تبويب <span class="help-key">أدخل بياناتك أولًا بأول</span> هو مكان الإنفاق الحقيقي. تعرض كل فئة ما خططت له، وما أنفقته حتى الآن، وشريطًا يمتلئ كلما اقتربت من الخطة.</p>
           <p style="margin-top:8px;"><b>والمبالغ تتراكم.</b> اكتب مبلغًا واضغط <span class="help-key">إضافة</span> لينضم إلى مجموع تلك الفئة. ثلاث مشتريات بـ 120 و85 و240 تصل بك إلى 445. ويفرغ الحقل استعدادًا للتالي، وضغط Enter يعادل ضغط «إضافة».</p>
@@ -2820,12 +3240,12 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;">لم تنفق شيئًا على بند ما؟ أدخل <strong>0</strong> واضغط «إضافة»، فيُسجَّل ذلك بوصفه «لا شيء» فعلًا، وهو يختلف عن عدم التسجيل إطلاقًا — انظر أدناه.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>زر +</h3>
           <p>الشيء نفسه بسرعة أكبر. اضغط <b>+</b> في الأسفل، واختر الفئة، واكتب المبلغ، واضغط «إضافة». يذهب إلى الشهر الحالي وينضم إلى مجموع تلك الفئة تمامًا كما يفعل التبويب.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="spent">
           <h3>لتتذكّر علام أنفقت</h3>
           <p>بجانب كل مبلغ خانةٌ لملاحظة قصيرة — <i>تصليح السيارة</i>، <i>هدية لأمي</i>. وهي اختيارية، وأنفع ما تكون في <b>مصروفات أخرى</b>، وهي الفئة التي تتحول لولا ذلك إلى رقم بلا قصة خلفه.</p>
           <p style="margin-top:8px;">عندها تعرض كل فئة ممّا يتكوّن مجموعها، فترى بعد شهر أين ذهب المال بدل أن تخمّن. ويحذف زر <span class="help-key">✕</span> بجانب أي سطر ذلك القيد وحده ويخصم مبلغه من المجموع — وهو أدقّ من <span class="help-key">↺</span> الذي يمسح الفئة كلها.</p>
@@ -2833,7 +3253,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">وما سجّلته قبل وجود الملاحظات يبقى محسوبًا، ويظهر في سطر واحد باسم <i>سُجّل قبل إضافة الملاحظات</i>، حتى لا تبدو السطور المفصّلة ومجموع الفئة مختلفة أبدًا.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="basis">
           <h3>ماذا يحدث عند انتهاء الشهر</h3>
           <p>ما دام الشهر جاريًا، تُحتسب مدّخراتك من <strong>خطتك</strong>. وهذا مقصود: فنصف شهر من الإنفاق المسجّل أمام دخل شهر كامل سيبدو فائضًا هائلًا غير حقيقي.</p>
           <p style="margin-top:8px;">وعند انتهاء الشهر يحلّ ما سجّلته محلّها:</p>
@@ -2845,7 +3265,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">ولهذا يهمّ إدخال <strong>0</strong>. فالفئة التي لم تُمسّ تعود إلى خطتها، أما التي أدخلت فيها 0 فتُحتسب بلا إنفاق.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="compare">
           <h3>الخطة أمام الواقع</h3>
           <p>تعرض <span class="help-key">لوحة المعلومات</span> كل فئة بما خططت له بجانب ما أنفقته، عبر كل أشهرك.</p>
           <ul class="help-list">
@@ -2856,18 +3276,18 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">وتظهر الألوان نفسها على كل فئة أثناء التسجيل، فترى الفئة وهي تضيق قبل انتهاء الشهر.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="categories">
           <h3>اختيار ما تتتبّعه</h3>
           <p>في <span class="help-key">أدخل ميزانيتك وخطتك</span>، ضمن <b>أعمدة الجدول</b>، تختار الفئات. احذف ما لا تحتاجه وأضف ما يناسبك — الاشتراكات، الرسوم الدراسية، أو أي شيء يناسب حياتك. وإذا كانت الفئة تحتوي أرقامًا فسيُطلب تأكيدك قبل حذفها.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="salary">
           <h3>اكتب راتبك مرة واحدة</h3>
           <p>في <span class="help-key">أدخل ميزانيتك وخطتك</span>، حدّد <b>راتبك الشهري المعتاد</b>. عندها يبدأ كل شهر جديد وهو مُعبّأ به.</p>
           <p style="margin-top:8px;">وهو نقطة بداية لا قيد: غيّر أي شهر بمفرده فيتغيّر ذلك الشهر وحده. وإذا زاد راتبك، حدّث الرقم واضغط <span class="help-key">تطبيق على كل الأشهر</span>؛ سيخبرك بعدد الأشهر التي ستتغيّر ويسألك أولًا.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="fixed">
           <h3>المبالغ الثابتة</h3>
           <p>بعض البنود ثابتة كل شهر — الإيجار، أو اشتراك ما. وبعضها يتغيّر — البقالة، الوقود.</p>
           <p style="margin-top:8px;">ضمن <b>ثابت أم متغيّر</b>، اجعل الثابت <b>ثابتًا</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ. واترك الباقي <b>متغيّرًا</b> وأدخله شهرًا بشهر.</p>
@@ -2879,7 +3299,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">وهكذا تسجّل زيادة في الراتب أو ارتفاعًا في الإيجار: أنهِ الفترة القديمة عند الشهر السابق للتغيير، واضغط <span class="help-key">+ إضافة فترة</span>، وامنح الجديدة مبلغها. ويأخذ كل شهر بالفترة التي تغطّيه.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="emergency">
           <h3>صندوق الطوارئ</h3>
           <p>قاعدة بسيطة تدّخر لك تلقائيًا. في <span class="help-key">أدخل ميزانيتك وخطتك</span>، أسفل أهدافك مباشرة، حدّد كم تودّ أن تضع جانبًا كل شهر، وكم لديك بالفعل.</p>
           <p style="margin-top:8px;">ثم في كل شهر:</p>
@@ -2891,13 +3311,13 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">لا تحتاج لفعل شيء — يعمل جنبًا إلى جنب مع ميزانيتك.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="emergency">
           <h3>مدّخرات لديك بالفعل</h3>
           <p>إن كان لديك مال مدّخر قبل البدء، فضعه في <b>رصيد الادخار الابتدائي</b> بجانب إعدادات الطوارئ. عندها تكمل التوقعات من ذلك الرقم بدل أن تبدأ من الصفر، فتعكس موضعك الحقيقي.</p>
           <p style="margin-top:8px;">وهو الرقم نفسه الموجود في <b>الادخار الابتدائي</b> بصفحة التوقعات — غيّره في أيٍّ منهما فيتغير الآخر معه.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>الادخار من أجل شيء</h3>
           <p>في أعلى <span class="help-key">أدخل ميزانيتك وخطتك</span>، أضف ما تدّخر من أجله مع المبلغ. وأضف ما شئت من الأهداف.</p>
           <p style="margin-top:8px;"><b>والترتيب هو الأولوية.</b> استخدم السهمين ▲ ▼ لوضع الأهم في الأعلى. يوزّع التطبيق ادخارك تبعًا لذلك — مع أربعة أهداف تكون النسب 40% و30% و20% و10% — ويمكنك كتابة نسبتك الخاصة لأيٍّ منها.</p>
@@ -2905,21 +3325,21 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip"><b>وعند بلوغ هدف تنتقل حصته إلى البقية.</b> فتصل الأهداف اللاحقة أسرع مما توحي به القسمة البسيطة، والتواريخ المعروضة تراعي ذلك أصلًا.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>هدف واحد أم الجميع</h3>
           <p><b>خطّط للجميع</b> يوزّع ادخارك على كل الأهداف حسب الأولوية.</p>
           <p style="margin-top:8px;"><b>ركّز على واحد</b> يضع كل شيء في هدف واحد حتى يكتمل، ثم ينتقل إلى التالي.</p>
           <p style="margin-top:8px;">ويقارن سطر أسفلهما بينهما بتواريخ حقيقية، مثل: <i>«بالتركيز على الحاسوب ينتهي في ديسمبر. وبالتوزيع على الكل تكتمل جميعها بحلول يونيو.»</i> — لترى المفاضلة بدل أن تخمّنها.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>المواعيد والدخل الإضافي</h3>
           <p>حدّد للهدف تاريخًا في خانة <b>بحلول</b>، ليتحقق التطبيق مما إذا كان ادخارك يبلغه في وقته. وإن لم يبلغه أخبرك بحجم الفارق:</p>
           <p style="margin-top:8px;"><i>يحتاج 640 شهريًا ويحصل على 400. الفارق 240 شهريًا — وهو ما قد يغطيه دخل إضافي.</i></p>
           <p style="margin-top:8px;">رقم يمكنك التصرّف بناءً عليه، لا اقتراح مبهم بأن تكسب أكثر.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>عند تجاوز الإنفاق</h3>
           <p>إذا تجاوزت فئة، يخبرك التطبيق فورًا ويوضح ما كلّفك ذلك:</p>
           <ul class="help-list">
@@ -2930,20 +3350,20 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip">التجاوز <b>يحرّك</b> التواريخ فورًا، لأن ذلك المال أُنفق ولا تستطيع بقية الشهر إعادته. أما كونك <b>تحت</b> الخطة حتى الآن فلا يحرّكها، لأن الشهر لم ينته وقد تنفق بعد. فالتواريخ لا تتحرك إلا عند اليقين.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="goals">
           <h3>كم ينبغي أن أدّخر؟</h3>
           <p>من نقاط البداية الشائعة نحو 25% مما تكسب. ويعرض التطبيق هذا الرقم بجانب ما تتركه خطتك فعلًا لترى الاثنين:</p>
           <p style="margin-top:8px;"><i>قاعدة الـ 25%: 2,500. خطتك تدّخر: 2,000. وبلوغ الـ 25% يعني تقليل نحو 500 من الإنفاق المخطط شهريًا.</i></p>
           <p style="margin-top:8px;">ولن يقترح عليك مبلغًا لا تبلغه ميزانيتك؛ وحين يختلفان يقول ذلك ويوضح ما ينبغي تغييره. كما يعرض ما يتبقى للإنفاق بعد تمويل أهدافك، لكنه لن يخترع لك مبلغًا للبقالة: فلا سبيل له لمعرفة طريقة عيشك.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="setup">
           <h3>الجدول يمتد تلقائيًا</h3>
           <p>إذا امتدت أهدافك أبعد مما يغطيه جدول أشهرك، وسّعه التطبيق وأخبرك بذلك. وهو يضيف أشهرًا فقط ولا يحذف شهرًا أبدًا، لأن ذلك قد يمحو أرقامًا أدخلتها.</p>
           <p style="margin-top:8px;">وإذا كان الهدف يستغرق أكثر من 20 سنة بمعدلك الحالي، قال ذلك صراحةً بدل أن يعرض تاريخًا بعد عقود.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="forecast">
           <h3>لوحة المعلومات والتوقعات</h3>
           <p><b>لوحة المعلومات</b> تجمع كل شيء: خطتك أمام ما أنفقته، والمجاميع، ومتوسط معدل ادخارك، وأين يذهب مالك فعليًا، في رسوم بيانية.</p>
           <p style="margin-top:8px;"><b>التوقعات</b> تنظر إلى الأمام. أخبرها بما تتوقعه من زيادات في الراتب وارتفاع في التكاليف وعوائد استثمار، فتقدّر أين سيستقر رصيدك. وهي تقدير مبني على افتراضاتك، وليست وعدًا.</p>
@@ -2960,7 +3380,7 @@ nav.tabs button{ color:var(--ink); }
           <p class="help-tip warn"><b>على الآيفون، هذا يحمي بياناتك فعلًا.</b> يحذف Safari بيانات المواقع المحفوظة بعد 7 أيام من عدم الزيارة. أما التطبيق على شاشتك الرئيسية فلا يُعامل كموقع، فتبقى ميزانيتك في مكانها. وبعد التثبيت يعمل أيضًا بدون إنترنت إطلاقًا.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="backup">
           <h3>احتفظ بنسخة احتياطية</h3>
           <p>كل شيء موجود على هذا الجهاز ولا مكان غيره. هذا ما يجعله خاصًا — لكنه يعني أيضًا أن فقدان الهاتف أو إعادة ضبطه يأخذ ميزانيتك معه.</p>
           <p style="margin-top:8px;">بين حين وآخر:</p>
@@ -2971,7 +3391,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:10px;">ولاستعادتها على هاتف جديد أو بعد إعادة ضبط، افتح التطبيق واستخدم <span class="help-key">استيراد البيانات</span> مع ذلك الملف. سيعود كل شيء كما كان تمامًا.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="backup">
           <h3>العمل مع إكسل</h3>
           <ul class="help-list">
             <li><span class="help-key">تصدير إلى إكسل (.xlsx)</span> ينزّل مصنّفًا يضم ميزانيتك ولوحة المعلومات والتوقعات.</li>
@@ -2983,7 +3403,7 @@ nav.tabs button{ color:var(--ink); }
           <p style="margin-top:8px;"><b>زر المشاركة لا يعمل؟</b> يعمل فقط عبر رابط <code>https://</code> حقيقي — لا مع ملف مفتوح من التنزيلات أو داخل عارض ملفات تطبيق آخر.</p>
         </div>
 
-        <div class="help-section">
+        <div class="help-section" data-goto="language">
           <h3>الفاتح والداكن واللغة</h3>
           <p>زر <span class="help-key">◐</span> في الأعلى يتنقّل بين مطابقة جهازك، والفاتح دائمًا، والداكن دائمًا.</p>
           <p style="margin-top:8px;"><b>English / العربية</b> يبدّل اللغة في أي وقت، مع تخطيط كامل من اليمين إلى اليسار. وبياناتك تبقى كما هي تمامًا.</p>
@@ -3049,6 +3469,19 @@ nav.tabs button{ color:var(--ink); }
   </span>
 </footer>
 
+<div id="planner-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="planner-title">
+  <div class="modal-card planner-card">
+    <p class="planner-step" id="planner-step"></p>
+    <h3 id="planner-title"></h3>
+    <div id="planner-body"></div>
+    <div class="planner-actions">
+      <button type="button" id="planner-back" class="planner-ghost"></button>
+      <button type="button" id="planner-skip" class="planner-ghost"></button>
+      <button type="button" id="planner-next"></button>
+    </div>
+  </div>
+</div>
+
 <div id="reset-confirm-overlay" class="modal-overlay" style="display:none;">
   <div class="modal-card">
     <h3 data-i18n="reset_confirm_title">Reset all data?</h3>
@@ -3094,6 +3527,14 @@ const WHATS_NEW = {
     title: 'What’s new',
     intro: 'The app is now called Smart Budget, and it can plan toward what you are saving for.',
     items: [
+      'Press “Plan this for me” and the app builds the whole plan from five short questions — what you are saving for, what you do, what comes in, and roughly what you spend. It fills in every empty month and never touches one you have already filled.',
+      'The plan tab now opens with a straight choice: let the smart planner build it, or set it up yourself.',
+      'Your plan learns. Once a category has three finished months of logged spending, the app compares plan against reality and offers your real average — changing this month onwards only, never what already happened.',
+      'The first time you open the app it starts on How to use, which now has a contents list and a Show me button on every topic. After that it opens where you work.',
+      'Students are asked roughly when they finish studying. If the plan runs past that, the app says what you would actually have saved by then instead of claiming a date years out that assumes an income which stops.',
+      'The app now remembers what your plan assumed. If your pay or your spending moves, it tells you the new date and offers to plan again — and stays quiet about small wobbles.',
+      'If the goal is out of reach it says so, and says what would change it in your own numbers — including when a smaller goal first is the better start.',
+      'The plan tab is much lighter. Setting up the table, choosing categories and fixed-vs-variable now fold away once you are set up, so what you see is your goals and your months.',
       'Set savings goals — a laptop, a trip, anything. Put them in order of importance and the app works out when you would reach each one.',
       'Choose to focus on one goal at a time or split your saving across all of them. It shows you both dates so you can decide.',
       'Go over on a category and the app says what it cost you — which goal moved, by how long, and how much room is left in the rest of the month.',
@@ -3102,6 +3543,9 @@ const WHATS_NEW = {
       'It never suggests saving an amount your own budget cannot reach. Where the two disagree, it shows both and names the difference.',
       'Everything you set is now in one place. Goals, the emergency fund and your months all sit on “Enter your budget and plan”, which is now the first tab you land on.',
       'The tab called “Monthly budget” is now “Overview”, which is what it always was — a read-only summary. Tap any month there to jump straight to editing it.',
+      'How to use opens with a contents list, and every topic has a “Show me in the app” button — it takes you to the tab, scrolls to the control it just described, and rings it.',
+      'Backups are now named with the date and time they were taken, so the newest one is obvious in your files.',
+      'Picking a month no longer redraws the page under the date wheel while you are still scrolling it. Nothing is applied until you close the picker.',
       'A fixed amount now says where it stops — either at a month you choose, or at the end of your plan, keeping up on its own if the table stretches to reach a goal.',
       'Add a short note when you log spending — “Car repair”, “Gift for mum”. Each category now lists what its total is made of, which is what finally makes “Other expenses” answerable a month later.',
     ],
@@ -3111,6 +3555,14 @@ const WHATS_NEW = {
     title: 'ما الجديد',
     intro: 'صار اسم التطبيق «الميزانية الذكية»، وصار بإمكانه التخطيط لما تدّخر من أجله.',
     items: [
+      'اضغط «خطّط لي» ليبني التطبيق الخطة كلها من خمسة أسئلة قصيرة: ما تدّخر من أجله، وما عملك، وما يدخل عليك، وكم تنفق تقريبًا. يملأ كل شهر فارغ ولا يمسّ شهرًا ملأته أنت.',
+      'ويفتح تبويب الخطة الآن بخيار واضح: دع المخطّط الذكي يبنيها، أو أعدّها بنفسك.',
+      'وخطتك تتعلّم. فمتى صار لفئة ثلاثة أشهر منتهية مسجّل فيها إنفاقك، قارن الخطة بالواقع وعرض متوسطك الحقيقي — مغيّرًا هذا الشهر وما بعده لا ما مضى.',
+      'وفي أول مرة تفتح فيها التطبيق يبدأ من «طريقة الاستخدام»، وفيها الآن قائمة محتويات وزر «أرِني» لكل موضوع. ثم يفتح بعد ذلك حيث تعمل.',
+      'ويُسأل الطلاب متى ينهون الدراسة تقريبًا. فإن امتدت الخطة بعد ذلك، أخبرك التطبيق بما ستكون قد ادّخرته فعلًا حتى ذلك الحين، بدل أن يجزم بتاريخ بعيد يفترض دخلًا سيتوقف.',
+      'وصار التطبيق يحفظ ما قامت عليه خطتك. فإن تغيّر دخلك أو إنفاقك أخبرك بالتاريخ الجديد وعرض عليك التخطيط من جديد، ويسكت عن التذبذب اليسير.',
+      'وإن كان الهدف بعيد المنال قال ذلك، وذكر ما يغيّره بأرقامك أنت — ومن ذلك أن تبدأ بهدف أصغر أحيانًا.',
+      'وصار تبويب الخطة أخفّ بكثير. فإعداد الجدول واختيار الفئات والثابت مقابل المتغيّر تُطوى بعد انتهائك من الإعداد، فترى أهدافك وأشهرك لا غير.',
       'حدّد أهداف ادخار — حاسوب، رحلة، أو أي شيء. رتّبها حسب الأهمية ليحسب التطبيق موعد بلوغ كل منها.',
       'واختر التركيز على هدف واحد أو توزيع ادخارك عليها جميعًا. ويعرض لك التاريخين لتقرّر.',
       'وإذا تجاوزت فئة، يخبرك بما كلّفك ذلك: أي هدف تأخّر، وكم، وكم بقي لك في بقية الشهر.',
@@ -3119,6 +3571,9 @@ const WHATS_NEW = {
       'ولا يقترح عليك ادخار مبلغ لا تبلغه ميزانيتك. وحين يختلفان يعرض الاثنين ويوضح الفارق.',
       'وصار كل ما تحدّده في مكان واحد: الأهداف وصندوق الطوارئ وأشهرك، جميعها في «أدخل ميزانيتك وخطتك» الذي صار أول تبويب تفتح عليه.',
       'وصار تبويب «الميزانية الشهرية» يسمّى «نظرة عامة»، وهو ما كان عليه دائمًا: ملخّص للقراءة فقط. انقر أي شهر فيه لتنتقل مباشرة إلى تعديله.',
+      'وتفتح صفحة «طريقة الاستخدام» بقائمة محتويات، ولكل موضوع زر «أرِني في التطبيق» — ينقلك إلى التبويب، ويمرّر إلى الأداة التي شرحها لتوّ، ويضع حولها إطارًا.',
+      'وتُسمّى النسخ الاحتياطية بتاريخ ووقت أخذها، فتعرف أحدثها من أول نظرة في ملفاتك.',
+      'ولم يعد اختيار الشهر يُعيد رسم الصفحة تحت عجلة التاريخ وأنت تمرّرها، ولا يُطبّق شيء حتى تغلق المحدّد.',
       'وصار المبلغ الثابت يحدّد أين يتوقّف: إما عند شهر تختاره، وإما عند نهاية خطتك، فيواكبها تلقائيًا إن طال الجدول لبلوغ هدف.',
       'وأضف ملاحظة قصيرة حين تسجّل إنفاقًا — «تصليح السيارة»، «هدية لأمي». وصارت كل فئة تعرض ممّا يتكوّن مجموعها، وهو ما يجعل «مصروفات أخرى» أخيرًا قابلة للجواب بعد شهر.',
     ],
@@ -3243,11 +3698,88 @@ const TRANSLATIONS = {
     excel_reconnect_needed:'Permission needed — click to reconnect your linked file.',
     strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Total savings', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
     tab_budget:'Overview', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
+planner_open:'Plan this for me',
+    planner_start:'When does this plan start?',
+    planner_start_note:'Months before this are left exactly as they are.',
+    choose_title:'How would you like to start?',
+    choose_smart:'Smart budget planner',
+    choose_smart_sub:'Answer five short questions and the app builds the whole plan — your months, your categories and your goal.',
+    choose_manual:'Set it up myself',
+    choose_manual_sub:'Choose your own categories and amounts, month by month.',
+    learn_head:'Your plan and your spending disagree',
+    learn_over:'{cat}: you planned {planned}, and have averaged {actual} over {months} months.',
+    learn_under:'{cat}: you planned {planned}, but have only averaged {actual} over {months} months.',
+    learn_use:'Use {amount}',
+    learn_all:'Update all of them',
+    learn_note:'Updating changes this month onwards only. Months already finished keep what actually happened.',
+    planner_grad:'Roughly when do you finish studying?',
+    planner_grad_note:'Only used to tell you how far ahead this plan can honestly reach. Leave it blank if you would rather not say.',
+    planner_horizon:'One thing worth knowing: this plan runs {months} months, but you finish studying in {left} — around {grad}.',
+    planner_horizon_note:'After that your income changes, and the app has no way to guess by how much. What it can tell you is the part built on figures you can predict: by {grad} you would have put aside {banked} of {target}. That much is real. Come back and plan again once you know what you will be earning.',
+    drift_better:'Your plan was built on putting aside {was} a month. Right now it is {now}. At that rate {goal} arrives around {date}.',
+    drift_worse:'Your plan was built on putting aside {was} a month. Right now it is {now}. At that rate {goal} arrives around {date}.',
+    drift_none:'Your plan was built on putting aside {was} a month. Right now nothing is left over.',
+    drift_plain:'Your plan was built on putting aside {was} a month. Right now it is {now}.',
+    drift_update:'Plan again',
+    drift_keep:'Keep the plan',
+    planner_step_of:'Step {n} of {total}',
+    planner_back:'Back',
+    planner_next:'Next',
+    planner_apply:'Use this plan',
+    planner_manual:"I'll do it myself",
+    planner_q_goal:'What are you saving for?',
+    planner_q_goal_note:'One thing to aim at. You can add more later.',
+    planner_goal_name:'What is it?',
+    planner_goal_ph:'A car, a laptop, a trip…',
+    planner_goal_amount:'How much does it cost?',
+    planner_q_work:'What best describes you?',
+    planner_q_work_note:'This decides how the app treats your income — you can change it later.',
+    planner_work_student:'A student',
+    planner_work_student_sub:'Allowance, part-time work, or support from family',
+    planner_work_fixed:'Employed, same pay each month',
+    planner_work_fixed_sub:'The app will fill your salary in for every month',
+    planner_work_variable:'Employed, pay varies',
+    planner_work_variable_sub:'Overtime, commission, or shifts that change',
+    planner_q_income:'What comes in each month?',
+    planner_q_income_student:'Everything you receive in a normal month — allowance, a part-time job, anything regular.',
+    planner_q_income_fixed:'Your take-home pay: what actually lands in your account, not the figure before deductions.',
+    planner_q_income_variable:'Use a normal month, not your best one. A plan built on your best month falls apart in a quiet one.',
+    planner_income_student:'Money in, each month',
+    planner_income_fixed:'Monthly salary, after deductions',
+    planner_income_variable:'A normal month',
+    planner_side:'Anything else on top (optional)',
+    planner_q_which:'Which of these do you actually spend on?',
+    planner_q_which_note:'Tap to add or remove. Only keep the ones that apply to you.',
+    planner_q_amounts:'Roughly how much, each month?',
+    planner_q_amounts_note:'These are starting points worked out from your income, not recommendations. Change any of them to what you really spend — a rough number is fine.',
+    planner_left:'Left over to save: {amount}',
+    planner_left_none:'You are {amount} over what comes in. Nothing is left to save.',
+    planner_result:'Here is your plan',
+    planner_in:'Coming in',
+    planner_out:'Going out',
+    planner_aside:'Put aside',
+    planner_ok:'Putting aside {amount} a month, you reach {target} in {months} months — around {date}.',
+    planner_ok_note:'Press Use this plan and every empty month gets these numbers. You can change any month afterwards.',
+    planner_ok_note_variable:'Because your pay varies, this is built on a normal month. Better months will pull the date closer.',
+    planner_nogoal:'You would put aside {amount} a month. Add a goal any time and the app will work out when you reach it.',
+    planner_none:'Your spending is {amount} more than what comes in, so there is nothing left to save yet.',
+    planner_toolong:'At this rate the goal is more than 20 years away.',
+    planner_levers_note:'What would change it:',
+    planner_lever_close:'Getting back level — that {amount} — is the first step, and it starts you saving on its own.',
+    planner_lever_more:'Finding {step} a month more would get you there in about {months} months, around {date}.',
+    planner_lever_less:'Or spending {step} a month less. {cat} is your largest, at {amount}.',
+    planner_still_far:'Even then this stays a long way off. A smaller goal first is usually the better start — it arrives soon enough to be worth keeping up.',
+    planner_done:'Done. {filled} months filled in. {skipped} months you had already filled were left alone.',
+    help_toc:'Jump to a topic',
+    help_show_me:'Show me in the app →',
+    help_toc_back:'Contents',
     budget_h2:'Your months at a glance',
     budget_note:'A read-only summary of every month, so nothing here can be typed over by accident. Totals, savings and savings rate are worked out for you. To change a number, open “Enter your budget and plan” — or tap a month below to jump straight to it.',
     legend_in:'Your input', legend_out:'Calculated automatically',
     setup_title:'Set up your table',
     setup_note:'Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.',
+    fold_setup:'Set up your table, categories and fixed amounts',
+    fold_rules:'Emergency fund and starting balances',
     setup_years_label:'Number of years', setup_startmonth_label:'Starting month', btn_generate:'Generate months table',
     columns_title:'Table columns',
     columns_note:"Choose which expense categories to track. Remove ones you don't need, or add your own.",
@@ -3411,11 +3943,88 @@ const TRANSLATIONS = {
     excel_reconnect_needed:'يلزم إذن — اضغط لإعادة ربط ملفك المرتبط.',
     strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'إجمالي الادخار', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
     tab_budget:'نظرة عامة', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
+planner_open:'خطّط لي',
+    planner_start:'من أي شهر تبدأ هذه الخطة؟',
+    planner_start_note:'وتبقى الأشهر السابقة له كما هي تمامًا.',
+    choose_title:'كيف تودّ أن تبدأ؟',
+    choose_smart:'المخطّط الذكي',
+    choose_smart_sub:'أجب عن خمسة أسئلة قصيرة ليبني التطبيق الخطة كاملة: أشهرك وفئاتك وهدفك.',
+    choose_manual:'سأعدّه بنفسي',
+    choose_manual_sub:'اختر فئاتك ومبالغك بنفسك، شهرًا بشهر.',
+    learn_head:'خطتك وإنفاقك مختلفان',
+    learn_over:'{cat}: خطّطت لـ {planned}، ومتوسطك الفعلي {actual} خلال {months} أشهر.',
+    learn_under:'{cat}: خطّطت لـ {planned}، ولم يتجاوز متوسطك {actual} خلال {months} أشهر.',
+    learn_use:'اعتمد {amount}',
+    learn_all:'حدّثها جميعًا',
+    learn_note:'التحديث يغيّر هذا الشهر وما بعده فقط، وتبقى الأشهر المنتهية على ما حدث فيها فعلًا.',
+    planner_grad:'متى تنتهي من الدراسة تقريبًا؟',
+    planner_grad_note:'يُستخدم فقط ليخبرك إلى أي مدى تصدق هذه الخطة. اتركه فارغًا إن لم ترغب في تحديده.',
+    planner_horizon:'أمر يستحق الانتباه: تمتد هذه الخطة {months} شهرًا، لكنك تنهي الدراسة خلال {left} — قرابة {grad}.',
+    planner_horizon_note:'وبعدها يتغيّر دخلك، ولا سبيل للتطبيق أن يخمّن كم سيصير. لكنه يخبرك بما يقوم على أرقام يمكنك توقّعها: بحلول {grad} تكون قد ادّخرت {banked} من {target}، وهذا القدر حقيقي. وعُد لتخطّط من جديد حين تعرف دخلك القادم.',
+    drift_better:'بُنيت خطتك على ادخار {was} شهريًا، وهي الآن {now}. وبهذا المعدّل يصل {goal} قرابة {date}.',
+    drift_worse:'بُنيت خطتك على ادخار {was} شهريًا، وهي الآن {now}. وبهذا المعدّل يصل {goal} قرابة {date}.',
+    drift_none:'بُنيت خطتك على ادخار {was} شهريًا، ولم يعد يتبقّى شيء الآن.',
+    drift_plain:'بُنيت خطتك على ادخار {was} شهريًا، وهي الآن {now}.',
+    drift_update:'خطّط من جديد',
+    drift_keep:'أبقِ الخطة',
+    planner_step_of:'الخطوة {n} من {total}',
+    planner_back:'رجوع',
+    planner_next:'التالي',
+    planner_apply:'اعتمد هذه الخطة',
+    planner_manual:'سأفعلها بنفسي',
+    planner_q_goal:'ما الذي تدّخر من أجله؟',
+    planner_q_goal_note:'هدف واحد تستهدفه، ويمكنك إضافة غيره لاحقًا.',
+    planner_goal_name:'ما هو؟',
+    planner_goal_ph:'سيارة، حاسوب، رحلة…',
+    planner_goal_amount:'كم يكلّف؟',
+    planner_q_work:'أيّها يصفك أكثر؟',
+    planner_q_work_note:'يحدّد هذا كيف يتعامل التطبيق مع دخلك، ويمكنك تغييره لاحقًا.',
+    planner_work_student:'طالب',
+    planner_work_student_sub:'مصروف، أو عمل جزئي، أو دعم من الأهل',
+    planner_work_fixed:'موظّف براتب ثابت',
+    planner_work_fixed_sub:'سيملأ التطبيق راتبك في كل شهر تلقائيًا',
+    planner_work_variable:'موظّف بدخل متغيّر',
+    planner_work_variable_sub:'عمل إضافي أو عمولة أو ورديات متغيّرة',
+    planner_q_income:'كم يدخل عليك كل شهر؟',
+    planner_q_income_student:'كل ما تستلمه في شهر عادي — المصروف، وعمل جزئي، وأي دخل منتظم.',
+    planner_q_income_fixed:'صافي الراتب: ما يصل حسابك فعلًا، لا الرقم قبل الاستقطاعات.',
+    planner_q_income_variable:'خذ شهرًا عاديًا لا أفضل شهر. فالخطة المبنية على أفضل شهر تنهار في شهر هادئ.',
+    planner_income_student:'الداخل كل شهر',
+    planner_income_fixed:'الراتب الشهري بعد الاستقطاعات',
+    planner_income_variable:'شهر عادي',
+    planner_side:'أي دخل آخر (اختياري)',
+    planner_q_which:'على أيٍّ من هذه تنفق فعلًا؟',
+    planner_q_which_note:'اضغط للإضافة أو الإزالة، وأبقِ ما ينطبق عليك فقط.',
+    planner_q_amounts:'كم تقريبًا في الشهر؟',
+    planner_q_amounts_note:'هذه نقاط بداية محسوبة من دخلك، وليست توصيات. غيّر أيًّا منها إلى ما تنفقه فعلًا، والرقم التقريبي يكفي.',
+    planner_left:'المتبقي للادخار: {amount}',
+    planner_left_none:'تجاوزت ما يدخل عليك بمقدار {amount}، فلم يبقَ شيء للادخار.',
+    planner_result:'هذه خطتك',
+    planner_in:'الداخل',
+    planner_out:'الخارج',
+    planner_aside:'المدّخر',
+    planner_ok:'بادّخار {amount} شهريًا تبلغ {target} خلال {months} شهرًا — قرابة {date}.',
+    planner_ok_note:'اضغط «اعتمد هذه الخطة» لتُملأ بهذه الأرقام كل شهر فارغ، ويبقى بإمكانك تغيير أي شهر بعدها.',
+    planner_ok_note_variable:'ولأن دخلك متغيّر، بُنيت هذه على شهر عادي. والأشهر الأفضل ستقرّب الموعد.',
+    planner_nogoal:'ستدّخر {amount} شهريًا. أضف هدفًا متى شئت ليحسب التطبيق موعد بلوغه.',
+    planner_none:'إنفاقك يزيد {amount} عمّا يدخل عليك، فلا يتبقّى شيء للادخار بعد.',
+    planner_toolong:'بهذا المعدّل يبعد الهدف أكثر من 20 سنة.',
+    planner_levers_note:'وهذا ما يغيّره:',
+    planner_lever_close:'العودة إلى التعادل — أي {amount} — هي الخطوة الأولى، وهي وحدها تبدأ بك الادخار.',
+    planner_lever_more:'دخل إضافي قدره {step} شهريًا يبلغ بك الهدف خلال {months} شهرًا تقريبًا، قرابة {date}.',
+    planner_lever_less:'أو إنفاق أقل بـ {step} شهريًا. و{cat} أكبر بنودك، عند {amount}.',
+    planner_still_far:'وحتى عندها يبقى الهدف بعيدًا. والأفضل عادةً أن تبدأ بهدف أصغر يأتي قريبًا بما يكفي لتستمر.',
+    planner_done:'تم. مُلئ {filled} شهرًا، وتُركت {skipped} أشهر سبق أن ملأتها كما هي.',
+    help_toc:'انتقل إلى موضوع',
+    help_show_me:'أرِني في التطبيق ←',
+    help_toc_back:'المحتويات',
     budget_h2:'أشهرك في لمحة',
     budget_note:'ملخّص للقراءة فقط لكل شهر، فلا يمكن الكتابة فوق شيء هنا بالخطأ. وتُحتسب الإجماليات والادخار ومعدله لك تلقائيًا. ولتغيير أي رقم، افتح «أدخل ميزانيتك وخطتك» — أو انقر شهرًا أدناه لتنتقل إليه مباشرة.',
     legend_in:'إدخالك', legend_out:'يُحسب تلقائيًا',
     setup_title:'إعداد الجدول',
     setup_note:'اختر عدد السنوات التي تريد البدء بها والشهر الأول — سيُنشئ هذا الجدول أدناه. يمكنك إضافة أشهر أو حذفها في أي وقت.',
+    fold_setup:'إعداد الجدول والفئات والمبالغ الثابتة',
+    fold_rules:'صندوق الطوارئ والأرصدة الابتدائية',
     setup_years_label:'عدد السنوات', setup_startmonth_label:'الشهر الأول', btn_generate:'إنشاء جدول الأشهر',
     columns_title:'أعمدة الجدول',
     columns_note:'اختر فئات المصروفات التي تريد تتبعها. احذف ما لا تحتاجه، أو أضف فئتك الخاصة.',
@@ -3589,8 +4198,8 @@ function overrunTitle(amount, label){
 }
 function overrunImpactText(){
   return lang === 'ar'
-    ? 'هذا المبلغ يخرج من مدّخرات هذا الشهر، وقد أخّر التواريخ أدناه.'
-    : 'That comes out of this month’s saving, and the dates below already account for it.';
+    ? 'هذا المبلغ يخرج من مدّخرات هذا الشهر، وقد أخّر تواريخ أهدافك.'
+    : 'That comes out of this month’s saving, and your goal dates already account for it.';
 }
 function headroomText(total, names, safeLeft){
   return lang === 'ar'
@@ -3889,6 +4498,8 @@ function normalizeState(s){
       m.touched = keys.filter(k=> (Number(m[k]) || 0) !== 0);
     });
   }
+  // What the guided plan assumed, kept so reality can be compared against it.
+  if(s.plan && typeof s.plan !== 'object') s.plan = null;
   if(!s.categories) s.categories = [...DEFAULT_CATEGORY_KEYS];
   if(!s.customLabels) s.customLabels = {};
   if(!s.fieldModes) s.fieldModes = {};
@@ -4111,12 +4722,49 @@ function generateMonths(startYm, numMonths){
 /* A blank month pre-filled with the usual salary, marked answered so the
    month calendar counts it. Seeded, not locked: every month stays editable,
    which is the difference between this and "fixed" mode. */
+/* The most recent month with any spending on it. Read during generateMonths,
+   which builds a new array before assigning it, so this still sees the months
+   as they were. */
+function lastBudgetedMonth(){
+  for(let i = state.months.length - 1; i >= 0; i--){
+    const m = state.months[i];
+    if(state.categories.some(k=> (Number(m[k]) || 0) !== 0)) return m;
+  }
+  return null;
+}
+
 function seededMonth(ym){
   const m = blankMonth(ym);
-  const salary = Number(state.defaultSalary) || 0;
+  const p = state.plan;
+  const salary = (p && Number(p.salary)) || Number(state.defaultSalary) || 0;
   if(salary > 0){
     m.salary = salary;
     markFieldAnswered(m, 'salary');
+  }
+  if(p){
+    if(Number(p.side) > 0){
+      m.sideIncome = Number(p.side);
+      markFieldAnswered(m, 'sideIncome');
+    }
+    // Only categories that still exist: the list can be edited after planning,
+    // and seeding a category that was removed would resurrect a dead column.
+    if(p.cats) state.categories.forEach(k=>{
+      const v = Number(p.cats[k]) || 0;
+      if(v > 0){ m[k] = v; markFieldAnswered(m, k); }
+    });
+  } else {
+    // No stored plan — a goal added by hand, say. Carry on from the last month
+    // that was actually budgeted, rather than inventing a month with income and
+    // no outgoings.
+    const prev = lastBudgetedMonth();
+    if(prev){
+      if(!m.salary && Number(prev.salary) > 0){ m.salary = Number(prev.salary); markFieldAnswered(m, 'salary'); }
+      if(Number(prev.sideIncome) > 0){ m.sideIncome = Number(prev.sideIncome); markFieldAnswered(m, 'sideIncome'); }
+      state.categories.forEach(k=>{
+        const v = Number(prev[k]) || 0;
+        if(v > 0){ m[k] = v; markFieldAnswered(m, k); }
+      });
+    }
   }
   return m;
 }
@@ -4216,11 +4864,13 @@ function addPeriod(key){
   renderAll();
   scheduleSave();
 }
-function updatePeriod(key, pid, field, value){
+function updatePeriod(key, pid, field, value, redraw){
   const p = (state.fixedSchedules[key]||[]).find(x=>x.id===pid);
   if(!p) return;
   p[field] = value;
-  renderAll();
+  // redraw===false is the month-wheel path: the value is banked immediately,
+  // but the panel is left alone until the picker closes.
+  if(redraw !== false) renderAll();
   scheduleSave();
 }
 function removePeriod(key, pid){
@@ -4293,8 +4943,12 @@ function renderPlanningModes(){
   });
   list.querySelectorAll('.period-row').forEach(row=>{
     const key = row.dataset.key, pid = row.dataset.pid;
-    row.querySelector('.period-start').addEventListener('change', e=> updatePeriod(key,pid,'startYm',e.target.value));
-    row.querySelector('.period-end').addEventListener('change', e=> updatePeriod(key,pid,'endYm', e.target.value || null));
+    const startEl = row.querySelector('.period-start');
+    const endEl = row.querySelector('.period-end');
+    startEl.addEventListener('change', e=> updatePeriod(key,pid,'startYm', e.target.value, false));
+    endEl.addEventListener('change', e=> updatePeriod(key,pid,'endYm', e.target.value || null, false));
+    startEl.addEventListener('blur', ()=> renderAll());
+    endEl.addEventListener('blur', ()=> renderAll());
     row.querySelector('.period-end-mode').addEventListener('change', e=>{
       if(e.target.value === 'plan'){ updatePeriod(key, pid, 'endYm', null); return; }
       // Switching to a chosen month needs one to start from. The table's last
@@ -4442,8 +5096,12 @@ function hasLoggedActual(m, key){
    surplus that is not real. Once the month is over, whatever was logged is
    what happened; anything never logged falls back to the plan. */
 function effectiveSpendValue(m, key){
-  if(isMonthClosed(m) && hasLoggedActual(m, key)) return actualOf(m, key);
-  return effectiveCategoryValue(m, key);
+  const planned = effectiveCategoryValue(m, key);
+  if(isMonthClosed(m)) return hasLoggedActual(m, key) ? actualOf(m, key) : planned;
+  // Still running. Spending less than planned so far proves nothing, because
+  // the month has not finished — but spending MORE than planned is already
+  // done, and no amount of restraint later brings it back.
+  return Math.max(planned, actualOf(m, key));
 }
 
 /* How a closed month is being counted, for the badge that explains it. */
@@ -4749,6 +5407,7 @@ function actualTargetIndex(){
 }
 
 function renderActualPanel(){
+  renderSpendAlerts();
   const rowsHost = document.getElementById('sp-rows');
   const totalHost = document.getElementById('sp-total');
   const monthEl = document.getElementById('sp-month');
@@ -4886,6 +5545,7 @@ function wireActualPanel(){
     if(noteBox) noteBox.value = '';
     renderActualPanel();
     renderDashboard();
+    autoExtendForGoals();
     renderAll();
     scheduleSave();
     // Put the caret back where the next amount goes.
@@ -4903,6 +5563,7 @@ function wireActualPanel(){
       removeLogEntry(state.months[idx], del.dataset.del, Number(del.dataset.i));
       renderActualPanel();
       renderDashboard();
+      autoExtendForGoals();
       renderAll();
       scheduleSave();
       return;
@@ -4917,6 +5578,7 @@ function wireActualPanel(){
       if(state.months[idx].log) delete state.months[idx].log[key];
       renderActualPanel();
       renderDashboard();
+      autoExtendForGoals();
       renderAll();
       scheduleSave();
     }
@@ -5241,23 +5903,34 @@ function renderGoalSummary(){
     </div>`;
 }
 
+function overrunAlertHtml(){
+  const over = confirmedOverrun();
+  if(over <= 0) return '';
+  const cats = overrunCategories();
+  const head = headroomCategories();
+  const headTotal = head.reduce((s, x)=> s + x.left, 0);
+  const names = head.slice(0, 3).map(x=> x.label).join(lang === 'ar' ? '، ' : ', ');
+  return `<div class="goal-alert is-over">
+    <p class="ga-title">${overrunTitle(over, cats[0] ? cats[0].label : '')}</p>
+    <p class="ga-body">${overrunImpactText()}</p>
+    ${headTotal > 0 ? `<p class="ga-body">${headroomText(headTotal, names, Math.max(0, headTotal - over))}</p>` : ''}
+  </div>`;
+}
+
+/* The same warning, on the tab where the spending was entered. */
+function renderSpendAlerts(){
+  const host = document.getElementById('spend-alerts');
+  if(!host) return;
+  host.innerHTML = overrunAlertHtml();
+}
+
 function renderGoalAlerts(){
   const host = document.getElementById('goal-alerts');
   if(!host) return;
   const parts = [];
 
-  const over = confirmedOverrun();
-  if(over > 0){
-    const cats = overrunCategories();
-    const head = headroomCategories();
-    const headTotal = head.reduce((s, x)=> s + x.left, 0);
-    const names = head.slice(0, 3).map(x=> x.label).join(lang === 'ar' ? '، ' : ', ');
-    parts.push(`<div class="goal-alert is-over">
-      <p class="ga-title">${overrunTitle(over, cats[0] ? cats[0].label : '')}</p>
-      <p class="ga-body">${overrunImpactText()}</p>
-      ${headTotal > 0 ? `<p class="ga-body">${headroomText(headTotal, names, Math.max(0, headTotal - over))}</p>` : ''}
-    </div>`);
-  }
+  const overHtml = overrunAlertHtml();
+  if(overHtml) parts.push(overHtml);
 
   const sim = simulateGoals(state.goalMode);
   if(state.goals.length && sim.monthly <= 0){
@@ -5463,8 +6136,17 @@ function wireGoals(){
       const g = goalById(due.dataset.due);
       if(!g) return;
       g.dueYm = due.value || null;
-      applyGoalsAndRender();
+      // Banked, but not drawn: see focusout below. Saving still happens now, so
+      // closing the app mid-picker keeps the date.
+      scheduleSave();
     }
+  });
+
+  /* The redraw the month wheel was triggering on every scroll stop. focusout
+     rather than blur because this is a delegated listener and blur does not
+     bubble. */
+  list.addEventListener('focusout', e=>{
+    if(e.target.closest('input[data-due]')) applyGoalsAndRender();
   });
 }
 
@@ -5676,6 +6358,9 @@ function renderBudget(){
   renderPlanningModes();
   renderCurrencyPicker();
   renderDefaultSalary();
+  renderPlanChoose();
+  renderPlanLearn();
+  renderPlanDrift();
   renderStrip(totals);
   renderEntryPanel();
   renderActualPanel();
@@ -5833,6 +6518,7 @@ function qaCommit(){
   setActual(m, qaCategory, actualOf(m, qaCategory) + amount);
   addLogEntry(m, qaCategory, amount, noteEl ? noteEl.value : '');
   closeQuickAdd();
+  autoExtendForGoals();
   renderAll();
   scheduleSave();
 }
@@ -6342,11 +7028,17 @@ function sanitizeForFilename(s){
   return s.trim().replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,'_');
 }
 
+/* Local time, not UTC: the stamp is read by the person who pressed the button,
+   and it should match the clock they pressed it by. */
+function backupStamp(){
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
 function suggestedExcelFilename(){
-  const now = new Date();
-  const monthName = now.toLocaleDateString('en-US', {month:'long'});
   const namePart = state.userName ? sanitizeForFilename(state.userName)+'_' : '';
-  return `Budget_Planner_${namePart}${monthName}_${now.getFullYear()}`;
+  return `Budget_Planner_${namePart}${backupStamp()}`;
 }
 
 async function exportToExcel(){
@@ -6707,6 +7399,7 @@ function applyLanguage(l){
   document.getElementById('lang-ar').classList.toggle('active', l==='ar');
   document.getElementById('help-content-en').style.display = l==='en' ? 'block' : 'none';
   document.getElementById('help-content-ar').style.display = l==='ar' ? 'block' : 'none';
+  renderHelpTocs();
   renderAll();
   updateLinkStatus();
   updateDateTime();
@@ -6714,6 +7407,836 @@ function applyLanguage(l){
   updateShareLinkHrefs();
   refreshWhatsNewIfOpen();
   renderAnnouncementBanner();
+}
+
+/* ---------------------------------------------------------------------------
+   How to use — contents
+   Read off the rendered headings, so it cannot disagree with them. Runs for
+   both language blocks; each gets its own id prefix because both exist in the
+   DOM at once and only one is displayed.
+   --------------------------------------------------------------------------- */
+/* Where each help topic lives in the app. tab:null means the control is in the
+   header and is on screen whichever tab is open. */
+const HELP_GOTO = {
+  planner:    { tab:'entry',     sel:'#btn-replan' },
+  goals:      { tab:'entry',     sel:'#goals' },
+  setup:      { tab:'entry',     sel:'.setup-card' },
+  calendar:   { tab:'entry',     sel:'#entry-grid-view' },
+  categories: { tab:'entry',     sel:'#category-list' },
+  salary:     { tab:'entry',     sel:'#setup-salary' },
+  fixed:      { tab:'entry',     sel:'#planning-mode-list' },
+  emergency:  { tab:'entry',     sel:'.rules-box' },
+  spent:      { tab:'actual',    sel:'#sp-rows' },
+  basis:      { tab:'actual',    sel:'#sp-basis' },
+  overview:   { tab:'budget',    sel:'#overview-rows' },
+  compare:    { tab:'dashboard', sel:'#planned-vs-spent' },
+  forecast:   { tab:'forecast',  sel:'.forecast-grid' },
+  backup:     { tab:null,        sel:'.actions' },
+  language:   { tab:null,        sel:'.lang-switch' },
+};
+
+function gotoAppFeature(key){
+  const dest = HELP_GOTO[key];
+  if(!dest) return;
+  if(dest.tab) switchTab(dest.tab);
+
+  // switchTab re-renders and scrolls to the top, so the element to aim at does
+  // not exist until after that; a frame later it does, and has been laid out.
+  requestAnimationFrame(()=>{
+    let el = document.querySelector(dest.sel);
+    // The month calendar hides itself while a month's form is open, and you
+    // cannot scroll to something with no box. Fall back to the panel, which is
+    // still the right place to have been taken.
+    if(el && el.offsetParent === null && dest.tab){
+      el = document.getElementById('panel-' + dest.tab);
+    }
+    if(!el) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.classList.remove('spotlight');
+    void el.offsetWidth;               // restart the ring if it is already on
+    el.classList.add('spotlight');
+    setTimeout(()=> el.classList.remove('spotlight'), 2600);
+  });
+}
+
+/* One button per tagged topic, added to the rendered help rather than written
+   into the copy twice. */
+function decorateHelpGoto(host){
+  if(!host) return;
+  host.querySelectorAll('.help-goto').forEach(b=> b.remove());
+  host.querySelectorAll('[data-goto]').forEach(el=>{
+    const key = el.dataset.goto;
+    if(!HELP_GOTO[key]) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'help-goto';
+    btn.dataset.gotoKey = key;
+    btn.textContent = t('help_show_me');
+    // Inside the step's own text column, so it lines up under the words rather
+    // than beside the step number.
+    const host2 = el.matches('li') ? (el.querySelector('div') || el) : el;
+    host2.appendChild(btn);
+  });
+}
+
+function buildHelpToc(hostId, prefix){
+  const host = document.getElementById(hostId);
+  if(!host) return;
+
+  const existing = host.querySelector('.help-toc');
+  if(existing) existing.remove();
+  host.querySelectorAll('.help-back').forEach(b=> b.remove());
+
+  const sections = [...host.querySelectorAll('.help-section')].filter(sec=> sec.querySelector('h3'));
+  if(sections.length < 3) return;
+
+  const tocId = prefix + '-toc';
+  const items = sections.map((sec, i)=>{
+    const id = prefix + '-s' + i;
+    sec.id = id;
+    const title = sec.querySelector('h3').textContent.trim();
+    return `<li><a href="#${id}" data-jump="${id}">${esc(title)}</a></li>`;
+  }).join('');
+
+  const toc = document.createElement('details');
+  toc.className = 'help-toc';
+  toc.id = tocId;
+  toc.innerHTML =
+    `<summary>${esc(t('help_toc'))} <span class="help-toc-n">${sections.length}</span></summary>` +
+    `<ol>${items}</ol>`;
+
+  const lede = host.querySelector('.help-lede');
+  if(lede) lede.insertAdjacentElement('afterend', toc);
+  else host.prepend(toc);
+
+  // A way back that does not mean scrolling the whole page up by hand.
+  sections.forEach(sec=>{
+    const back = document.createElement('a');
+    back.className = 'help-back';
+    back.href = '#' + tocId;
+    back.dataset.jump = tocId;
+    back.textContent = '↑ ' + t('help_toc_back');
+    sec.appendChild(back);
+  });
+}
+
+function renderHelpTocs(){
+  buildHelpToc('help-content-en', 'he');
+  buildHelpToc('help-content-ar', 'ha');
+  decorateHelpGoto(document.getElementById('help-content-en'));
+  decorateHelpGoto(document.getElementById('help-content-ar'));
+}
+
+function wireHelpToc(){
+  const panel = document.getElementById('panel-help');
+  if(!panel) return;
+  panel.addEventListener('click', e=>{
+    const go = e.target.closest('button[data-goto-key]');
+    if(go){ gotoAppFeature(go.dataset.gotoKey); return; }
+    const link = e.target.closest('a[data-jump]');
+    if(!link) return;
+    // Handled here rather than by the browser: a real hash jump would rewrite
+    // the URL, and start_url is what the installed app relaunches into.
+    e.preventDefault();
+    const target = document.getElementById(link.dataset.jump);
+    if(!target) return;
+    const toc = target.closest('.help-toc') ? null : link.closest('.help-toc');
+    if(toc) toc.open = false;   // chose a topic: get the index out of the way
+    if(target.classList.contains('help-toc')) target.open = true;
+    target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+}
+
+/* ============================================================================
+   Guided plan
+   ============================================================================ */
+
+/* Starting points as a share of stated income. Deliberately summing to 0.70,
+   leaving 30% — a little above the 25% the app already uses as a rule of thumb,
+   so the first plan someone sees is a reachable one rather than a flattering
+   one. Not advice, and every figure is editable. */
+const PLANNER_SHARE = { rent:0.30, utilities:0.06, groceries:0.12, transport:0.10, entertainment:0.06, other:0.06 };
+const PLANNER_SHARE_OTHER = 0.05;
+
+/* Rent is not pre-selected for a student: plenty live at home, and a budget
+   that opens by assuming a rent they do not pay is one they will not trust. */
+const PLANNER_WORK_CATS = {
+  student:  ['groceries','transport','entertainment','other'],
+  fixed:    ['rent','utilities','groceries','transport','entertainment','other'],
+  variable: ['rent','utilities','groceries','transport','entertainment','other'],
+};
+const PLANNER_WORKS = ['student','fixed','variable'];
+const PLANNER_STEPS = 6;
+
+let plannerStep = 1;
+let plannerDraft = null;
+
+function plannerNum(v){ const n = Number(v); return Number.isFinite(n) && n > 0 ? n : 0; }
+
+function newPlannerDraft(){
+  return {
+    goalName: '', goalTarget: 0,
+    work: 'fixed',
+    startYm: (state.months[0] && ymIndex(state.months[0].ym) > ymIndex(currentYm()))
+      ? state.months[0].ym : currentYm(),
+    gradYm: null,
+    income: state.defaultSalary || 0, side: 0,
+    chosen: null,          // set from occupation on first sight of step 4
+    cats: {},
+  };
+}
+
+function plannerCatalogue(){
+  return (state.categories && state.categories.length) ? state.categories : DEFAULT_CATEGORY_KEYS;
+}
+
+function plannerDefaultChosen(work){
+  const all = plannerCatalogue();
+  const want = PLANNER_WORK_CATS[work] || PLANNER_WORK_CATS.fixed;
+  const picked = all.filter(k=> want.includes(k));
+  return picked.length ? picked : all.slice();
+}
+
+function plannerSuggest(key, income){
+  const share = PLANNER_SHARE[key] !== undefined ? PLANNER_SHARE[key] : PLANNER_SHARE_OTHER;
+  return Math.round((income * share) / 10) * 10;
+}
+
+function plannerChosenSum(d){
+  return (d.chosen || []).reduce((sum, k)=> sum + plannerNum(d.cats[k]), 0);
+}
+
+function plannerBiggest(d){
+  let best = null;
+  (d.chosen || []).forEach(k=>{
+    const v = plannerNum(d.cats[k]);
+    if(!best || v > best.amount) best = { key:k, amount:v };
+  });
+  return best;
+}
+
+/* What the answers add up to, and whether the goal is actually reachable. */
+function plannerOutcome(d){
+  const income = plannerNum(d.income) + plannerNum(d.side);
+  const spend = plannerChosenSum(d);
+  const save = income - spend;
+  const target = plannerNum(d.goalTarget);
+  const o = { income, spend, save, target, rate: income > 0 ? save / income : 0 };
+
+  if(save <= 0){ o.kind = 'none'; o.deficit = spend - income; return o; }
+  if(target <= 0){ o.kind = 'nogoal'; return o; }
+  o.months = Math.ceil(target / save);
+  o.startYm = d.startYm || currentYm();
+  o.ym = addMonths(o.startYm, Math.max(1, o.months));
+  o.kind = o.months > GOAL_MAX_MONTHS ? 'toolong' : 'ok';
+  return o;
+}
+
+/* The levers. Aimed at halving a reachable wait, or at three years when the
+   goal cannot be reached at all — both expressed as one number per month, in
+   their own figures, rather than a percentage nobody can act on. */
+/* How far out the app is willing to speak with a straight face. Only students
+   have one, and only because they told us. */
+function plannerHorizon(d, o){
+  if(d.work !== 'student' || !d.gradYm) return null;
+  const left = ymIndex(d.gradYm) - ymIndex(d.startYm || currentYm());
+  if(left <= 0) return null;                       // already finished
+  if(!(o.months > left)) return null;              // the plan lands in time
+  return {
+    left,
+    gradYm: d.gradYm,
+    banked: Math.max(0, o.save) * left,            // what is actually predictable
+    shortBy: Math.max(0, o.target - Math.max(0, o.save) * left),
+  };
+}
+
+function plannerLevers(d, o){
+  // A change someone could plausibly make — a tenth of what comes in, rounded
+  // to a number you would say out loud — rather than whatever a chosen deadline
+  // happens to demand.
+  const step = Math.max(50, Math.round((o.income * 0.10) / 50) * 50);
+  const after = Math.max(0, o.save) + step;
+  const months = after > 0 ? Math.ceil(o.target / after) : Infinity;
+  const big = plannerBiggest(d);
+  return {
+    step, after, months,
+    reachable: months <= GOAL_MAX_MONTHS,
+    ym: addMonths(d.startYm || currentYm(), Math.max(1, Math.min(months, GOAL_MAX_MONTHS))),
+    biggest: big,
+    canTrim: !!(big && big.amount >= step),
+  };
+}
+
+/* ============================================================================
+   Plans that learn from what actually happened
+   ============================================================================ */
+const LEARN_MIN_MONTHS = 3;      // one odd month is not a habit
+const LEARN_MIN_ABS = 25;
+const LEARN_MIN_PCT = 0.10;
+
+/* Closed months only. A month still running has been logged in part and
+   planned in full, so including it would report every plan as too generous. */
+function learnRowsFor(key){
+  return state.months.filter(m=> isMonthClosed(m) && hasLoggedActual(m, key));
+}
+
+/* The figure you are about to spend against — the first month not yet closed. */
+function plannedNowFor(key){
+  const from = ymIndex(currentYm());
+  const m = state.months.find(x=> ymIndex(x.ym) >= from) || state.months[state.months.length - 1];
+  return m ? effectiveCategoryValue(m, key) : 0;
+}
+
+function planLearningFor(key){
+  const rows = learnRowsFor(key);
+  if(rows.length < LEARN_MIN_MONTHS) return null;
+  const planned = plannedNowFor(key);
+  const actual  = rows.reduce((sum, m)=> sum + actualOf(m, key), 0) / rows.length;
+  const diff = actual - planned;
+  if(Math.abs(diff) < Math.max(LEARN_MIN_ABS, planned * LEARN_MIN_PCT)) return null;
+  return {
+    key, months: rows.length, planned, actual, diff,
+    suggest: Math.max(0, Math.round(actual / 10) * 10),
+  };
+}
+
+function planLearnings(){
+  return state.categories.map(planLearningFor).filter(Boolean);
+}
+
+/* Applied from this month on. Closed months are what happened; rewriting them
+   would be inventing history, and it would also destroy the very evidence this
+   suggestion was drawn from. */
+function applyLearning(key, amount){
+  const nowYm = currentYm();
+  const from = ymIndex(nowYm);
+
+  if(state.fieldModes[key] === 'fixed'){
+    const periods = state.fixedSchedules[key] || (state.fixedSchedules[key] = []);
+    const running = periods.find(p=> ymIndex(p.startYm) <= from && (!p.endYm || ymIndex(p.endYm) >= from));
+    if(running && ymIndex(running.startYm) >= from){
+      // It only starts now anyway — no history to preserve, so just correct it.
+      running.amount = amount;
+    } else {
+      if(running) running.endYm = addMonths(nowYm, -1);
+      periods.push({ id:'ln'+Date.now()+'-'+Math.random().toString(36).slice(2,5), startYm: nowYm, endYm: null, amount });
+    }
+  } else {
+    state.months.forEach(m=>{ if(ymIndex(m.ym) >= from) m[key] = amount; });
+  }
+}
+
+/* Shown only until a plan or a goal exists — after that the choice has been
+   made, and the slim button below is the way back in. */
+function renderPlanChoose(){
+  const host = document.getElementById('plan-choose');
+  const replan = document.getElementById('btn-replan');
+  if(!host) return;
+  const undecided = !state.plan && !((state.goals || []).length);
+  host.style.display = undecided ? 'block' : 'none';
+  if(replan) replan.style.display = undecided ? 'none' : 'block';
+}
+
+function wirePlanChoose(){
+  const smart = document.getElementById('choose-smart');
+  const manual = document.getElementById('choose-manual');
+  if(smart) smart.addEventListener('click', ()=> openPlanner());
+  if(manual) manual.addEventListener('click', ()=>{
+    // Doing it by hand means the controls the fold hides, so open them and go.
+    const fold = document.getElementById('setup-fold');
+    if(fold) fold.open = true;
+    document.getElementById('plan-choose').style.display = 'none';
+    const btn = document.getElementById('btn-replan');
+    if(btn) btn.style.display = 'block';
+    if(fold) fold.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+}
+
+function renderPlanLearn(){
+  const host = document.getElementById('plan-learn');
+  if(!host) return;
+  const found = planLearnings();
+  if(!found.length){ host.style.display = 'none'; host.innerHTML = ''; return; }
+
+  host.style.display = 'block';
+  host.innerHTML =
+    '<p class="learn-head">' + esc(t('learn_head')) + '</p>' +
+    '<ul class="learn-list">' + found.map(f=>
+      '<li>' +
+        '<span class="learn-text">' + esc(t(f.diff > 0 ? 'learn_over' : 'learn_under')
+          .replace('{cat}', categoryLabel(f.key))
+          .replace('{planned}', fmtMoney(f.planned))
+          .replace('{actual}', fmtMoney(f.actual))
+          .replace('{months}', f.months)) + '</span>' +
+        '<button type="button" class="learn-use" data-learn="' + esc(f.key) + '" data-amount="' + f.suggest + '">' +
+          esc(t('learn_use').replace('{amount}', fmtMoney(f.suggest))) + '</button>' +
+      '</li>').join('') + '</ul>' +
+    (found.length > 1 ? '<button type="button" id="learn-all" class="learn-all">' + esc(t('learn_all')) + '</button>' : '') +
+    '<p class="learn-note">' + esc(t('learn_note')) + '</p>';
+}
+
+function wirePlanLearn(){
+  const host = document.getElementById('plan-learn');
+  if(!host) return;
+  host.addEventListener('click', e=>{
+    const one = e.target.closest('button[data-learn]');
+    if(one){
+      applyLearning(one.dataset.learn, Number(one.dataset.amount) || 0);
+      renderAll();
+      scheduleSave();
+      return;
+    }
+    if(e.target.closest('#learn-all')){
+      planLearnings().forEach(f=> applyLearning(f.key, f.suggest));
+      renderAll();
+      scheduleSave();
+    }
+  });
+}
+
+/* What this month is actually set up to earn and spend, whatever the plan once
+   assumed. Reads the current month so a fixed schedule or an edited month both
+   count. */
+function planNowFigures(){
+  // The first month from now on that is actually set up. The current month is
+  // usually part-spent and sometimes untouched, and neither answers "what am I
+  // putting aside each month".
+  const from = ymIndex(currentYm());
+  const hasData = x => (Number(x.salary) || 0) !== 0 || (Array.isArray(x.touched) && x.touched.length);
+  let m = state.months.find(x=> ymIndex(x.ym) >= from && hasData(x))
+       || state.months.find(x=> ymIndex(x.ym) >= from)
+       || state.months[state.months.length - 1]
+       || null;
+  if(!m) return null;
+  const income = effectiveSalary(m) + effectiveValue(m, 'sideIncome');
+  const spend = state.categories.reduce((sum, k)=> sum + effectiveCategoryValue(m, k), 0);
+  return { income, spend, save: income - spend };
+}
+
+/* Compared on savings, not income: a raise entirely eaten by rent changes no
+   date, and interrupting someone to tell them otherwise is noise. */
+function planDrift(){
+  const p = state.plan;
+  if(!p) return null;
+  const now = planNowFigures();
+  if(!now) return null;
+
+  const base = Math.abs(p.ackSave !== undefined ? p.ackSave : p.save);
+  const moved = Math.abs(now.save - (p.ackSave !== undefined ? p.ackSave : p.save));
+  const threshold = Math.max(50, base * 0.05);
+  if(moved < threshold) return null;
+
+  const goal = (state.goals || []).find(g=> String(g.name||'').trim().toLowerCase() === String(p.goalName||'').trim().toLowerCase())
+            || (state.goals || [])[0] || null;
+  const d = { was: p.save, now: now.save, better: now.save > p.save, goal };
+  if(goal && goal.target > 0){
+    d.wasMonths = p.save > 0 ? Math.ceil(goal.target / p.save) : null;
+    d.nowMonths = now.save > 0 ? Math.ceil(goal.target / now.save) : null;
+    if(d.nowMonths && d.nowMonths <= GOAL_MAX_MONTHS) d.nowYm = addMonths(currentYm(), d.nowMonths);
+  }
+  return d;
+}
+
+function renderPlanDrift(){
+  const host = document.getElementById('plan-drift');
+  if(!host) return;
+  const d = planDrift();
+  if(!d){ host.style.display = 'none'; host.innerHTML = ''; return; }
+
+  let line;
+  if(d.goal && d.nowYm){
+    line = t(d.better ? 'drift_better' : 'drift_worse')
+      .replace('{was}', fmtMoney(Math.max(0, d.was)))
+      .replace('{now}', fmtMoney(Math.max(0, d.now)))
+      .replace('{goal}', esc(d.goal.name))
+      .replace('{date}', monthLabel(d.nowYm));
+  } else if(d.now <= 0){
+    line = t('drift_none').replace('{was}', fmtMoney(Math.max(0, d.was)));
+  } else {
+    line = t('drift_plain')
+      .replace('{was}', fmtMoney(Math.max(0, d.was)))
+      .replace('{now}', fmtMoney(Math.max(0, d.now)));
+  }
+
+  host.style.display = 'block';
+  host.className = 'drift ' + (d.better ? 'is-good' : 'is-warn');
+  host.innerHTML =
+    '<p class="drift-line">' + esc(line) + '</p>' +
+    '<div class="drift-actions">' +
+      '<button type="button" id="drift-replan">' + esc(t('drift_update')) + '</button>' +
+      '<button type="button" id="drift-dismiss" class="drift-ghost">' + esc(t('drift_keep')) + '</button>' +
+    '</div>';
+
+  document.getElementById('drift-replan').addEventListener('click', ()=>{
+    const now = planNowFigures();
+    openPlanner({ income: now ? now.income : 0, work: state.plan.work, gradYm: state.plan.gradYm, goalName: state.plan.goalName });
+  });
+  document.getElementById('drift-dismiss').addEventListener('click', ()=>{
+    // Keep the plan, accept the new reality as the baseline, and stop asking
+    // until it moves again.
+    const now = planNowFigures();
+    state.plan.ackSave = now ? now.save : state.plan.save;
+    scheduleSave();
+    renderPlanDrift();
+  });
+}
+
+function openPlanner(prefill){
+  plannerDraft = newPlannerDraft();
+  if(prefill && typeof prefill === 'object'){
+    Object.keys(prefill).forEach(k=>{ if(prefill[k] !== undefined && prefill[k] !== null) plannerDraft[k] = prefill[k]; });
+  }
+  plannerStep = 1;
+  document.getElementById('planner-overlay').style.display = 'flex';
+  renderPlanner();
+}
+function closePlanner(){
+  document.getElementById('planner-overlay').style.display = 'none';
+}
+
+function renderPlanner(){
+  const d = plannerDraft;
+  if(!d) return;
+  const body = document.getElementById('planner-body');
+  const title = document.getElementById('planner-title');
+
+  document.getElementById('planner-step').textContent =
+    t('planner_step_of').replace('{n}', plannerStep).replace('{total}', PLANNER_STEPS);
+  const back = document.getElementById('planner-back');
+  back.textContent = t('planner_back');
+  back.style.visibility = plannerStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('planner-skip').textContent = t('planner_manual');
+  document.getElementById('planner-next').textContent =
+    plannerStep === PLANNER_STEPS ? t('planner_apply') : t('planner_next');
+
+  if(plannerStep === 1){
+    title.textContent = t('planner_q_goal');
+    body.innerHTML =
+      '<p class="planner-note">' + esc(t('planner_q_goal_note')) + '</p>' +
+      '<div class="planner-field"><label for="pl-goal-name">' + esc(t('planner_goal_name')) + '</label>' +
+      '<input type="text" id="pl-goal-name" maxlength="40" value="' + esc(d.goalName) + '" placeholder="' + esc(t('planner_goal_ph')) + '"></div>' +
+      '<div class="planner-field"><label for="pl-goal-target">' + esc(t('planner_goal_amount')) + ' (' + esc(currencyDef().symbol) + ')</label>' +
+      '<input type="number" id="pl-goal-target" inputmode="decimal" min="0" value="' + (d.goalTarget || '') + '"></div>';
+
+  } else if(plannerStep === 2){
+    title.textContent = t('planner_q_work');
+    body.innerHTML =
+      '<p class="planner-note">' + esc(t('planner_q_work_note')) + '</p>' +
+      '<div class="planner-picks">' + PLANNER_WORKS.map(w=>
+        '<button type="button" class="planner-pick' + (d.work === w ? ' on' : '') + '" data-work="' + w + '">' +
+          '<span class="pk-t">' + esc(t('planner_work_' + w)) + '</span>' +
+          '<span class="pk-s">' + esc(t('planner_work_' + w + '_sub')) + '</span>' +
+        '</button>').join('') + '</div>';
+
+  } else if(plannerStep === 3){
+    title.textContent = t('planner_q_income');
+    body.innerHTML =
+      '<p class="planner-note">' + esc(t('planner_q_income_' + d.work)) + '</p>' +
+      '<div class="planner-field"><label for="pl-income">' + esc(t('planner_income_' + d.work)) + '</label>' +
+      '<input type="number" id="pl-income" inputmode="decimal" min="0" value="' + (d.income || '') + '"></div>' +
+      '<div class="planner-field"><label for="pl-side">' + esc(t('planner_side')) + '</label>' +
+      '<input type="number" id="pl-side" inputmode="decimal" min="0" value="' + (d.side || '') + '"></div>' +
+      '<div class="planner-field"><label for="pl-start">' + esc(t('planner_start')) + '</label>' +
+      '<input type="month" id="pl-start" value="' + esc(d.startYm || currentYm()) + '">' +
+      '<p class="planner-sub">' + esc(t('planner_start_note')) + '</p></div>' +
+      // Asked only of students, and only because the answer changes what the
+      // app is willing to claim further out than this date.
+      (d.work === 'student'
+        ? '<div class="planner-field"><label for="pl-grad">' + esc(t('planner_grad')) + '</label>' +
+          '<input type="month" id="pl-grad" value="' + esc(d.gradYm || '') + '">' +
+          '<p class="planner-sub">' + esc(t('planner_grad_note')) + '</p></div>'
+        : '');
+
+  } else if(plannerStep === 4){
+    if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
+    title.textContent = t('planner_q_which');
+    body.innerHTML =
+      '<p class="planner-note">' + esc(t('planner_q_which_note')) + '</p>' +
+      '<div class="planner-chips">' + plannerCatalogue().map(k=>
+        '<button type="button" class="planner-chip' + (d.chosen.includes(k) ? ' on' : '') + '" data-cat="' + esc(k) + '" aria-pressed="' + (d.chosen.includes(k) ? 'true' : 'false') + '">' +
+        esc(categoryLabel(k)) + '</button>').join('') + '</div>';
+
+  } else if(plannerStep === 5){
+    if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
+    title.textContent = t('planner_q_amounts');
+    d.chosen.forEach(k=>{ if(d.cats[k] === undefined) d.cats[k] = plannerSuggest(k, plannerNum(d.income) + plannerNum(d.side)); });
+    body.innerHTML =
+      '<p class="planner-note">' + esc(t('planner_q_amounts_note')) + '</p>' +
+      '<div class="planner-rows">' + d.chosen.map(k=>
+        '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(categoryLabel(k)) + '</label>' +
+        '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '"></div>').join('') +
+      '</div><p class="planner-left" id="pl-left"></p>';
+    updatePlannerLeft();
+
+  } else {
+    title.textContent = t('planner_result');
+    body.innerHTML = plannerResultHtml(d, plannerOutcome(d));
+  }
+}
+
+function updatePlannerLeft(){
+  const el = document.getElementById('pl-left');
+  if(!el || !plannerDraft) return;
+  const o = plannerOutcome(plannerDraft);
+  el.className = 'planner-left ' + (o.save > 0 ? 'is-good' : 'is-bad');
+  el.textContent = o.save > 0
+    ? t('planner_left').replace('{amount}', fmtMoney(o.save))
+    : t('planner_left_none').replace('{amount}', fmtMoney(Math.abs(o.save)));
+}
+
+function plannerResultHtml(d, o){
+  const rows =
+    '<div class="planner-sum">' +
+      '<div><p class="k">' + esc(t('planner_in')) + '</p><p class="v">' + fmtMoney(o.income) + '</p></div>' +
+      '<div><p class="k">' + esc(t('planner_out')) + '</p><p class="v">' + fmtMoney(o.spend) + '</p></div>' +
+      '<div><p class="k">' + esc(t('planner_aside')) + '</p><p class="v ' + (o.save > 0 ? 'good' : 'bad') + '">' + fmtMoney(Math.max(0, o.save)) + '</p></div>' +
+    '</div>';
+
+  if(o.kind === 'nogoal'){
+    return rows + '<p class="planner-headline is-good">' +
+      esc(t('planner_nogoal').replace('{amount}', fmtMoney(o.save))) + '</p>';
+  }
+
+  if(o.kind === 'ok'){
+    const headline = t('planner_ok')
+      .replace('{amount}', fmtMoney(o.save))
+      .replace('{target}', fmtMoney(o.target))
+      .replace('{months}', o.months)
+      .replace('{date}', monthLabel(o.ym));
+    const note = d.work === 'variable' ? t('planner_ok_note_variable') : t('planner_ok_note');
+    const hz = plannerHorizon(d, o);
+    // A date past graduation is a date built on an income that stops. Say what
+    // is actually predictable instead of asserting the far one.
+    const horizon = hz
+      ? '<p class="planner-headline is-warn">' + esc(t('planner_horizon')
+          .replace('{months}', o.months)
+          .replace('{left}', hz.left)
+          .replace('{grad}', monthLabel(hz.gradYm))) + '</p>' +
+        '<p class="planner-note">' + esc(t('planner_horizon_note')
+          .replace('{banked}', fmtMoney(hz.banked))
+          .replace('{target}', fmtMoney(o.target))
+          .replace('{grad}', monthLabel(hz.gradYm))) + '</p>'
+      : '';
+    return rows + '<p class="planner-headline is-good">' + esc(headline) + '</p>' +
+      horizon + '<p class="planner-note">' + esc(note) + '</p>';
+  }
+
+  // Out of reach: say so plainly, then say what would change it.
+  const lev = plannerLevers(d, o);
+  const why = o.kind === 'none'
+    ? t('planner_none').replace('{amount}', fmtMoney(o.deficit))
+    : t('planner_toolong');
+
+  const items = [];
+  // When spending is over income, closing that gap is the first move and comes
+  // before any talk of dates.
+  if(o.kind === 'none'){
+    items.push(t('planner_lever_close').replace('{amount}', fmtMoney(o.deficit)));
+  }
+  if(lev.reachable){
+    items.push(t('planner_lever_more')
+      .replace('{step}', fmtMoney(lev.step))
+      .replace('{months}', lev.months)
+      .replace('{date}', monthLabel(lev.ym)));
+    if(lev.canTrim){
+      items.push(t('planner_lever_less')
+        .replace('{step}', fmtMoney(lev.step))
+        .replace('{cat}', categoryLabel(lev.biggest.key))
+        .replace('{amount}', fmtMoney(lev.biggest.amount)));
+    }
+    // Still five years away even after a change they could make. Reachable is
+    // not the same as worth waiting for, and saying so is the honest part.
+    if(lev.months > 60) items.push(t('planner_still_far'));
+  } else {
+    items.push(t('planner_still_far'));
+  }
+
+  return rows + '<p class="planner-headline is-bad">' + esc(why) + '</p>' +
+    '<p class="planner-note">' + esc(t('planner_levers_note')) + '</p>' +
+    '<ul class="planner-levers">' + items.map(x=> '<li>' + esc(x) + '</li>').join('') + '</ul>';
+}
+
+/* Reads whatever the current step is showing back into the draft. */
+function plannerCapture(){
+  const d = plannerDraft;
+  if(!d) return;
+  if(plannerStep === 1){
+    const n = document.getElementById('pl-goal-name');
+    const v = document.getElementById('pl-goal-target');
+    if(n) d.goalName = n.value.trim();
+    if(v) d.goalTarget = plannerNum(v.value);
+  } else if(plannerStep === 3){
+    const i = document.getElementById('pl-income');
+    const sd = document.getElementById('pl-side');
+    const g = document.getElementById('pl-grad');
+    const st = document.getElementById('pl-start');
+    if(i) d.income = plannerNum(i.value);
+    if(sd) d.side = plannerNum(sd.value);
+    if(g) d.gradYm = g.value || null;
+    if(st && st.value) d.startYm = st.value;
+  } else if(plannerStep === 5){
+    document.querySelectorAll('#planner-body input[data-camount]').forEach(el=>{
+      d.cats[el.dataset.camount] = plannerNum(el.value);
+    });
+  }
+}
+
+/* Fills only months that are still empty. Anything already entered is left
+   exactly as it is and reported back, so the plan can never eat work. */
+function applyPlannerPlan(){
+  const d = plannerDraft;
+  if(!d) return { filled:0, skipped:0 };
+  if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
+
+  if(d.chosen.length){
+    state.categories = d.chosen.slice();
+    state.categories.forEach(k=>{
+      if(!state.fieldModes[k]) state.fieldModes[k] = 'variable';
+      if(!state.fixedSchedules[k]) state.fixedSchedules[k] = [];
+    });
+  }
+  state.defaultSalary = plannerNum(d.income);
+
+  /* The occupation answer configuring what the fold hides. A fixed salary
+     becomes a real open-ended period, so it fills every month by itself and
+     keeps doing so as the table grows. */
+  if(d.work === 'fixed' && state.months.length){
+    state.fieldModes.salary = 'fixed';
+    state.fixedSchedules.salary = [{
+      id: 'pl' + Date.now(),
+      startYm: state.months[0].ym,
+      endYm: null,
+      amount: plannerNum(d.income),
+    }];
+  } else {
+    state.fieldModes.salary = 'variable';
+  }
+
+  const startYm = d.startYm || currentYm();
+  // A start before the table begins means the table has to begin there.
+  // generateMonths reuses any month it already has for a given ym, so the
+  // existing ones come through untouched.
+  if(state.months.length && ymIndex(startYm) < ymIndex(state.months[0].ym)){
+    const extra = ymIndex(state.months[0].ym) - ymIndex(startYm);
+    state.months = generateMonths(startYm, state.months.length + extra);
+  }
+
+  let filled = 0, skipped = 0;
+  // Judged on categories, not salary. A seeded month carries a salary the app
+  // put there and nothing else; treating that as filled is what left a decade
+  // of zero-spending months un-repairable by re-running the plan.
+  const userBudgeted = m => d.chosen.some(k=> (Number(m[k]) || 0) !== 0)
+    || state.categories.some(k=> (Number(m[k]) || 0) !== 0);
+  state.months.forEach(m=>{
+    // Anything before the chosen start is none of this plan's business.
+    if(ymIndex(m.ym) < ymIndex(startYm)) return;
+    if(userBudgeted(m)){ skipped++; return; }
+    m.salary = plannerNum(d.income);
+    m.sideIncome = plannerNum(d.side);
+    const touched = ['salary'];
+    if(plannerNum(d.side)) touched.push('sideIncome');
+    d.chosen.forEach(k=>{
+      m[k] = plannerNum(d.cats[k]);
+      if(m[k]) touched.push(k);
+    });
+    m.touched = touched;
+    filled++;
+  });
+
+  if(d.goalName && plannerNum(d.goalTarget) > 0){
+    if(!Array.isArray(state.goals)) state.goals = [];
+    const key = d.goalName.trim().toLowerCase();
+    const existing = state.goals.find(g=> String(g.name || '').trim().toLowerCase() === key);
+    if(existing){
+      // Same goal, revised. Its priority and any manual share stay as they are;
+      // only the amount is what the plan was just asked about.
+      existing.target = plannerNum(d.goalTarget);
+    } else {
+      state.goals.push({
+        id: 'g' + Date.now() + '-' + Math.random().toString(36).slice(2,5),
+        name: d.goalName.trim(), target: plannerNum(d.goalTarget), dueYm: null, pct: null,
+      });
+    }
+  }
+
+  // Stored so the app can later notice that reality has moved away from it.
+  // Measured through planNowFigures, the same function the check uses, and
+  // taken after the months are written — so "drift" means the world moved, not
+  // that two functions disagree about how to read the same table.
+  const base = planNowFigures() || { income:0, spend:0, save:0 };
+  state.plan = {
+    madeYm: currentYm(),
+    work: d.work,
+    gradYm: d.gradYm || null,
+    income: base.income,
+    spend: base.spend,
+    save: base.save,
+    goalName: d.goalName || '',
+    ackSave: base.save,
+    // Kept so months created later — by the goal stretching the table, or by
+    // "+ Add month" — are budgeted rather than blank.
+    salary: plannerNum(d.income),
+    side: plannerNum(d.side),
+    cats: d.chosen.reduce((acc, k)=>{ acc[k] = plannerNum(d.cats[k]); return acc; }, {}),
+  };
+
+  autoExtendForGoals();
+  renderAll();
+  scheduleSave();
+  return { filled, skipped };
+}
+
+function wirePlanner(){
+  const overlay = document.getElementById('planner-overlay');
+  if(!overlay) return;
+
+  document.getElementById('planner-next').addEventListener('click', ()=>{
+    plannerCapture();
+    if(plannerStep < PLANNER_STEPS){ plannerStep++; renderPlanner(); return; }
+    const res = applyPlannerPlan();
+    closePlanner();
+    switchTab('entry');
+    alert(t('planner_done').replace('{filled}', res.filled).replace('{skipped}', res.skipped));
+  });
+
+  document.getElementById('planner-back').addEventListener('click', ()=>{
+    plannerCapture();
+    if(plannerStep > 1){ plannerStep--; renderPlanner(); }
+  });
+
+  // "I'll do it myself" opens the controls it would have filled in.
+  document.getElementById('planner-skip').addEventListener('click', ()=>{
+    closePlanner();
+    switchTab('entry');
+    const fold = document.getElementById('setup-fold');
+    if(fold) fold.open = true;
+  });
+
+  overlay.addEventListener('click', e=>{
+    const pick = e.target.closest('.planner-pick');
+    if(pick){
+      plannerDraft.work = pick.dataset.work;
+      plannerDraft.chosen = null;   // occupation changes what is pre-selected
+      renderPlanner();
+      return;
+    }
+    const chip = e.target.closest('.planner-chip');
+    if(chip){
+      const k = chip.dataset.cat;
+      const i = plannerDraft.chosen.indexOf(k);
+      if(i === -1) plannerDraft.chosen.push(k); else plannerDraft.chosen.splice(i, 1);
+      renderPlanner();
+      return;
+    }
+    if(e.target === overlay) closePlanner();
+  });
+
+  overlay.addEventListener('input', e=>{
+    if(e.target.matches('input[data-camount]')){ plannerCapture(); updatePlannerLeft(); }
+  });
+
+  const replan = document.getElementById('btn-replan');
+  if(replan) replan.addEventListener('click', openPlanner);
 }
 
 function switchTab(tabName){
@@ -6729,7 +8252,21 @@ function switchTab(tabName){
 }
 
 /* ---------- events ---------- */
+/* Opened only when the table does not exist yet, and only on the first paint:
+   after that it is the reader's to open and close, and re-asserting it on every
+   render would reach in and shut a panel someone had deliberately opened. */
+function initSetupFold(){
+  const fold = document.getElementById('setup-fold');
+  if(fold) fold.open = !(state.months && state.months.length);
+}
+
 function wireEvents(){
+  renderHelpTocs();
+  wireHelpToc();
+  wirePlanner();
+  wirePlanChoose();
+  wirePlanLearn();
+  initSetupFold();
   document.querySelectorAll('nav.tabs button').forEach(btn=>{
     btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
   });
@@ -6784,6 +8321,8 @@ function wireEvents(){
 
   document.getElementById('btn-generate-months').addEventListener('click', ()=>{
     const years = Math.max(1, Math.min(20, Number(document.getElementById('setup-years').value)||1));
+    const fold = document.getElementById('setup-fold');
+    if(fold) fold.open = false;
     const startYm = document.getElementById('setup-start-month').value || state.months[0].ym;
     const numMonths = years*12;
     const newYmSet = new Set();
@@ -6853,7 +8392,7 @@ function wireEvents(){
     const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'budget-planner-data.json'; a.click();
+    a.href = url; a.download = suggestedExcelFilename()+'.json'; a.click();
     URL.revokeObjectURL(url);
   });
   document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
@@ -7019,9 +8558,9 @@ function registerServiceWorker(){
   applyLanguage(state.lang==='ar' ? 'ar' : 'en');
   if(!state.hasSeenHelp){
     isFirstRun = true;
-    switchTab('help');
     state.hasSeenHelp = true;
     scheduleSave();
+    switchTab('help');
   }
   updateDateTime();
   setInterval(updateDateTime, 30000);
