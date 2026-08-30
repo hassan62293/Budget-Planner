@@ -272,7 +272,10 @@
   .user-name-input::placeholder{color:var(--ink-soft);font-weight:500;font-size:16px;font-family:var(--font-body);}
   .user-name-input.attention{
     border-bottom-width:2px;
-    animation:nameGlow 1.8s ease-in-out infinite;
+    /* Three pulses, then it holds the amber underline. It used to run forever,
+       which on a copy where nobody ever fills the name in means forever. */
+    animation:nameGlow 1.8s ease-in-out 3;
+    border-bottom-color:var(--amber-border);
   }
   @keyframes nameGlow{
     0%{ border-bottom-color:var(--amber-border); box-shadow:0 3px 10px rgba(231,169,61,0.55); }
@@ -1353,14 +1356,17 @@ td .ro-val{
 }
 tbody tr.ov-clickable{ cursor:pointer; }
 
-/* Help moves to a header button on phone so the bottom bar keeps five slots. */
-.help-btn{ display:none; }
+/* The forecast shortcut is phone-only: the desktop has a visible tab for it.
+   The ? is not — "help about what I am looking at" is asked on a laptop too, and
+   the desktop had no way to ask it. */
+.help-btn{
+  display:none; align-items:center; justify-content:center;
+  border:1px solid var(--rule); background:var(--paper-raised); color:var(--ink-soft);
+  border-radius:999px; width:36px; height:36px; font-size:15px; cursor:pointer; flex:0 0 auto;
+}
+#btn-help{ display:inline-flex; }
 @media (max-width:639px){
-  .help-btn{
-    display:inline-flex; align-items:center; justify-content:center;
-    border:1px solid var(--rule); background:var(--paper-raised); color:var(--ink-soft);
-    border-radius:999px; width:36px; height:36px; font-size:15px; cursor:pointer; flex:0 0 auto;
-  }
+  .help-btn{ display:inline-flex; }
   nav.tabs{ display:none; }
 }
 
@@ -1675,7 +1681,10 @@ a[role="button"]{
    invitation rather than an error. */
 .user-name-input.attention{
   background:var(--paper-raised);
-  animation:nameGlow 2s ease-in-out infinite;
+  /* Three cycles, not forever: it should catch the eye once on arrival, not
+     pulse under the reader for the whole session. forwards holds the closing
+     amber ring so the box stays marked as wanting something. */
+  animation:nameGlow 2s ease-in-out 3 forwards;
 }
 @keyframes nameGlow{
   0%,100%{
@@ -2161,6 +2170,17 @@ nav.tabs button{ color:var(--ink); }
   background:transparent; color:var(--ink); cursor:pointer;
 }
 .planner-addcat button:hover{ background:var(--ink); color:var(--paper); }
+
+.help-back{
+  display:inline-flex; align-items:center; gap:8px;
+  margin:0 0 16px; min-height:var(--tap); padding:9px 15px;
+  font-family:var(--font-body); font-size:12.5px; font-weight:600;
+  border:1px solid var(--ink); border-radius:var(--radius-sm);
+  background:transparent; color:var(--ink); cursor:pointer;
+}
+.help-back:hover{ background:var(--ink); color:var(--paper); }
+/* An arrow is not mirrored by the bidi algorithm, so it is turned by hand. */
+[dir="rtl"] .hb-arrow{ display:inline-block; transform:scaleX(-1); }
 
 .ga-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 .ga-btn{
@@ -2819,7 +2839,10 @@ nav.tabs button{ color:var(--ink); }
         <p id="current-datetime" class="current-datetime"></p>
       </div>
     </div>
-    <input type="text" id="user-name-input" class="user-name-input" data-i18n-placeholder="username_placeholder" placeholder="Enter your name">
+    <input type="text" id="user-name-input" class="user-name-input"
+                 name="display-name" autocomplete="off" spellcheck="false"
+                 data-lpignore="true" data-1p-ignore data-form-type="other"
+                 data-i18n-placeholder="username_placeholder" placeholder="Enter your name">
     <p class="sub" data-i18n="sub">Track monthly income and spending, watch your savings rate, and project where your balance lands over time.</p>
     <div class="actions">
       <button id="btn-save" style="border-color:var(--emerald-deep);color:var(--emerald-deep);" data-i18n="btn_save">Save now</button>
@@ -3178,6 +3201,7 @@ nav.tabs button{ color:var(--ink); }
 
     <section class="panel" id="panel-help">
       <h2 class="section-title" data-i18n="help_h2">How to use</h2>
+      <div id="help-return" style="display:none;"></div>
 
       <div id="help-content-en" class="help-content">
         <p class="help-lede">Smart Budget keeps track of what you earn, what you spend, and what's left over — and works out when you would reach the things you are saving for. Everything stays on your device: no account, no sign-up. Here's how to get going.</p>
@@ -3956,6 +3980,7 @@ const TRANSLATIONS = {
     ov_legend_met:'Inside the plan',
     ov_legend_none:'Nothing logged yet',
     actions_more:'Backups, Excel and sharing',
+    help_back:'Back to {tab}',
     learn_watch_head:'Learning from what you actually spend',
     learn_watch_wait:'{done} of {need} finished months logged. After {need}, any category you consistently over or under-spend gets a suggested new number here.',
     learn_watch_ok:'{done} finished months logged, and nothing is far enough off its plan to be worth changing. Keep logging and this is where a suggestion would appear.',
@@ -4255,6 +4280,7 @@ planner_open:'Plan this for me',
     ov_legend_met:'ضمن الخطة',
     ov_legend_none:'لم يُسجّل شيء بعد',
     actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
+    help_back:'العودة إلى {tab}',
     learn_watch_head:'نتعلّم مما تنفقه فعلًا',
     learn_watch_wait:'سُجّل {done} من {need} أشهر منتهية. بعد {need} أشهر، كل بند تتجاوزه أو تقلّ عنه باستمرار سيظهر له رقم مقترح هنا.',
     learn_watch_ok:'سُجّلت {done} أشهر منتهية، ولا يوجد بند بعيد عن خطته بما يكفي لتغييره. واصل التسجيل، وهنا سيظهر الاقتراح.',
@@ -7602,7 +7628,7 @@ function wireBottomNav(){
     btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
   });
   const help = document.getElementById('btn-help');
-  if(help) help.addEventListener('click', ()=> switchTab('help'));
+  if(help) help.addEventListener('click', openHelpForHere);
   const fcBtn = document.getElementById('btn-forecast');
   if(fcBtn) fcBtn.addEventListener('click', ()=> switchTab('forecast'));
 }
@@ -8406,6 +8432,94 @@ const HELP_GOTO = {
   language:   { tab:null,        sel:'.lang-switch' },
 };
 
+/* Which tab is showing. switchTab marks both navs, so the desktop row answers
+   for the phone bar too. */
+function currentTabName(){
+  const b = document.querySelector('nav.tabs button.active');
+  return b ? b.dataset.tab : 'entry';
+}
+function tabLabel(name){
+  const b = document.querySelector('nav.tabs button[data-tab="' + name + '"]');
+  return b ? b.textContent.trim() : name;
+}
+
+/* The topic for whatever is nearest the top of what you are looking at.
+   Restricted to the active panel: two HELP_GOTO entries point at the header,
+   which is near the top of every screen and would always win. */
+function nearestHelpTopic(){
+  const tab = currentTabName();
+  const panel = document.getElementById('panel-' + tab);
+  if(!panel) return null;
+  let best = null, bestDist = Infinity;
+  Object.keys(HELP_GOTO).forEach(topic=>{
+    const g = HELP_GOTO[topic];
+    if(g.tab && g.tab !== tab) return;
+    const el = document.querySelector(g.sel);
+    if(!el || el.offsetParent === null || !panel.contains(el)) return;
+    const d = Math.abs(el.getBoundingClientRect().top - 90);
+    if(d < bestDist){ bestDist = d; best = topic; }
+  });
+  return best;
+}
+
+let helpReturn = null;
+
+function gotoHelpTopic(topic){
+  switchTab('help');
+  requestAnimationFrame(()=>{
+    const host = document.getElementById('help-content-' + lang)
+              || document.getElementById('help-content-en');
+    // Prefer a full section, but some topics — 'overview' — are only tagged on a
+    // step in the opening list, and landing there beats not moving at all.
+    const el = !host ? null
+      : (host.querySelector('.help-section[data-goto="' + topic + '"]')
+      || host.querySelector('[data-goto="' + topic + '"]'));
+    if(!el) return;
+    // A topic can sit inside a collapsed <details>; without opening every one
+    // above it the scroll lands on a closed lid.
+    let d = el.closest('details');
+    while(d){ d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
+    el.scrollIntoView({ behavior:'smooth', block:'start' });
+    el.classList.remove('spotlight');
+    void el.offsetWidth;
+    el.classList.add('spotlight');
+    setTimeout(()=> el.classList.remove('spotlight'), 2600);
+  });
+}
+
+function renderHelpReturn(){
+  const host = document.getElementById('help-return');
+  if(!host) return;
+  if(!helpReturn){ host.style.display = 'none'; host.innerHTML = ''; return; }
+  host.style.display = 'block';
+  host.innerHTML = '<button type="button" id="help-back" class="help-back">' +
+    '<span class="hb-arrow" aria-hidden="true">←</span>' +
+    esc(t('help_back').replace('{tab}', tabLabel(helpReturn.tab))) + '</button>';
+}
+
+/* The ? in the header. Same button, same place — it just knows where you were. */
+function openHelpForHere(){
+  const topic = nearestHelpTopic();
+  helpReturn = { tab: currentTabName(), sel: topic ? HELP_GOTO[topic].sel : null };
+  if(topic) gotoHelpTopic(topic);
+  else switchTab('help');
+  renderHelpReturn();
+}
+
+function goBackFromHelp(){
+  const back = helpReturn;
+  helpReturn = null;
+  renderHelpReturn();
+  if(!back) return;
+  switchTab(back.tab);
+  if(!back.sel) return;
+  requestAnimationFrame(()=>{
+    const el = document.querySelector(back.sel);
+    if(!el || el.offsetParent === null) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+}
+
 function gotoAppFeature(key){
   const dest = HELP_GOTO[key];
   if(!dest) return;
@@ -8502,8 +8616,10 @@ function wireHelpToc(){
   const panel = document.getElementById('panel-help');
   if(!panel) return;
   panel.addEventListener('click', e=>{
+    if(e.target.closest('#help-back')){ goBackFromHelp(); return; }
     const go = e.target.closest('button[data-goto-key]');
-    if(go){ gotoAppFeature(go.dataset.gotoKey); return; }
+    // Leaving help by picking a feature makes the crumb stale.
+    if(go){ helpReturn = null; renderHelpReturn(); gotoAppFeature(go.dataset.gotoKey); return; }
     const link = e.target.closest('a[data-jump]');
     if(!link) return;
     // Handled here rather than by the browser: a real hash jump would rewrite
@@ -9436,7 +9552,9 @@ function switchTab(tabName){
   document.querySelectorAll('#bottom-nav button[data-tab]').forEach(b=> b.classList.toggle('on', b.dataset.tab===tabName));
   window.scrollTo({ top: 0, behavior: 'auto' });
   document.querySelectorAll('section.panel').forEach(p=> p.classList.toggle('active', p.id==='panel-'+tabName));
+  if(tabName !== 'help' && typeof helpReturn !== 'undefined' && helpReturn) helpReturn = null;
   renderAll();
+  if(typeof renderHelpReturn === 'function') renderHelpReturn();
 }
 
 /* ---------- events ---------- */
