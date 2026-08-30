@@ -683,6 +683,41 @@
   }
   .foot .foot-credit .credit-name{font-weight:600;}
 
+  .foot-version{
+    flex-basis:100%;
+    margin-top:10px;
+    display:flex;align-items:center;justify-content:center;
+    gap:9px;flex-wrap:wrap;
+    color:var(--ink);
+  }
+  .foot-version .version-num{font-variant-numeric:tabular-nums;font-weight:600;}
+  .foot-update{
+    font-family:var(--font-body);font-size:12.5px;font-weight:500;
+    padding:8px 14px;border-radius:3px;border:1px solid var(--ink);
+    background:transparent;color:var(--ink);cursor:pointer;
+    min-height:36px;
+  }
+  .foot-update:hover{background:var(--ink);color:var(--paper);}
+  .foot-update[disabled]{opacity:0.55;cursor:default;}
+  .foot-update[disabled]:hover{background:transparent;color:var(--ink);}
+  .update-note{color:var(--ink);font-weight:500;}
+
+  .actions-more{ margin:-6px 0 18px; }
+  .actions-more > summary{
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    font-family:var(--font-body); font-size:12.5px; font-weight:500;
+    color:var(--ink); padding:7px 0; min-height:var(--tap); list-style:none;
+  }
+  .actions-more > summary::-webkit-details-marker{ display:none; }
+  .actions-more > summary::before{
+    content:'▸'; font-size:10px; transition:transform .15s ease; flex:0 0 auto;
+  }
+  .actions-more[open] > summary::before{ transform:rotate(90deg); }
+  /* A chevron is not mirrored by the bidi algorithm, so it is turned by hand. */
+  [dir="rtl"] .actions-more > summary::before{ transform:scaleX(-1); }
+  [dir="rtl"] .actions-more[open] > summary::before{ transform:scaleX(-1) rotate(-90deg); }
+  .actions-more-body{ margin-top:2px; }
+
   .share-link-wrap{position:relative;display:inline-block;}
   #btn-share-link{
     font-family:var(--font-body);font-size:12.5px;font-weight:500;
@@ -902,6 +937,10 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   tbody tr:hover td,tbody tr:hover td:first-child{ background:var(--row-hover); }
   tbody tr.row-empty td,tbody tr.row-empty td:first-child{ background:var(--row-empty); }
   tbody tr.row-empty:hover td{ background:var(--row-hover); }
+  /* After the row-empty rules on purpose: equal specificity, so order decides. */
+  tbody tr.ov-out-over td, tbody tr.ov-out-over td:first-child{ background:var(--bad-tint); }
+  tbody tr.ov-out-met td,  tbody tr.ov-out-met td:first-child{ background:var(--good-tint); }
+  tbody tr.ov-out-over:hover td, tbody tr.ov-out-met:hover td{ background:var(--row-hover); }
 
   input.cell-input{
     border:1px solid var(--rule); border-radius:8px; background:var(--paper);
@@ -952,13 +991,9 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   .title-row{ gap:12px; }
   .user-name-input{ font-size:19px; }
 
-  /* Ten buttons in a row becomes a wall on a phone; make it a scrollable
-     rail so the primary actions stay reachable with a thumb. */
-  .actions{
-    flex-wrap:nowrap; overflow-x:auto; gap:8px; padding-bottom:6px;
-    scrollbar-width:none; -ms-overflow-style:none;
-  }
-  .actions::-webkit-scrollbar{ display:none; }
+  /* Two buttons live up here now and the rest are behind a fold, so these wrap
+     onto a second line instead of scrolling sideways out of reach. */
+  .actions{ gap:8px; padding-bottom:6px; }
   .actions button{ flex:0 0 auto; min-height:38px; border-radius:999px; padding:9px 15px; }
 
   .strip{ grid-template-columns:repeat(2,1fr); }
@@ -1260,6 +1295,19 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   .ov-rows{ display:flex; }
   #panel-budget .table-wrap{ display:none; }
 }
+.ov-legend{
+  display:flex; flex-wrap:wrap; gap:6px 14px;
+  margin:0 0 10px; font-size:11.5px; color:var(--ink-soft);
+}
+.ovl{ display:flex; align-items:center; gap:6px; }
+.ovl::before{
+  content:''; width:11px; height:11px; border-radius:3px;
+  border:1px solid var(--rule); flex:0 0 auto;
+}
+.ovl.is-met::before{ background:var(--good-tint); border-color:var(--good); }
+.ovl.is-over::before{ background:var(--bad-tint); border-color:var(--bad); }
+.ovl.is-none::before{ background:var(--paper-raised); }
+
 .ov-row{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
   background:var(--paper-raised); border-radius:var(--radius-sm);
@@ -1268,6 +1316,10 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
 }
 .ov-row:hover{ box-shadow:var(--shadow-md); }
 .ov-row.is-empty{ background:var(--row-empty); }
+/* Below is-empty deliberately: a month with something logged in it has more to
+   say than a month the app considers blank. */
+.ov-row.ov-out-over{ background:var(--bad-tint); }
+.ov-row.ov-out-met{ background:var(--good-tint); }
 .ov-m{ font-size:13px; font-weight:700; }
 .ov-right{ display:flex; align-items:center; gap:10px; }
 .ov-saved{ font-size:14.5px; font-weight:700; font-variant-numeric:tabular-nums; }
@@ -1402,18 +1454,21 @@ button{ color:var(--ink); }
   --ink-soft:#6E685C;    /* was #7C766B — now clears AA on the cream ground */
   --good-ink:#3A6450;
   --warn-ink:#83601F;
+  --stretch-ink:#A2521C;   /* between the amber and the red: reachable, but a push */
   --bad-ink:#96382D;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --good-ink:var(--good);
     --warn-ink:var(--warn);
+    --stretch-ink:#F0A46A;
     --bad-ink:var(--bad);
   }
 }
 :root[data-theme="dark"]{
   --good-ink:var(--good);
   --warn-ink:var(--warn);
+  --stretch-ink:#F0A46A;
   --bad-ink:var(--bad);
 }
 
@@ -2033,6 +2088,89 @@ nav.tabs button{ color:var(--ink); }
 .goal-alert.is-info{ border-inline-start-color:var(--good); background:var(--good-tint); }
 .ga-title{ margin:0; font-size:13.5px; font-weight:700; }
 .ga-body{ margin:6px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink); }
+.sp-check-card{
+  margin-top:18px; padding:15px 16px;
+  border:1px solid var(--rule); border-radius:8px; background:var(--paper-raised);
+}
+.sp-check-card.is-wait{ opacity:0.85; }
+
+/* Pulses a few times on arrival, then holds the ring. An animation that never
+   stops is one the eye learns to skip, and it would sit under the reader all
+   month. */
+.sp-check-card.needs-you{
+  opacity:1;
+  border-color:var(--warn);
+  box-shadow:0 0 0 3px var(--warn-tint);
+  animation:spcPulse 1.5s ease-in-out 3;
+}
+@keyframes spcPulse{
+  0%, 100%{ box-shadow:0 0 0 3px var(--warn-tint); }
+  50%{ box-shadow:0 0 0 7px var(--warn-tint); border-color:var(--warn); }
+}
+@media (prefers-reduced-motion: reduce){
+  .sp-check-card.needs-you{ animation:none; }
+}
+.spc-ask{
+  margin:7px 0 0; font-size:12.5px; font-weight:700; color:var(--warn-ink);
+}
+.sp-check-card.is-wait .spc-actions button{
+  background:var(--warn); border-color:var(--warn); color:#2C2A26;
+}
+.spc-title{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
+.spc-note{ margin:6px 0 0; font-size:12px; line-height:1.6; color:var(--ink-soft); }
+.spc-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:12px; }
+.spc-row label{ font-size:12.5px; font-weight:600; color:var(--ink); }
+.spc-row input{
+  flex:1 1 130px; min-width:0; min-height:40px;
+  font-family:var(--font-body); font-size:13.5px; font-weight:600;
+  padding:8px 11px; border-radius:3px;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+}
+.spc-expected{ margin:9px 0 0; font-size:12.5px; color:var(--ink); }
+.spc-gap{ margin:9px 0 0; font-size:12.5px; font-weight:600; line-height:1.55; }
+.spc-gap.is-short{ color:var(--bad-ink); }
+.spc-gap.is-extra{ color:var(--good-ink); }
+.spc-gap.is-match{ color:var(--good-ink); }
+.spc-actions{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:11px; }
+.spc-under{ font-size:12.5px; color:var(--ink); }
+.spc-actions select{
+  min-height:40px; max-width:100%;
+  font-family:var(--font-body); font-size:13px;
+  padding:8px 10px; border-radius:3px;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+}
+.spc-actions button{
+  min-height:40px; padding:9px 16px;
+  font-family:var(--font-body); font-size:13px; font-weight:600;
+  border-radius:3px; border:1px solid var(--good);
+  background:var(--good); color:var(--paper); cursor:pointer;
+}
+.spc-actions button:hover{ filter:brightness(1.08); }
+
+.planner-addcat{ display:flex; gap:8px; margin-top:12px; }
+.planner-addcat input{
+  flex:1 1 auto; min-width:0; min-height:40px;
+  font-family:var(--font-body); font-size:13px;
+  padding:8px 11px; border-radius:3px;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+}
+.planner-addcat button{
+  flex:0 0 auto; min-height:40px; padding:8px 16px;
+  font-family:var(--font-body); font-size:13px; font-weight:600;
+  border-radius:3px; border:1px solid var(--ink);
+  background:transparent; color:var(--ink); cursor:pointer;
+}
+.planner-addcat button:hover{ background:var(--ink); color:var(--paper); }
+
+.ga-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.ga-btn{
+  font-family:var(--font-body); font-size:12.5px; font-weight:600;
+  padding:8px 14px; min-height:36px; border-radius:3px;
+  border:1px solid var(--good); background:var(--good); color:var(--paper); cursor:pointer;
+}
+.ga-btn:hover{ filter:brightness(1.08); }
+.ga-btn.is-soft{ background:transparent; color:var(--ink); border-color:var(--ink); }
+.ga-btn.is-soft:hover{ background:var(--ink); color:var(--paper); filter:none; }
 
 /* ---- summary ---- */
 .goal-sum{
@@ -2061,6 +2199,16 @@ nav.tabs button{ color:var(--ink); }
   box-shadow:var(--shadow-sm); padding:12px 14px; min-width:0;
 }
 .goal-row.is-focus{ border-inline-start:4px solid var(--emerald); }
+/* The card answers the same question as the note inside it. A goal with no
+   date to be measured against keeps the neutral ground. */
+.goal-row.is-status-ok{ background:var(--good-tint); }
+.goal-row.is-status-gap{ background:var(--warn-tint); }
+.goal-row.is-status-stretch{ background:var(--warn-tint); }
+.goal-row.is-status-hard{ background:var(--bad-tint); }
+.goal-row.is-status-ok .goal-order button,
+.goal-row.is-status-gap .goal-order button,
+.goal-row.is-status-stretch .goal-order button,
+.goal-row.is-status-hard .goal-order button{ background:var(--paper-raised); }
 .goal-row-top{ display:flex; align-items:center; gap:10px; min-width:0; }
 .goal-order{ display:flex; flex-direction:column; gap:2px; flex:0 0 auto; }
 .goal-order button{
@@ -2072,6 +2220,32 @@ nav.tabs button{ color:var(--ink); }
 .goal-id{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:1px; }
 .goal-name{ font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .goal-target{ font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+/* Editable in place: a mistyped amount should not cost you the whole goal. */
+.goal-name-in, .goal-target-in{
+  width:100%; min-width:0; font-family:inherit; color:var(--ink);
+  background:transparent; border:1px solid transparent; border-radius:6px;
+  padding:3px 6px;
+}
+.goal-name-in{ font-size:14px; font-weight:700; }
+.goal-target-in{ font-size:11.5px; font-variant-numeric:tabular-nums; }
+.goal-name-in:hover, .goal-target-in:hover{ border-color:var(--rule); }
+.goal-name-in:focus, .goal-target-in:focus{
+  border-color:var(--emerald); background:var(--paper); outline:none;
+}
+
+.goal-datemode{
+  display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:9px;
+}
+.gdm-choice{ display:flex; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.gdm-btn{
+  min-height:var(--tap); padding:0 12px; border:none; cursor:pointer;
+  font-family:inherit; font-size:12px; font-weight:600;
+  background:var(--paper); color:var(--ink-soft);
+}
+.gdm-btn + .gdm-btn{ border-inline-start:1px solid var(--rule); }
+.gdm-btn.on{ background:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .gdm-btn.on{ color:#1A1815; }
+.gdm-auto-when{ font-size:11.5px; color:var(--ink); font-weight:600; }
 .goal-del{
   border:none; background:var(--paper); color:var(--ink-soft); cursor:pointer;
   width:30px; height:30px; min-width:30px; border-radius:50%; font-size:12px; flex:0 0 auto;
@@ -2112,6 +2286,8 @@ nav.tabs button{ color:var(--ink); }
 .goal-note{ margin:9px 0 0; font-size:11.5px; line-height:1.55; }
 .goal-note.is-gap{ color:var(--warn-ink); }
 .goal-note.is-ok{ color:var(--good-ink); }
+.goal-note.is-stretch{ color:var(--stretch-ink); font-weight:500; }
+.goal-note.is-hard{ color:var(--bad-ink); font-weight:600; }
 
 /* ---- add + compare ---- */
 .goal-add{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
@@ -2128,6 +2304,24 @@ nav.tabs button{ color:var(--ink); }
   font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
 }
 :root[data-theme="dark"] #btn-add-goal{ color:#1A1815; }
+
+.goal-timeline{
+  margin-top:14px; padding:13px 14px;
+  border:1px solid var(--rule); border-radius:var(--radius); background:var(--paper-raised);
+}
+.tl-head{ margin:0 0 8px; font-size:12.5px; font-weight:700; color:var(--ink); }
+.goal-timeline ul{ list-style:none; margin:0; padding:0; }
+.goal-timeline li{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px;
+  padding:6px 0; border-top:1px solid var(--rule); font-size:12px;
+}
+.goal-timeline li:first-child{ border-top:none; }
+.tl-name{ flex:1 1 40%; min-width:0; font-weight:600; color:var(--ink); }
+.tl-when{ flex:0 0 auto; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.tl-verdict{ flex:0 0 auto; font-size:11.5px; color:var(--ink-soft); }
+.goal-timeline li.is-ok .tl-verdict{ color:var(--good-ink); font-weight:600; }
+.goal-timeline li.is-late .tl-verdict{ color:var(--bad-ink); font-weight:600; }
+.tl-verdict:empty{ display:none; }
 
 .goal-compare{
   margin:12px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink-soft);
@@ -2629,30 +2823,35 @@ nav.tabs button{ color:var(--ink); }
     <p class="sub" data-i18n="sub">Track monthly income and spending, watch your savings rate, and project where your balance lands over time.</p>
     <div class="actions">
       <button id="btn-save" style="border-color:var(--emerald-deep);color:var(--emerald-deep);" data-i18n="btn_save">Save now</button>
-      <button id="btn-export" data-i18n="btn_export">Export data (.json)</button>
-      <button id="btn-import" data-i18n="btn_import">Import data</button>
-      <button id="btn-export-excel" data-i18n="btn_export_excel">Export to Excel (.xlsx)</button>
-      <button id="btn-import-excel" data-i18n="btn_import_excel">Load from Excel</button>
-      <button id="btn-connect-excel" data-i18n="btn_connect_excel" style="display:none;">Connect Excel file…</button>
-      <button id="btn-share-excel" data-i18n="btn_share_excel" style="display:none;">Share / Back Up…</button>
-      <button id="btn-reload-linked" data-i18n="btn_reload_linked" style="display:none;">Reload from linked file</button>
-      <div class="share-link-wrap">
-        <button id="btn-share-link" data-i18n="btn_share_link">Share this page</button>
-        <div id="share-link-popover" class="share-link-popover" style="display:none;">
-          <a id="share-link-email" href="#" target="_blank" rel="noopener">
-            <span class="sl-icon">✉️</span><span data-i18n="share_via_email">Email</span>
-          </a>
-          <a id="share-link-whatsapp" href="#" target="_blank" rel="noopener">
-            <span class="sl-icon">💬</span><span data-i18n="share_via_whatsapp">WhatsApp</span>
-          </a>
-        </div>
-      </div>
-      <button id="btn-install" data-i18n="btn_install" style="display:none;border-color:var(--emerald-deep);color:var(--emerald-deep);">Install app</button>
       <button id="btn-reset" class="danger" data-i18n="btn_reset">Reset all</button>
       <span id="save-flag" data-i18n="msg_saved">Saved</span>
-      <input type="file" id="file-import" accept="application/json" style="display:none;">
-      <input type="file" id="file-import-excel" accept=".xlsx,.xls" style="display:none;">
     </div>
+    <details class="actions-more" id="actions-more">
+      <summary data-i18n="actions_more">Backups, Excel and sharing</summary>
+      <div class="actions actions-more-body">
+        <button id="btn-export" data-i18n="btn_export">Export data (.json)</button>
+        <button id="btn-import" data-i18n="btn_import">Import data</button>
+        <button id="btn-export-excel" data-i18n="btn_export_excel">Export to Excel (.xlsx)</button>
+        <button id="btn-import-excel" data-i18n="btn_import_excel">Load from Excel</button>
+        <button id="btn-connect-excel" data-i18n="btn_connect_excel" style="display:none;">Connect Excel file…</button>
+        <button id="btn-share-excel" data-i18n="btn_share_excel" style="display:none;">Share / Back Up…</button>
+        <button id="btn-reload-linked" data-i18n="btn_reload_linked" style="display:none;">Reload from linked file</button>
+        <div class="share-link-wrap">
+          <button id="btn-share-link" data-i18n="btn_share_link">Share this page</button>
+          <div id="share-link-popover" class="share-link-popover" style="display:none;">
+            <a id="share-link-email" href="#" target="_blank" rel="noopener">
+              <span class="sl-icon">✉️</span><span data-i18n="share_via_email">Email</span>
+            </a>
+            <a id="share-link-whatsapp" href="#" target="_blank" rel="noopener">
+              <span class="sl-icon">💬</span><span data-i18n="share_via_whatsapp">WhatsApp</span>
+            </a>
+          </div>
+        </div>
+        <button id="btn-install" data-i18n="btn_install" style="display:none;border-color:var(--emerald-deep);color:var(--emerald-deep);">Install app</button>
+      </div>
+    </details>
+    <input type="file" id="file-import" accept="application/json" style="display:none;">
+    <input type="file" id="file-import-excel" accept=".xlsx,.xls" style="display:none;">
     <p id="excel-link-status" style="display:none;font-size:11px;color:var(--ink-soft);margin:-14px 0 18px;"></p>
   </div>
   <div class="strip" id="ledger-strip">
@@ -2687,6 +2886,11 @@ nav.tabs button{ color:var(--ink); }
 
 
 
+      <p class="ov-legend">
+        <span class="ovl is-met" data-i18n="ov_legend_met">Inside the plan</span>
+        <span class="ovl is-over" data-i18n="ov_legend_over">Over the plan</span>
+        <span class="ovl is-none" data-i18n="ov_legend_none">Nothing logged yet</span>
+      </p>
       <div class="ov-rows" id="overview-rows"></div>
 
       <div class="table-wrap">
@@ -2746,6 +2950,7 @@ nav.tabs button{ color:var(--ink); }
           <input type="number" id="goal-target" inputmode="decimal" step="any" min="0" data-i18n-placeholder="goal_target_ph" placeholder="Amount">
           <button type="button" id="btn-add-goal" data-i18n="goal_add">Add goal</button>
         </div>
+        <div id="goal-timeline"></div>
         <p class="goal-compare" id="goal-compare"></p>
       </div>
 
@@ -2873,6 +3078,7 @@ nav.tabs button{ color:var(--ink); }
       <p class="sp-basis" id="sp-basis"></p>
       <div class="sp-total" id="sp-total"></div>
       <div class="sp-rows" id="sp-rows"></div>
+      <div id="sp-check"></div>
     </section>
 
     <section class="panel" id="panel-dashboard">
@@ -3544,6 +3750,12 @@ nav.tabs button{ color:var(--ink); }
     <span class="credit-name" data-i18n="footer_credit_name">Hassan Abdulghani Alwehaimid</span>
     <span data-i18n="footer_credit_rights">· © 2026, all rights reserved.</span>
   </span>
+  <span class="foot-version">
+    <span data-i18n="footer_version">Version</span>
+    <span class="version-num" id="app-version">—</span>
+    <button type="button" id="btn-update" class="foot-update" data-i18n="footer_update">Check for updates</button>
+    <span class="update-note" id="update-note" role="status" aria-live="polite"></span>
+  </span>
 </footer>
 
 <div id="planner-overlay" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="planner-title">
@@ -3718,6 +3930,45 @@ const TRANSLATIONS = {
     goal_focus_this:'Focus on this',
     goal_focused:'Focused',
     goal_on_track:'On track for this date.',
+    trim_title:'Some months are no longer needed',
+    trim_body:'The last {n} months run past anything your goals need. They are empty, so removing them changes nothing you entered — it just stops them dragging on your savings rate and totals.',
+    trim_to_goals:'Trim to your goals ({n} months)',
+    trim_to_setup:'Trim to your setup ({n} months)',
+    planner_add_cat_ph:'Something else you spend on',
+    planner_add_cat:'Add',
+    check_title:'Money check',
+    check_note:'Enter what you actually had at the end of this month. If it does not match what the plan expected, record the difference — your goal dates are only as honest as the figures behind them.',
+    check_open_note:'This month is still running. The check opens once it is over, when there is a final figure worth comparing against.',
+    check_held:'What you actually had',
+    check_expected:'The plan expected {amount}',
+    check_short:'You have {amount} less than the plan expected.',
+    check_extra:'You have {amount} more than the plan expected.',
+    check_match:'This matches the plan.',
+    check_under:'Record it under',
+    check_extra_as:'Recorded as extra income',
+    check_apply:'Record the difference',
+    check_offset_note:'Money check adjustment',
+    check_needs_you:'Last month has ended — worth checking what you actually have.',
+    check_goto:'Check {month}',
+    ov_over_title:'Spent more than this month planned for',
+    ov_met_title:'Stayed inside what this month planned for',
+    ov_legend_over:'Over the plan',
+    ov_legend_met:'Inside the plan',
+    ov_legend_none:'Nothing logged yet',
+    actions_more:'Backups, Excel and sharing',
+    learn_watch_head:'Learning from what you actually spend',
+    learn_watch_wait:'{done} of {need} finished months logged. After {need}, any category you consistently over or under-spend gets a suggested new number here.',
+    learn_watch_ok:'{done} finished months logged, and nothing is far enough off its plan to be worth changing. Keep logging and this is where a suggestion would appear.',
+    goal_from:'From',
+    goal_name_aria:'Goal name',
+    goal_target_aria:'Goal amount',
+    goal_date_q:'How should the date be decided?',
+    goal_date_auto:'Work out the date',
+    goal_date_target:'I have a date',
+    goal_lands:'Lands {date} at this rate',
+    tl_head:'What you would reach, and when',
+    tl_by:'clears {date}',
+    tl_late:'{n} months past your date',
     goal_rule:'25% rule of thumb',
     goal_plan_leaves:'Your plan saves',
     goal_ceiling:'Left to spend',
@@ -3904,6 +4155,12 @@ planner_open:'Plan this for me',
     footer_credit_by:'Designed and built by',
     footer_credit_name:'Hassan Abdulghani Alwehaimid',
     footer_credit_rights:'· © 2026, all rights reserved.',
+    footer_version:'Version',
+    footer_update:'Check for updates',
+    update_checking:'Checking…',
+    update_found:'New version found — reloading…',
+    update_current:'You already have the newest version.',
+    update_offline:'Could not check — you appear to be offline.',
     row_delete_title:'Remove month', totals_label:'Total / avg',
     emergency_tooltip:'Auto-funded up to the threshold; withdrawn on deficit months',
     alert_import_error:'Could not read that file — make sure it is a JSON export from this planner.',
@@ -3972,6 +4229,45 @@ planner_open:'Plan this for me',
     goal_focus_this:'ركّز على هذا',
     goal_focused:'قيد التركيز',
     goal_on_track:'في المسار الصحيح لهذا التاريخ.',
+    trim_title:'بعض الأشهر لم تعد لازمة',
+    trim_body:'آخر {n} شهرًا تتجاوز كل ما تحتاجه أهدافك. وهي فارغة، لذا حذفها لا يغيّر شيئًا مما أدخلته — بل يمنعها من التأثير على معدل ادخارك وإجمالياتك.',
+    trim_to_goals:'قصّها على أهدافك ({n} شهرًا)',
+    trim_to_setup:'قصّها على إعدادك الأصلي ({n} شهرًا)',
+    planner_add_cat_ph:'شيء آخر تنفق عليه',
+    planner_add_cat:'أضف',
+    check_title:'مطابقة الرصيد',
+    check_note:'أدخل ما كان لديك فعلًا في نهاية هذا الشهر. إن لم يطابق ما توقّعته الخطة، فسجّل الفارق — فتواريخ أهدافك لا تكون أدق من الأرقام التي بُنيت عليها.',
+    check_open_note:'هذا الشهر لم ينتهِ بعد. تُفتح المطابقة بعد انتهائه، حين يصبح هناك رقم نهائي يستحق المقارنة.',
+    check_held:'ما كان لديك فعلًا',
+    check_expected:'توقّعت الخطة {amount}',
+    check_short:'لديك {amount} أقل مما توقّعته الخطة.',
+    check_extra:'لديك {amount} أكثر مما توقّعته الخطة.',
+    check_match:'هذا مطابق للخطة.',
+    check_under:'سجّله ضمن',
+    check_extra_as:'يُسجّل كدخل إضافي',
+    check_apply:'سجّل الفارق',
+    check_offset_note:'تسوية مطابقة الرصيد',
+    check_needs_you:'انتهى الشهر الماضي — يستحق أن تتحقق مما لديك فعلًا.',
+    check_goto:'تحقّق من {month}',
+    ov_over_title:'أنفقتَ أكثر مما خُطط لهذا الشهر',
+    ov_met_title:'بقيتَ ضمن ما خُطط لهذا الشهر',
+    ov_legend_over:'تجاوز الخطة',
+    ov_legend_met:'ضمن الخطة',
+    ov_legend_none:'لم يُسجّل شيء بعد',
+    actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
+    learn_watch_head:'نتعلّم مما تنفقه فعلًا',
+    learn_watch_wait:'سُجّل {done} من {need} أشهر منتهية. بعد {need} أشهر، كل بند تتجاوزه أو تقلّ عنه باستمرار سيظهر له رقم مقترح هنا.',
+    learn_watch_ok:'سُجّلت {done} أشهر منتهية، ولا يوجد بند بعيد عن خطته بما يكفي لتغييره. واصل التسجيل، وهنا سيظهر الاقتراح.',
+    goal_from:'من',
+    goal_name_aria:'اسم الهدف',
+    goal_target_aria:'مبلغ الهدف',
+    goal_date_q:'كيف يُحدَّد التاريخ؟',
+    goal_date_auto:'احسب التاريخ',
+    goal_date_target:'لديّ تاريخ محدد',
+    goal_lands:'يكتمل في {date} بهذا المعدل',
+    tl_head:'ما ستبلغه، ومتى',
+    tl_by:'يسبق {date}',
+    tl_late:'يتأخر {n} شهرًا عن تاريخك',
     goal_rule:'قاعدة الـ 25%',
     goal_plan_leaves:'خطتك تدّخر',
     goal_ceiling:'المتبقي للإنفاق',
@@ -4158,6 +4454,12 @@ planner_open:'خطّط لي',
     footer_credit_by:'من تصميم وتطوير',
     footer_credit_name:'حسن عبدالغني الوحيمد',
     footer_credit_rights:'· © 2026، جميع الحقوق محفوظة.',
+    footer_version:'الإصدار',
+    footer_update:'التحقق من وجود تحديث',
+    update_checking:'جارٍ التحقق…',
+    update_found:'تم العثور على إصدار جديد — جارٍ إعادة التحميل…',
+    update_current:'لديك أحدث إصدار بالفعل.',
+    update_offline:'تعذّر التحقق — يبدو أنك غير متصل بالإنترنت.',
     row_delete_title:'حذف الشهر', totals_label:'الإجمالي / المتوسط',
     emergency_tooltip:'يُموَّل تلقائيًا حتى الحد المحدد، ويُسحب منه عند العجز',
     alert_import_error:'تعذّرت قراءة هذا الملف — تأكّد أنه ملف JSON مُصدَّر من هذا المخطط.',
@@ -4209,6 +4511,75 @@ async function ensureXlsxLoaded(){
   ], ()=> typeof XLSX!=='undefined');
   return xlsxAvailable;
 }
+/* ---- Updating an app that lives on a home screen -------------------------
+   There is no address bar there, so no way to force a reload. The service
+   worker only looks for a new version when the browser feels like it; this
+   asks it outright. registration.update() is fetched by the browser rather
+   than by the page, so connect-src does not block it. */
+
+function swVersion(){
+  const ctrl = navigator.serviceWorker && navigator.serviceWorker.controller;
+  if(!ctrl) return Promise.resolve(null);
+  return new Promise(resolve=>{
+    const ch = new MessageChannel();
+    const giveUp = setTimeout(()=>resolve(null), 1500);
+    ch.port1.onmessage = e => { clearTimeout(giveUp); resolve(e.data); };
+    try{ ctrl.postMessage('version', [ch.port2]); }
+    catch(err){ clearTimeout(giveUp); resolve(null); }
+  });
+}
+
+function showAppVersion(){
+  const el = document.getElementById('app-version');
+  if(!el) return;
+  swVersion().then(v=>{ if(v) el.textContent = v; });
+}
+
+// Resolves once nothing is still installing — or after ten seconds, because a
+// button that can hang forever is worse than one that reloads a moment early.
+function swSettled(reg){
+  return new Promise(resolve=>{
+    const stop = setTimeout(resolve, 10000);
+    (function tick(){
+      if(!reg.installing){ clearTimeout(stop); resolve(); }
+      else setTimeout(tick, 250);
+    })();
+  });
+}
+
+async function checkForUpdate(){
+  const btn  = document.getElementById('btn-update');
+  const note = document.getElementById('update-note');
+  const say  = key => { if(note) note.textContent = t(key); };
+  if(btn) btn.disabled = true;
+  say('update_checking');
+
+  if(!('serviceWorker' in navigator)){ location.reload(); return; }
+  const reg = await navigator.serviceWorker.getRegistration();
+  if(!reg){ location.reload(); return; }
+
+  let found = false;
+  const onFound = ()=>{ found = true; };
+  reg.addEventListener('updatefound', onFound);
+
+  let offline = false;
+  try{ await reg.update(); }catch(err){ offline = true; }
+
+  if(found || reg.installing || reg.waiting){
+    // The incoming worker calls skipWaiting() and claim() on its own, so once
+    // it has installed the reload is served from its cache, not the old one.
+    say('update_found');
+    await swSettled(reg);
+    if(reg.waiting) reg.waiting.postMessage('skip-waiting');
+    location.reload();
+    return;
+  }
+
+  reg.removeEventListener('updatefound', onFound);
+  if(btn) btn.disabled = false;
+  say(offline ? 'update_offline' : 'update_current');
+}
+
 function t(key){ return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]!==undefined) ? TRANSLATIONS[lang][key] : key; }
 
 function arYears(n){
@@ -4306,6 +4677,34 @@ function nothingToSaveText(biggest){
     ? ('خطتك لا تترك شيئًا للادخار بعد، فلا يمكن حساب تاريخ. أكبر بند مخطط لديك هو ' + biggest + '.')
     : ('Your plan does not leave anything to save yet, so no date can be worked out. Your largest planned category is ' + biggest + '.');
 }
+/* Money that genuinely cannot move: the categories marked fixed. What is left
+   of income after these is the most that could ever go towards a goal. */
+function fixedCommitments(){
+  const i = currentMonthIndex();
+  const m = i === -1 ? state.months[0] : state.months[i];
+  if(!m) return 0;
+  return state.categories
+    .filter(c=> state.fieldModes[c] === 'fixed')
+    .reduce((sum, c)=> sum + effectiveCategoryValue(m, c), 0);
+}
+
+function goalStretchText(need, getting){
+  return lang === 'ar'
+    ? ('يحتاج ' + need + ' شهريًا، وهو أعلى من قاعدة الـ25% — لكنه في المتناول إن شددت الإنفاق. أنت تضع جانبًا ' + getting + ' حاليًا.')
+    : ('Needs ' + need + ' a month — above the 25% guideline, but within reach if you tighten up. You are putting aside ' + getting + ' right now.');
+}
+
+function goalUnreachableText(need, when){
+  if(!when){
+    return lang === 'ar'
+      ? ('يحتاج ' + need + ' شهريًا — أكثر مما يحتمله دخلك بعد التزاماتك الثابتة. وبالمعدل الحالي لا يكتمل هذا الهدف إطلاقًا.')
+      : ('Needs ' + need + ' a month — more than your income can cover after your fixed commitments. At the current rate this goal is never reached.');
+  }
+  return lang === 'ar'
+    ? ('يحتاج ' + need + ' شهريًا — أكثر مما يحتمله دخلك بعد التزاماتك الثابتة. أقرب تاريخ يمكن بلوغه فعلًا هو ' + when + '.')
+    : ('Needs ' + need + ' a month — more than your income can cover after your fixed commitments. The earliest date you could actually reach is ' + when + '.');
+}
+
 function goalGapText(need, getting, gap){
   return lang === 'ar'
     ? ('يحتاج ' + need + ' شهريًا، ويحصل على ' + getting + '. الفارق ' + gap + ' شهريًا — وهو ما قد يغطيه دخل إضافي.')
@@ -4558,6 +4957,18 @@ function normalizeState(s){
   if(!s.currency || !CURRENCIES[s.currency]) s.currency = DEFAULT_CURRENCY;
   if(typeof s.defaultSalary !== 'number') s.defaultSalary = 0;
   if(!Array.isArray(s.goals)) s.goals = [];
+  // Anyone arriving from before this was recorded gets the app's own starting
+  // length, not their current one — which may already include auto-extension.
+  if(typeof s.baseMonths !== 'number' || s.baseMonths < 1) s.baseMonths = 12;
+  if(!Array.isArray(s.retiredGoals)) s.retiredGoals = [];
+  s.retiredGoals = s.retiredGoals
+    .filter(h=> h && typeof h === 'object' && h.startYm && h.retiredYm)
+    .map(h=>({
+      startYm: String(h.startYm),
+      retiredYm: String(h.retiredYm),
+      share: Math.max(0, Number(h.share) || 0),
+      target: Math.max(0, Number(h.target) || 0),
+    }));
   s.goals = s.goals.filter(g=> g && typeof g === 'object').map(g=>({
     id: g.id || ('g' + Math.random().toString(36).slice(2)),
     name: String(g.name || ''),
@@ -5576,6 +5987,8 @@ function renderActualPanel(){
         </div>
       </div>`;
   }).join('');
+
+  renderMoneyCheck(idx);
 }
 
 /* The list of what made up a category's total. Absent entirely when there is
@@ -5605,6 +6018,143 @@ function renderSpendItems(m, key){
       <p class="spi-head">${esc(t('sp_items'))}</p>
       <ul>${rows}${restRow}</ul>
     </div>`;
+}
+
+/* Everything held at the end of month idx: the opening balance, every month's
+   saving up to and including it, and whatever sits in the emergency fund.
+   Savings and the emergency fund are separate pots — monthCalc counts the
+   emergency contribution as spend — so both belong in the total. */
+function expectedHeld(idx){
+  const { rows } = computeAll();
+  if(!rows.length) return 0;
+  const at = Math.max(0, Math.min(idx, rows.length - 1));
+  let total = Number(state.forecast.start) || 0;
+  for(let i = 0; i <= at; i++) total += rows[i].savings;
+  return total + rows[at].emergencyBalance;
+}
+
+function moneyCheckGap(idx){
+  const m = state.months[idx];
+  if(!m) return null;
+  const raw = m.held;
+  if(raw === undefined || raw === null || raw === '') return null;
+  const held = Number(raw);
+  if(!isFinite(held)) return null;
+  return held - expectedHeld(idx);
+}
+
+function offsetCatDefault(){
+  if(state.lastOffsetCat && state.categories.includes(state.lastOffsetCat)) return state.lastOffsetCat;
+  return state.categories[0] || '';
+}
+
+/* The newest month that has finished. That is the one worth reconciling; the
+   ones before it are still reachable, they just do not ask. */
+function lastClosedMonthIndex(){
+  for(let i = state.months.length - 1; i >= 0; i--){
+    if(isMonthClosed(state.months[i])) return i;
+  }
+  return -1;
+}
+
+function monthAwaitingCheck(){
+  const i = lastClosedMonthIndex();
+  if(i === -1) return -1;
+  const raw = state.months[i].held;
+  return (raw === undefined || raw === null || raw === '') ? i : -1;
+}
+
+function renderMoneyCheck(idx){
+  const host = document.getElementById('sp-check');
+  if(!host) return;
+  const m = state.months[idx];
+  if(!m){ host.innerHTML = ''; return; }
+
+  if(!isMonthClosed(m)){
+    // Where the person actually is. If a finished month is still waiting, this
+    // is the only place they will be told so.
+    const waiting = monthAwaitingCheck();
+    host.innerHTML =
+      '<div class="sp-check-card is-wait' + (waiting === -1 ? '' : ' needs-you') + '">' +
+        '<p class="spc-title">' + esc(t('check_title')) + '</p>' +
+        '<p class="spc-note">' + esc(t('check_open_note')) + '</p>' +
+        (waiting === -1 ? '' :
+          '<div class="spc-actions">' +
+            '<button type="button" id="spc-goto" data-goto="' + waiting + '">' +
+            esc(t('check_goto').replace('{month}', monthLabel(state.months[waiting].ym))) +
+            '</button>' +
+          '</div>') +
+      '</div>';
+    return;
+  }
+
+  const expected = expectedHeld(idx);
+  const raw = m.held;
+  const entered = (raw === undefined || raw === null || raw === '') ? null : Number(raw);
+  const gap = entered === null ? 0 : entered - expected;
+  const off = Math.abs(gap) >= 1;
+
+  let tail = '';
+  if(entered !== null && off){
+    const short = gap < 0;
+    tail =
+      '<p class="spc-gap ' + (short ? 'is-short' : 'is-extra') + '">' +
+        esc((short ? t('check_short') : t('check_extra')).replace('{amount}', fmtMoney(Math.abs(gap)))) +
+      '</p>' +
+      '<div class="spc-actions">' +
+        (short
+          ? '<label class="spc-under" for="spc-cat">' + esc(t('check_under')) + '</label>' +
+            '<select id="spc-cat">' + state.categories.map(c=>
+              '<option value="' + esc(c) + '"' + (c === offsetCatDefault() ? ' selected' : '') + '>' +
+              esc(categoryLabel(c)) + '</option>').join('') + '</select>'
+          : '<span class="spc-under">' + esc(t('check_extra_as')) + '</span>') +
+        '<button type="button" id="spc-apply">' + esc(t('check_apply')) + '</button>' +
+      '</div>';
+  } else if(entered !== null){
+    tail = '<p class="spc-gap is-match">' + esc(t('check_match')) + '</p>';
+  }
+
+  const asking = entered === null && idx === lastClosedMonthIndex();
+
+  host.innerHTML =
+    '<div class="sp-check-card' + (asking ? ' needs-you' : '') + '">' +
+      '<p class="spc-title">' + esc(t('check_title')) + '</p>' +
+      (asking ? '<p class="spc-ask">' + esc(t('check_needs_you')) + '</p>' : '') +
+      '<p class="spc-note">' + esc(t('check_note')) + '</p>' +
+      '<div class="spc-row">' +
+        '<label for="spc-held">' + esc(t('check_held')) + '</label>' +
+        '<input type="number" id="spc-held" inputmode="decimal" step="any" min="0" placeholder="0" value="' +
+          (entered === null ? '' : entered) + '">' +
+      '</div>' +
+      '<p class="spc-expected">' + esc(t('check_expected').replace('{amount}', fmtMoney(expected))) + '</p>' +
+      tail +
+    '</div>';
+}
+
+/* Records the difference so the rest of the app works from the real figure.
+   Short means money left that the plan did not account for, so it lands as
+   spending; extra means income the plan never saw. */
+function applyMoneyCheck(idx){
+  const m = state.months[idx];
+  if(!m || !isMonthClosed(m)) return;
+  const gap = moneyCheckGap(idx);
+  if(gap === null || Math.abs(gap) < 1) return;
+
+  if(gap < 0){
+    const sel = document.getElementById('spc-cat');
+    const cat = (sel && sel.value) || offsetCatDefault();
+    if(!cat) return;
+    state.lastOffsetCat = cat;
+    // On top of what the month already counts for this category — see the note
+    // at the head of this patch for why the raw actual is the wrong base.
+    setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
+    addLogEntry(m, cat, -gap, t('check_offset_note'));
+  } else {
+    m.sideIncome = (Number(m.sideIncome) || 0) + gap;
+  }
+  autoExtendForGoals();
+  renderAll();
+  scheduleSave();
 }
 
 function wireActualPanel(){
@@ -5677,6 +6227,34 @@ function wireActualPanel(){
     const noteBox = e.target.closest('input[data-note]');
     if(noteBox){ e.preventDefault(); submitAdd(noteBox.dataset.note); }
   });
+  const check = document.getElementById('sp-check');
+  if(check){
+    // Stored on every keystroke but only redrawn once the field is left, so
+    // typing a five-digit balance does not rebuild the card under the caret.
+    check.addEventListener('input', e=>{
+      if(e.target.id !== 'spc-held') return;
+      const m = state.months[actualMonthIdx];
+      if(m) m.held = e.target.value === '' ? undefined : Number(e.target.value);
+      scheduleSave();
+    });
+    check.addEventListener('change', e=>{
+      if(e.target.id !== 'spc-held') return;
+      renderMoneyCheck(actualMonthIdx);
+    });
+    check.addEventListener('click', e=>{
+      if(e.target.closest('#spc-apply')){ applyMoneyCheck(actualMonthIdx); return; }
+      const go = e.target.closest('button[data-goto]');
+      if(go){
+        actualMonthIdx = Number(go.dataset.goto);
+        renderActualPanel();
+        const card = document.querySelector('.sp-check-card');
+        if(card) card.scrollIntoView({ block:'center', behavior:'smooth' });
+        const box = document.getElementById('spc-held');
+        if(box) box.focus({ preventScroll:true });
+      }
+    });
+  }
+
   document.getElementById('sp-prev').addEventListener('click', ()=>{
     if(actualMonthIdx > 0){ actualMonthIdx--; renderActualPanel(); }
   });
@@ -5861,6 +6439,28 @@ function goalStartYm(g){
   return (g && g.startYm) || (state.months[0] && state.months[0].ym) || currentYm();
 }
 
+/* Snapshots what a goal was owed before it disappears. Only the replay ever
+   reads these, so a ghost can never fall out of step with the goal list the
+   rest of the app walks. */
+function retireGoal(g){
+  if(!g || !(g.target > 0)) return;
+  if(!Array.isArray(state.retiredGoals)) state.retiredGoals = [];
+  const i = state.goals.findIndex(x=> x.id === g.id);
+  const shares = effectiveShares() || [];
+  const share = shares[i] || 0;
+  if(share <= 0) return;             // it was never taking a share anyway
+  // Stored against the goals that outlive it, because those are about to be
+  // renormalised. An absolute share would be measured against a moved ruler.
+  const survivors = shares.reduce((sum, v, j)=> sum + (j === i ? 0 : v), 0);
+  if(survivors <= 0) return;         // nothing left to protect the money from
+  state.retiredGoals.push({
+    startYm: goalStartYm(g),
+    retiredYm: currentYm(),
+    share: share / survivors,
+    target: Math.max(0, Number(g.target) || 0),
+  });
+}
+
 /* What each goal has actually banked, replayed rather than divided.
    Each closed month's saving goes only to the goals that existed that month and
    had not already been paid off. */
@@ -5872,6 +6472,12 @@ function goalOpeningAcc(mode){
   const shares = effectiveShares(mode);
   const { rows } = computeAll();
 
+  // Goals that were deleted still took their share of the months they were
+  // there for. They keep taking it here, so removing a goal never rewrites
+  // what the surviving goals had already saved.
+  const ghosts = Array.isArray(state.retiredGoals) ? state.retiredGoals : [];
+  const ghostAcc = ghosts.map(()=> 0);
+
   const give = (amount, atYm)=>{
     if(!(amount > 0)) return;
     const at = ymIndex(atYm);
@@ -5879,9 +6485,23 @@ function goalOpeningAcc(mode){
       g.target > 0 &&
       ymIndex(goalStartYm(g)) <= at &&
       acc[i] < g.target - GOAL_EPSILON);
-    const weight = shares.reduce((sum, v, i)=> sum + (live[i] ? v : 0), 0);
-    if(weight <= 0) return;          // nothing live yet: the money is just saved
+    const ghostLive = ghosts.map((h, i)=>
+      h.target > 0 &&
+      ymIndex(h.startYm) <= at &&
+      at < ymIndex(h.retiredYm) &&
+      ghostAcc[i] < h.target - GOAL_EPSILON);
+
+    const liveWeight = shares.reduce((sum, v, i)=> sum + (live[i] ? v : 0), 0);
+    if(liveWeight <= 0) return;      // nothing live yet: the money is just saved
+
+    // A ghost's stake is a ratio, so it is scaled against whatever the living
+    // goals weigh this month — which is what makes it survive renormalisation.
+    const ghostWeight = ghosts.map((h, i)=>
+      ghostLive[i] ? (Number(h.share) || 0) * liveWeight : 0);
+    const weight = liveWeight + ghostWeight.reduce((a, b)=> a + b, 0);
+
     goals.forEach((g, i)=>{ if(live[i]) acc[i] += amount * (shares[i] / weight); });
+    ghosts.forEach((h, i)=>{ if(ghostLive[i]) ghostAcc[i] += amount * (ghostWeight[i] / weight); });
   };
 
   const firstYm = (state.months[0] && state.months[0].ym) || currentYm();
@@ -5979,12 +6599,70 @@ function requiredMonthlyForDeadlines(){
 /* Grows the table so the last goal fits. Only ever adds — contracting would
    delete months that may hold entered figures. */
 let lastAutoExtendTo = 0;
-function autoExtendForGoals(){
-  if(!state.goals.length) return null;
+/* How many months the goals still in play actually need. Zero means there is
+   nothing to size the table against. */
+function goalsNeededMonths(){
+  if(!state.goals.length) return 0;
   const horizon = goalHorizonMonths();
-  if(horizon <= 0) return null;
+  if(horizon <= 0) return 0;
+  return Math.min(GOAL_MAX_MONTHS, horizon + 1);           // +1 so the final month is visible
+}
+
+/* Safe to remove? Only if it has not happened yet and holds nothing the person
+   typed. Seeded salary and seeded categories do not count — every generated
+   month has those, which is exactly why hasMonthData() cannot be used here. */
+function monthIsTrimmable(m){
+  if(!m) return false;
+  if(ymIndex(m.ym) <= ymIndex(currentYm())) return false;
+  if(m.actual && Object.keys(m.actual).length) return false;
+  if(m.log && Object.keys(m.log).length) return false;
+  return true;
+}
+
+/* Removes trailing months down to target, stopping dead at the first month
+   that is not safe to remove — so the result can end up longer than asked for,
+   which is the right way round. */
+function trimMonthsTo(target){
+  let removed = 0;
+  while(state.months.length > target && monthIsTrimmable(state.months[state.months.length - 1])){
+    state.months.pop();
+    removed++;
+  }
+  if(removed){
+    lastAutoExtendTo = 0;      // a later change must be free to extend again
+    lastExtendNotice = '';
+  }
+  return removed;
+}
+
+/* The two ways out the person is offered: down to what the goals need, or back
+   to the table length they set themselves. */
+function trimOptions(){
+  const base = Math.max(1, Number(state.baseMonths) || 12);
+  const need = goalsNeededMonths();
+  const goalTarget = need > 0 ? need : base;
+  const setupTarget = Math.max(base, goalTarget);
+  const reach = target => {
+    let n = 0;
+    for(let i = state.months.length - 1; i >= target; i--){
+      if(!monthIsTrimmable(state.months[i])) break;
+      n++;
+    }
+    return n;
+  };
+  const goalCut = reach(goalTarget);
+  if(goalCut <= 0) return null;
+  return {
+    goalTarget, setupTarget, goalCut,
+    setupCut: reach(setupTarget),
+    sameTarget: goalTarget === setupTarget,
+  };
+}
+
+function autoExtendForGoals(){
+  const needed = goalsNeededMonths();
+  if(needed <= 0) return null;
   const have = state.months.length;
-  const needed = Math.min(GOAL_MAX_MONTHS, horizon + 1);   // +1 so the final month is visible
   if(needed <= have) return null;
   if(needed === lastAutoExtendTo) return null;
 
@@ -6080,6 +6758,21 @@ function renderGoalAlerts(){
     parts.push(`<div class="goal-alert is-info"><p class="ga-body">${lastExtendNotice}</p></div>`);
   }
 
+  const trim = trimOptions();
+  if(trim){
+    const btn = (kind, months)=>
+      `<button type="button" class="ga-btn${kind === 'setup' ? ' is-soft' : ''}" data-trim="${kind}">` +
+      t(kind === 'goals' ? 'trim_to_goals' : 'trim_to_setup').replace('{n}', months) + '</button>';
+    parts.push(`<div class="goal-alert is-info">
+      <p class="ga-title">${t('trim_title')}</p>
+      <p class="ga-body">${t('trim_body').replace('{n}', trim.goalCut)}</p>
+      <div class="ga-actions">
+        ${btn('goals', trim.goalTarget)}
+        ${(trim.sameTarget || trim.setupCut <= 0) ? '' : btn('setup', trim.setupTarget)}
+      </div>
+    </div>`);
+  }
+
   host.innerHTML = parts.join('');
 }
 
@@ -6103,16 +6796,22 @@ function renderGoalList(){
     const isFocus = state.goalMode === 'focus' && g.id === focusId;
     const sharePct = Math.round((shares[i] || 0) * 1000) / 10;
 
+    const status = goalOutlook(g, i, sim).status;
+
     return `
-      <div class="goal-row${isFocus ? ' is-focus' : ''}" data-goal="${g.id}">
+      <div class="goal-row${isFocus ? ' is-focus' : ''} is-status-${status}" data-goal="${g.id}">
         <div class="goal-row-top">
           <div class="goal-order">
             <button type="button" data-up="${g.id}" ${i === 0 ? 'disabled' : ''} aria-label="${t('goal_up')}">▲</button>
             <button type="button" data-down="${g.id}" ${i === state.goals.length - 1 ? 'disabled' : ''} aria-label="${t('goal_down')}">▼</button>
           </div>
           <div class="goal-id">
-            <span class="goal-name">${g.name || t('goal_unnamed')}</span>
-            <span class="goal-target">${fmtMoney(g.target)}</span>
+            <input class="goal-name-in" type="text" value="${esc(g.name || '')}"
+                   placeholder="${esc(t('goal_unnamed'))}" data-gname="${g.id}"
+                   aria-label="${esc(t('goal_name_aria'))}">
+            <input class="goal-target-in" type="number" inputmode="decimal" step="any" min="0"
+                   value="${g.target}" data-gtarget="${g.id}"
+                   aria-label="${esc(t('goal_target_aria'))}">
           </div>
           <button type="button" class="goal-del" data-del-goal="${g.id}" aria-label="${t('goal_remove')}">✕</button>
         </div>
@@ -6132,12 +6831,23 @@ function renderGoalList(){
             <span>%</span>
           </label>
           <label class="goal-due">
-            <span>${t('goal_by')}</span>
-            <input type="month" value="${g.dueYm || ''}" data-due="${g.id}">
+            <span>${t('goal_from')}</span>
+            <input type="month" value="${g.startYm || ''}" data-start="${g.id}">
           </label>
           ${state.goalMode === 'focus'
             ? `<button type="button" class="goal-focus-btn${isFocus ? ' on' : ''}" data-focus="${g.id}">${isFocus ? t('goal_focused') : t('goal_focus_this')}</button>`
             : ''}
+        </div>
+
+        <div class="goal-datemode">
+          <div class="gdm-choice" role="group" aria-label="${esc(t('goal_date_q'))}">
+            <button type="button" class="gdm-btn${g.dueYm ? '' : ' on'}" data-datemode="auto" data-dg="${g.id}">${esc(t('goal_date_auto'))}</button>
+            <button type="button" class="gdm-btn${g.dueYm ? ' on' : ''}" data-datemode="target" data-dg="${g.id}">${esc(t('goal_date_target'))}</button>
+          </div>
+          ${g.dueYm
+            ? `<label class="goal-due gdm-when"><span>${t('goal_by')}</span>
+                 <input type="month" value="${g.dueYm}" data-due="${g.id}"></label>`
+            : `<span class="gdm-auto-when">${when ? t('goal_lands').replace('{date}', when) : t('goal_not_yet')}</span>`}
         </div>
         ${goalDeadlineNote(g, i, sim)}
       </div>`;
@@ -6146,17 +6856,73 @@ function renderGoalList(){
 
 /* Side income appears only when a deadline cannot be met — as a number, not a
    suggestion to "earn more". */
-function goalDeadlineNote(g, i, sim){
-  if(!g.dueYm || !(g.target > 0)) return '';
+/* Where a goal stands against its own deadline, as one answer the card and the
+   note both read. 'none' means it has no date to be measured against. */
+function goalOutlook(g, i, sim){
+  const out = { status:'none', need:0, getting:0, gap:0 };
+  if(!g.dueYm || !(g.target > 0)) return out;
   const monthsLeft = ymIndex(g.dueYm) - ymIndex(currentYm());
-  if(monthsLeft <= 0) return '';
-  const shares = effectiveShares();
-  const already = savedToDate() * (shares[i] || 0);
-  const need = Math.max(0, g.target - already) / monthsLeft;
-  const getting = sim.monthly * (shares[i] || 0);
-  const gap = need - getting;
-  if(gap <= 0.01) return `<p class="goal-note is-ok">${t('goal_on_track')}</p>`;
-  return `<p class="goal-note is-gap">${goalGapText(fmtMoney(need), fmtMoney(getting), fmtMoney(gap))}</p>`;
+  if(monthsLeft <= 0) return out;
+
+  const share = (effectiveShares()[i]) || 0;
+  const already = savedToDate() * share;
+  out.need = Math.max(0, g.target - already) / monthsLeft;
+  out.getting = sim.monthly * share;
+  out.gap = out.need - out.getting;
+  if(out.gap <= 0.01){ out.status = 'ok'; return out; }
+
+  // Each goal is judged against its own slice of the money, so two goals that
+  // each need a quarter of the income are not both waved through.
+  const { avgIncome } = goalBasis();
+  if(!(avgIncome > 0)){ out.status = 'gap'; return out; }
+  const rule = avgIncome * RULE_OF_THUMB * share;
+  const ceiling = Math.max(0, avgIncome - fixedCommitments()) * share;
+  out.status = out.need > ceiling ? 'hard' : (out.need > rule ? 'stretch' : 'gap');
+  return out;
+}
+
+function goalDeadlineNote(g, i, sim){
+  const o = goalOutlook(g, i, sim);
+  if(o.status === 'none') return '';
+  if(o.status === 'ok') return `<p class="goal-note is-ok">${t('goal_on_track')}</p>`;
+  if(o.status === 'hard')
+    return `<p class="goal-note is-hard">${goalUnreachableText(fmtMoney(o.need), monthsFromNowLabel(sim.done[i]))}</p>`;
+  if(o.status === 'stretch')
+    return `<p class="goal-note is-stretch">${goalStretchText(fmtMoney(o.need), fmtMoney(o.getting))}</p>`;
+  return `<p class="goal-note is-gap">${goalGapText(fmtMoney(o.need), fmtMoney(o.getting), fmtMoney(o.gap))}</p>`;
+}
+
+/* Every goal, when it lands, and whether that clears the date it was given.
+   Shown only once there is something to compare — a single goal with no date
+   says nothing here that its own card has not already said. */
+function renderGoalTimeline(){
+  const host = document.getElementById('goal-timeline');
+  if(!host) return;
+  const goals = state.goals.filter(g=> g.target > 0);
+  if(!goals.length || (goals.length === 1 && !goals[0].dueYm)){ host.innerHTML = ''; return; }
+
+  const sim = simulateGoals(state.goalMode);
+  const rows = state.goals.map((g, i)=>{
+    if(!(g.target > 0)) return '';
+    const lands = sim.done[i];
+    const when = lands === null || lands === undefined ? null : monthsFromNowLabel(lands);
+    let verdict = '', cls = '';
+    if(g.dueYm && when){
+      const over = lands - (ymIndex(g.dueYm) - ymIndex(currentYm()));
+      if(over <= 0){ verdict = t('tl_by').replace('{date}', monthLabel(g.dueYm)); cls = 'is-ok'; }
+      else { verdict = t('tl_late').replace('{n}', Math.round(over)); cls = 'is-late'; }
+    }
+    return `<li class="${cls}">
+      <span class="tl-name">${esc(g.name || t('goal_unnamed'))}</span>
+      <span class="tl-when">${when ? when : t('goal_not_yet')}</span>
+      <span class="tl-verdict">${esc(verdict)}</span>
+    </li>`;
+  }).join('');
+
+  host.innerHTML = `<div class="goal-timeline">
+    <p class="tl-head">${esc(t('tl_head'))}</p>
+    <ul>${rows}</ul>
+  </div>`;
 }
 
 function renderGoalCompare(){
@@ -6187,6 +6953,7 @@ function renderGoals(){
   renderGoalAlerts();
   renderGoalSummary();
   renderGoalList();
+  renderGoalTimeline();
   renderGoalCompare();
 }
 
@@ -6212,6 +6979,17 @@ function wireGoals(){
     nameEl.focus();
   });
 
+  const alertHost = document.getElementById('goal-alerts');
+  if(alertHost) alertHost.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-trim]');
+    if(!b) return;
+    const opts = trimOptions();
+    if(!opts) return;
+    trimMonthsTo(b.dataset.trim === 'setup' ? opts.setupTarget : opts.goalTarget);
+    renderAll();
+    scheduleSave();
+  });
+
   document.getElementById('goal-mode').addEventListener('click', e=>{
     const b = e.target.closest('button[data-mode]');
     if(!b) return;
@@ -6224,6 +7002,26 @@ function wireGoals(){
     const down = e.target.closest('button[data-down]');
     const del = e.target.closest('button[data-del-goal]');
     const foc = e.target.closest('button[data-focus]');
+    const dm = e.target.closest('button[data-datemode]');
+
+    if(dm){
+      const g = goalById(dm.dataset.dg);
+      if(!g) return;
+      if(dm.dataset.datemode === 'auto'){
+        g.dueYm = null;
+      } else if(!g.dueYm){
+        // Opens on the date it is already heading for, so the first thing seen
+        // is achievable rather than an empty box or an arbitrary guess.
+        const sim = simulateGoals(state.goalMode);
+        const idx = state.goals.findIndex(x=> x.id === g.id);
+        const lands = sim.done[idx];
+        g.dueYm = (lands === null || lands === undefined)
+          ? addMonths(currentYm(), 12)
+          : addMonths(currentYm(), Math.max(1, lands));
+      }
+      applyGoalsAndRender();
+      return;
+    }
 
     if(up || down){
       const id = (up || down).dataset.up || (up || down).dataset.down;
@@ -6238,6 +7036,7 @@ function wireGoals(){
       const g = goalById(del.dataset.delGoal);
       if(!g) return;
       if(!confirm(confirmRemoveGoalMsg(g.name || t('goal_unnamed')))) return;
+      retireGoal(g);
       state.goals = state.goals.filter(x=> x.id !== g.id);
       if(state.focusGoalId === g.id) state.focusGoalId = state.goals.length ? state.goals[0].id : null;
       applyGoalsAndRender();
@@ -6252,6 +7051,29 @@ function wireGoals(){
   list.addEventListener('change', e=>{
     const share = e.target.closest('input[data-share]');
     const due = e.target.closest('input[data-due]');
+    const gname = e.target.closest('input[data-gname]');
+    const gtarget = e.target.closest('input[data-gtarget]');
+    const gstart = e.target.closest('input[data-start]');
+
+    if(gname){
+      const g = goalById(gname.dataset.gname);
+      if(g){ g.name = gname.value.trim(); applyGoalsAndRender(); }
+      return;
+    }
+    if(gtarget){
+      const g = goalById(gtarget.dataset.gtarget);
+      if(g){ g.target = Math.max(0, Number(gtarget.value) || 0); applyGoalsAndRender(); }
+      return;
+    }
+    if(gstart){
+      const g = goalById(gstart.dataset.start);
+      if(!g) return;
+      g.startYm = gstart.value || currentYm();
+      // Same reason as the due date below: the month wheel fires change on
+      // every stop, so the redraw waits for focusout.
+      scheduleSave();
+      return;
+    }
     if(share){
       const g = goalById(share.dataset.share);
       if(!g) return;
@@ -6274,7 +7096,7 @@ function wireGoals(){
      rather than blur because this is a delegated listener and blur does not
      bubble. */
   list.addEventListener('focusout', e=>{
-    if(e.target.closest('input[data-due]')) applyGoalsAndRender();
+    if(e.target.closest('input[data-due]') || e.target.closest('input[data-start]')) applyGoalsAndRender();
   });
 }
 
@@ -6308,7 +7130,9 @@ function renderOverviewRows(rows){
   host.innerHTML = rows.map((r, idx)=>{
     const empty = monthStatus(r.m) === 'empty';
     const rateCls = empty ? 'none' : rateTone(r.rate) || '';
-    return `<button type="button" class="ov-row${empty ? ' is-empty' : ''}" data-open="${idx}">
+    const outcome = monthOutcome(r.m);
+    const outCls = outcome === 'none' ? '' : ' ov-out-' + outcome;
+    return `<button type="button" class="ov-row${empty ? ' is-empty' : ''}${outCls}" data-open="${idx}"${outcome === 'none' ? '' : ` title="${esc(outcomeTitle(outcome))}"`}>
       <span class="ov-m">${monthLabel(r.m.ym)}</span>
       <span class="ov-right">
         <span class="ov-saved ${r.savings >= 0 ? 'pos' : 'neg'}">${empty ? '—' : fmtMoney(r.savings)}</span>
@@ -6428,6 +7252,20 @@ function renderTotalsRow(totals){
   tf.innerHTML = html;
 }
 
+/* Did this month come in over what it planned, or inside it? 'none' means
+   there is nothing logged to judge it by. */
+function monthOutcome(m){
+  if(!m) return 'none';
+  if(!state.categories.some(c=> hasLoggedActual(m, c))) return 'none';
+  const planned = state.categories.reduce((sum, c)=> sum + effectiveCategoryValue(m, c), 0);
+  const actual  = state.categories.reduce((sum, c)=> sum + effectiveSpendValue(m, c), 0);
+  return actual > planned + 0.01 ? 'over' : 'met';
+}
+
+function outcomeTitle(out){
+  return out === 'over' ? t('ov_over_title') : out === 'met' ? t('ov_met_title') : '';
+}
+
 function renderBudget(){
   renderTableHead();
   const body = document.getElementById('budget-body');
@@ -6441,6 +7279,11 @@ function renderBudget(){
     // The whole row is the affordance now: editing happens in the entry tab.
     tr.dataset.open = String(idx);
     tr.classList.add('ov-clickable');
+    const outcome = monthOutcome(m);
+    if(outcome !== 'none'){
+      tr.classList.add('ov-out-' + outcome);
+      tr.title = outcomeTitle(outcome);
+    }
     const salaryLocked = state.fieldModes.salary==='fixed';
     const sideLocked = state.fieldModes.sideIncome==='fixed';
     let html = `
@@ -7781,6 +8624,18 @@ function plannerCatalogue(){
   return (state.categories && state.categories.length) ? state.categories : DEFAULT_CATEGORY_KEYS;
 }
 
+/* A key added in this wizard has no entry in state.customLabels yet, because
+   nothing is committed until the plan is applied. */
+function plannerCatLabel(d, k){
+  return (d && d.custom && d.custom[k]) || categoryLabel(k);
+}
+
+/* The menu plus anything typed in during this run of the wizard. */
+function plannerAllCats(d){
+  const own = (d && d.custom) ? Object.keys(d.custom) : [];
+  return plannerCatalogue().concat(own);
+}
+
 function plannerDefaultChosen(work){
   const all = plannerCatalogue();
   const want = PLANNER_WORK_CATS[work] || PLANNER_WORK_CATS.fixed;
@@ -7940,11 +8795,32 @@ function wirePlanChoose(){
   });
 }
 
+/* The most closed, logged months any one category has — how close the app is
+   to having enough to speak. */
+function learnProgress(){
+  return state.categories.reduce((best, key)=>
+    Math.max(best, learnRowsFor(key).length), 0);
+}
+
 function renderPlanLearn(){
   const host = document.getElementById('plan-learn');
   if(!host) return;
   const found = planLearnings();
-  if(!found.length){ host.style.display = 'none'; host.innerHTML = ''; return; }
+
+  if(!found.length){
+    const done = learnProgress();
+    // Nothing logged at all: stay quiet rather than explain a feature that has
+    // no data to work with yet.
+    if(done < 1){ host.style.display = 'none'; host.innerHTML = ''; return; }
+    host.style.display = 'block';
+    host.innerHTML =
+      '<p class="learn-head">' + esc(t('learn_watch_head')) + '</p>' +
+      '<p class="learn-note">' + esc(
+        (done >= LEARN_MIN_MONTHS ? t('learn_watch_ok') : t('learn_watch_wait'))
+          .split('{done}').join(done)
+          .split('{need}').join(LEARN_MIN_MONTHS)) + '</p>';
+    return;
+  }
 
   host.style.display = 'block';
   host.innerHTML =
@@ -7960,7 +8836,7 @@ function renderPlanLearn(){
           esc(t('learn_use').replace('{amount}', fmtMoney(f.suggest))) + '</button>' +
       '</li>').join('') + '</ul>' +
     (found.length > 1 ? '<button type="button" id="learn-all" class="learn-all">' + esc(t('learn_all')) + '</button>' : '') +
-    '<p class="learn-note">' + esc(t('learn_note')) + '</p>';
+    '<p class="learn-note">' + esc(t('learn_note').replace('{need}', LEARN_MIN_MONTHS)) + '</p>';
 }
 
 function wirePlanLearn(){
@@ -8147,9 +9023,13 @@ function renderPlanner(){
     title.textContent = t('planner_q_which');
     body.innerHTML =
       '<p class="planner-note">' + esc(t('planner_q_which_note')) + '</p>' +
-      '<div class="planner-chips">' + plannerCatalogue().map(k=>
+      '<div class="planner-chips">' + plannerAllCats(d).map(k=>
         '<button type="button" class="planner-chip' + (d.chosen.includes(k) ? ' on' : '') + '" data-cat="' + esc(k) + '" aria-pressed="' + (d.chosen.includes(k) ? 'true' : 'false') + '">' +
-        esc(categoryLabel(k)) + '</button>').join('') + '</div>';
+        esc(plannerCatLabel(d, k)) + '</button>').join('') + '</div>' +
+      '<div class="planner-addcat">' +
+        '<input type="text" id="pl-newcat" maxlength="' + NOTE_MAX + '" placeholder="' + esc(t('planner_add_cat_ph')) + '" aria-label="' + esc(t('planner_add_cat_ph')) + '">' +
+        '<button type="button" id="pl-addcat">' + esc(t('planner_add_cat')) + '</button>' +
+      '</div>';
 
   } else if(plannerStep === 5){
     if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
@@ -8173,7 +9053,7 @@ function renderPlanner(){
             ? t('planner_q_amounts_plan')
             : t('planner_q_amounts_note')) + '</p>' +
       '<div class="planner-rows">' + d.chosen.map(k=>
-        '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(categoryLabel(k)) + '</label>' +
+        '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(plannerCatLabel(d, k)) + '</label>' +
         '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '"></div>').join('') +
       '</div><p class="planner-left" id="pl-left"></p>';
     updatePlannerLeft();
@@ -8321,11 +9201,19 @@ function applyPlannerPlan(){
   if(!d) return { filled:0, skipped:0 };
   if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
 
+  // Names typed during the wizard become real categories only now, at the
+  // point the plan is actually accepted.
+  if(d.custom){
+    Object.keys(d.custom).forEach(k=>{
+      if(!state.customLabels[k]) state.customLabels[k] = d.custom[k];
+    });
+  }
   if(d.chosen.length){
     state.categories = d.chosen.slice();
     state.categories.forEach(k=>{
       if(!state.fieldModes[k]) state.fieldModes[k] = 'variable';
       if(!state.fixedSchedules[k]) state.fixedSchedules[k] = [];
+      state.months.forEach(m=>{ if(m[k] === undefined) m[k] = 0; });
     });
   }
   state.defaultSalary = plannerNum(d.income);
@@ -8497,6 +9385,21 @@ function wirePlanner(){
       renderPlanner();
       return;
     }
+    if(e.target.closest('#pl-addcat')){
+      const box = document.getElementById('pl-newcat');
+      const label = (box && box.value || '').trim();
+      if(!label){ if(box) box.focus(); return; }
+      const d = plannerDraft;
+      if(!d.custom) d.custom = {};
+      if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
+      const key = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      d.custom[key] = label.slice(0, NOTE_MAX);
+      d.chosen.push(key);            // typed it in, so it is obviously wanted
+      renderPlanner();
+      const again = document.getElementById('pl-newcat');
+      if(again) again.focus();
+      return;
+    }
     const chip = e.target.closest('.planner-chip');
     if(chip){
       const k = chip.dataset.cat;
@@ -8510,6 +9413,14 @@ function wirePlanner(){
 
   overlay.addEventListener('input', e=>{
     if(e.target.matches('input[data-camount]')){ plannerCapture(); updatePlannerLeft(); }
+  });
+
+  overlay.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && e.target.id === 'pl-newcat'){
+      e.preventDefault();            // Enter here must not advance the wizard
+      const add = document.getElementById('pl-addcat');
+      if(add) add.click();
+    }
   });
 
   const replan = document.getElementById('btn-replan');
@@ -8560,6 +9471,13 @@ function wireEvents(){
     e.target.classList.toggle('attention', !e.target.value.trim());
   });
 
+  document.getElementById('btn-update').addEventListener('click', checkForUpdate);
+  showAppVersion();
+  // On a first visit nothing controls the page yet, so the version is unknown
+  // until the worker takes over. Ask again the moment it does.
+  if('serviceWorker' in navigator)
+    navigator.serviceWorker.addEventListener('controllerchange', showAppVersion);
+
   document.getElementById('btn-share-link').addEventListener('click', e=>{
     e.stopPropagation();
 
@@ -8608,6 +9526,8 @@ function wireEvents(){
     const droppedCount = state.months.filter(m=> !newYmSet.has(m.ym) && hasMonthData(m)).length;
     if(droppedCount>0 && !confirm(confirmRegenerateMsg(droppedCount))) return;
     state.months = generateMonths(startYm, numMonths);
+    state.baseMonths = numMonths;
+    lastAutoExtendTo = 0;
     renderAll();
     scheduleSave();
   });
@@ -8617,6 +9537,8 @@ function wireEvents(){
     const nextYm = last ? addMonths(last.ym,1) : (new Date()).getFullYear()+'-01';
     // Seeded, so a month added by hand arrives pre-filled like a generated one.
     state.months.push(seededMonth(nextYm));
+    // Added by hand, so it becomes part of the length trimming will respect.
+    state.baseMonths = Math.max(Number(state.baseMonths) || 0, state.months.length);
     renderAll();
     scheduleSave();
   });

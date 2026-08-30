@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION on every deploy: activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
  */
-const CACHE_VERSION = 'v60';
+const CACHE_VERSION = 'v65';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is
@@ -37,7 +37,10 @@ self.addEventListener('install', event => {
     const cache = await caches.open(CACHE);
     // addAll is atomic: one failure aborts the install, which is what we want.
     // A half-populated cache would mean an app that half-works offline.
-    await cache.addAll(SHELL);
+    // cache:'reload' bypasses the browser's own HTTP cache. Without it a
+    // fresh worker can dutifully re-cache a stale index.html and the update
+    // lands with none of the changes in it.
+    await cache.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })));
     await self.skipWaiting();
   })());
 });
@@ -104,4 +107,7 @@ self.addEventListener('fetch', event => {
 // Lets the page trigger an immediate update instead of waiting for a reload.
 self.addEventListener('message', event => {
   if (event.data === 'skip-waiting') self.skipWaiting();
+  // Lets the footer show which version is actually running.
+  if (event.data === 'version' && event.ports && event.ports[0])
+    event.ports[0].postMessage(CACHE_VERSION);
 });
