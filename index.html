@@ -2156,6 +2156,21 @@ nav.tabs button{ color:var(--ink); }
 }
 .spc-actions button:hover{ filter:brightness(1.08); }
 
+.planner-apply-mode{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--rule);
+}
+.pam-q{ margin:0 0 9px; font-size:12.5px; font-weight:600; color:var(--ink); }
+.pam-choice{ display:flex; flex-wrap:wrap; gap:8px; }
+.pam-btn{
+  flex:1 1 150px; min-height:var(--tap); padding:9px 13px;
+  font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+  border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:var(--paper); color:var(--ink-soft);
+}
+.pam-btn.on{ background:var(--emerald); border-color:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .pam-btn.on{ color:#1A1815; }
+.pam-note{ margin:9px 0 0; font-size:11.5px; line-height:1.55; color:var(--ink-soft); }
+
 .fwd-offer{
   display:flex; flex-wrap:wrap; align-items:center; gap:8px;
   margin:6px 0 10px; padding:9px 11px;
@@ -4010,6 +4025,12 @@ const TRANSLATIONS = {
     ov_legend_none:'Nothing logged yet',
     actions_more:'Backups, Excel and sharing',
     help_back:'Back to {tab}',
+    planner_apply_q:'{n} months already have figures in them.',
+    planner_apply_empty:'Fill only the empty months',
+    planner_apply_all:'Update all of them',
+    planner_apply_empty_note:'Months you have already filled in stay exactly as they are.',
+    planner_apply_all_note:'Every month from your start date onwards takes this plan. Months that have already ended, and anything you logged as actually spent, are left untouched.',
+    planner_done_all:'Done. {filled} months now follow this plan. {skipped} months that had already ended were left as they were.',
     fwd_ask:'Use {amount} from {month} onwards too?',
     fwd_yes:'Yes, apply it',
     fwd_dismiss:'No thanks',
@@ -4318,6 +4339,12 @@ planner_open:'Plan this for me',
     ov_legend_none:'لم يُسجّل شيء بعد',
     actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
     help_back:'العودة إلى {tab}',
+    planner_apply_q:'‏{n} شهرًا فيها أرقام بالفعل.',
+    planner_apply_empty:'املأ الأشهر الفارغة فقط',
+    planner_apply_all:'حدّثها جميعًا',
+    planner_apply_empty_note:'الأشهر التي ملأتها من قبل تبقى كما هي تمامًا.',
+    planner_apply_all_note:'كل شهر من تاريخ بدايتك فصاعدًا يأخذ هذه الخطة. أما الأشهر المنتهية وما سجّلته كإنفاق فعلي فتبقى دون مساس.',
+    planner_done_all:'تم. صار {filled} شهرًا يتبع هذه الخطة، وتُركت {skipped} أشهر منتهية كما كانت.',
     fwd_ask:'أستخدم {amount} من {month} فصاعدًا أيضًا؟',
     fwd_yes:'نعم، طبّقه',
     fwd_dismiss:'لا شكرًا',
@@ -9340,7 +9367,21 @@ function renderPlanner(){
 
   } else {
     title.textContent = t('planner_result');
-    body.innerHTML = plannerResultHtml(d, plannerOutcome(d));
+    if(!d.applyMode) d.applyMode = 'empty';
+    const rewritable = plannerRewritable(d);
+    const choice = rewritable === 0 ? '' :
+      '<div class="planner-apply-mode">' +
+        '<p class="pam-q">' + esc(t('planner_apply_q').replace('{n}', rewritable)) + '</p>' +
+        '<div class="pam-choice">' +
+          '<button type="button" class="pam-btn' + (d.applyMode === 'empty' ? ' on' : '') + '" data-applymode="empty">' +
+            esc(t('planner_apply_empty')) + '</button>' +
+          '<button type="button" class="pam-btn' + (d.applyMode === 'all' ? ' on' : '') + '" data-applymode="all">' +
+            esc(t('planner_apply_all')) + '</button>' +
+        '</div>' +
+        '<p class="pam-note">' + esc(d.applyMode === 'all'
+          ? t('planner_apply_all_note') : t('planner_apply_empty_note')) + '</p>' +
+      '</div>';
+    body.innerHTML = plannerResultHtml(d, plannerOutcome(d)) + choice;
   }
 }
 
@@ -9476,6 +9517,21 @@ function plannerCapture(){
 
 /* Fills only months that are still empty. Anything already entered is left
    exactly as it is and reported back, so the plan can never eat work. */
+/* Months this plan would overwrite if asked to: already filled in, from the
+   chosen start onwards, and not yet closed. Closed months are never counted
+   because they are never rewritten. */
+function plannerRewritable(d){
+  if(!d || !state.months.length) return 0;
+  const chosen = d.chosen || plannerDefaultChosen(d.work);
+  const startIdx = ymIndex(d.startYm || currentYm());
+  return state.months.filter(m=>{
+    if(ymIndex(m.ym) < startIdx) return false;
+    if(isMonthClosed(m)) return false;
+    return chosen.some(k=> (Number(m[k]) || 0) !== 0)
+        || state.categories.some(k=> (Number(m[k]) || 0) !== 0);
+  }).length;
+}
+
 function applyPlannerPlan(){
   const d = plannerDraft;
   if(!d) return { filled:0, skipped:0 };
@@ -9547,10 +9603,13 @@ function applyPlannerPlan(){
   }
 
   let filled = 0, skipped = 0;
+  const overwrite = d.applyMode === 'all';
   state.months.forEach(m=>{
     // Anything before the chosen start is none of this plan's business.
     if(ymIndex(m.ym) < ymIndex(startYm)) return;
-    if(userBudgeted(m)){ skipped++; return; }
+    // A month with figures is left alone unless the plan was told to replace
+    // them — and a closed one is left alone either way.
+    if(userBudgeted(m) && (!overwrite || isMonthClosed(m))){ skipped++; return; }
     m.salary = plannerNum(d.income);
     m.sideIncome = plannerNum(d.side);
     const touched = ['salary'];
@@ -9624,10 +9683,12 @@ function wirePlanner(){
   document.getElementById('planner-next').addEventListener('click', ()=>{
     plannerCapture();
     if(plannerStep < PLANNER_STEPS){ plannerStep++; renderPlanner(); return; }
+    const mode = plannerDraft && plannerDraft.applyMode;
     const res = applyPlannerPlan();
     closePlanner();
     switchTab('entry');
-    alert(t('planner_done').replace('{filled}', res.filled).replace('{skipped}', res.skipped));
+    alert((mode === 'all' ? t('planner_done_all') : t('planner_done'))
+      .replace('{filled}', res.filled).replace('{skipped}', res.skipped));
   });
 
   document.getElementById('planner-back').addEventListener('click', ()=>{
@@ -9678,6 +9739,12 @@ function wirePlanner(){
       renderPlanner();
       const again = document.getElementById('pl-newcat');
       if(again) again.focus();
+      return;
+    }
+    const pam = e.target.closest('button[data-applymode]');
+    if(pam){
+      plannerDraft.applyMode = pam.dataset.applymode;
+      renderPlanner();
       return;
     }
     const chip = e.target.closest('.planner-chip');
