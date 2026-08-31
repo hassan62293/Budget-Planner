@@ -2156,6 +2156,35 @@ nav.tabs button{ color:var(--ink); }
 }
 .spc-actions button:hover{ filter:brightness(1.08); }
 
+.fwd-offer{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  margin:6px 0 10px; padding:9px 11px;
+  border:1px solid var(--emerald); border-radius:var(--radius-sm);
+  background:var(--good-tint);
+}
+.fwd-txt{ flex:1 1 150px; min-width:0; font-size:12px; color:var(--ink); }
+/* The two buttons travel together: the dismiss dropping to its own line left it
+   stranded under the text looking like a separate control. */
+.fwd-btns{ display:flex; gap:8px; flex:0 0 auto; margin-inline-start:auto; }
+.fwd-yes{
+  min-height:var(--tap); padding:0 14px; font-family:inherit;
+  font-size:12.5px; font-weight:600; cursor:pointer;
+  border:1px solid var(--emerald); border-radius:var(--radius-sm);
+  background:var(--emerald); color:var(--paper);
+}
+.fwd-no{
+  min-height:var(--tap); width:var(--tap); padding:0; cursor:pointer;
+  font-family:inherit; font-size:13px; font-weight:700; line-height:1;
+  border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:transparent; color:var(--ink);
+}
+.fwd-no:hover{ background:var(--rule); }
+
+.pl-src{
+  display:block; margin-top:2px;
+  font-size:10.5px; font-weight:500; color:var(--ink-soft);
+}
+
 .planner-addcat{ display:flex; gap:8px; margin-top:12px; }
 .planner-addcat input{
   flex:1 1 auto; min-width:0; min-height:40px;
@@ -3981,6 +4010,14 @@ const TRANSLATIONS = {
     ov_legend_none:'Nothing logged yet',
     actions_more:'Backups, Excel and sharing',
     help_back:'Back to {tab}',
+    fwd_ask:'Use {amount} from {month} onwards too?',
+    fwd_yes:'Yes, apply it',
+    fwd_dismiss:'No thanks',
+    planner_src_actual:'from what you spend',
+    planner_src_budget:'from your table',
+    planner_src_plan:'from your last plan',
+    planner_q_amounts_budget:'Filled in from the budget you already set up. Change anything that no longer looks right.',
+    planner_q_amounts_mixed:'Filled in from what the app already knows — what you actually spend where there is enough of it, and your own budget everywhere else.',
     learn_watch_head:'Learning from what you actually spend',
     learn_watch_wait:'{done} of {need} finished months logged. After {need}, any category you consistently over or under-spend gets a suggested new number here.',
     learn_watch_ok:'{done} finished months logged, and nothing is far enough off its plan to be worth changing. Keep logging and this is where a suggestion would appear.',
@@ -4281,6 +4318,14 @@ planner_open:'Plan this for me',
     ov_legend_none:'لم يُسجّل شيء بعد',
     actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
     help_back:'العودة إلى {tab}',
+    fwd_ask:'أستخدم {amount} من {month} فصاعدًا أيضًا؟',
+    fwd_yes:'نعم، طبّقه',
+    fwd_dismiss:'لا شكرًا',
+    planner_src_actual:'من إنفاقك الفعلي',
+    planner_src_budget:'من جدولك',
+    planner_src_plan:'من خطتك السابقة',
+    planner_q_amounts_budget:'مملوءة من الميزانية التي أعددتها بالفعل. غيّر ما لم يعد مناسبًا.',
+    planner_q_amounts_mixed:'مملوءة مما يعرفه التطبيق بالفعل — من إنفاقك الفعلي حيث توجد بيانات كافية، ومن ميزانيتك أنت فيما عدا ذلك.',
     learn_watch_head:'نتعلّم مما تنفقه فعلًا',
     learn_watch_wait:'سُجّل {done} من {need} أشهر منتهية. بعد {need} أشهر، كل بند تتجاوزه أو تقلّ عنه باستمرار سيظهر له رقم مقترح هنا.',
     learn_watch_ok:'سُجّلت {done} أشهر منتهية، ولا يوجد بند بعيد عن خطته بما يكفي لتغييره. واصل التسجيل، وهنا سيظهر الاقتراح.',
@@ -5903,6 +5948,17 @@ function wireEntryTab(){
     if(e.target.matches('input[data-field]')) onCellChange(e);
   });
 
+  document.getElementById('entry-form-body').addEventListener('click', e=>{
+    if(e.target.closest('.fwd-no')){ forwardOffer = null; renderForwardOffer(); return; }
+    if(!e.target.closest('.fwd-yes') || !forwardOffer) return;
+    const o = forwardOffer;
+    forwardOffer = null;
+    applyForward(o.idx, o.key, o.amount);
+    autoExtendForGoals();
+    renderAll();
+    scheduleSave();
+  });
+
   document.getElementById('overview-rows').addEventListener('click', e=>{
     const row = e.target.closest('button[data-open]');
     if(row){ switchTab('entry'); openEntryMonth(Number(row.dataset.open)); }
@@ -7391,13 +7447,78 @@ function onCellChange(e){
     return;
   }
 
-  state.months[idx][field] = Number(target.value) || 0;
+  const amount = Number(target.value) || 0;
+  state.months[idx][field] = amount;
   // Typing 0 is an answer, so this is recorded on any commit, not only on a
   // non-zero one.
   markFieldAnswered(state.months[idx], field);
+
+  // Only categories carry forward: salary and side income have their own
+  // fixed/variable machinery, and a closed month is history.
+  forwardOffer = null;
+  if(state.categories.includes(field) && state.fieldModes[field] !== 'fixed'
+     && !isMonthClosed(state.months[idx])
+     && laterMonthsDiffering(idx, field, amount).length){
+    forwardOffer = { idx, key: field, amount };
+  }
+
   refreshComputed();
   scheduleDerivedRender();
+  renderForwardOffer();
   scheduleSave();
+}
+
+/* Months after this one that still hold a different figure. Closed months are
+   what happened and are never counted, nor touched. */
+function laterMonthsDiffering(fromIdx, key, amount){
+  const out = [];
+  for(let i = fromIdx + 1; i < state.months.length; i++){
+    const m = state.months[i];
+    if(isMonthClosed(m)) continue;
+    if(Math.abs(effectiveCategoryValue(m, key) - amount) > 0.01) out.push(i);
+  }
+  return out;
+}
+
+/* Sets a category from one month onwards. Fixed categories are driven by a
+   schedule rather than per-month values, so they are left to that mechanism. */
+function applyForward(fromIdx, key, amount){
+  if(state.fieldModes[key] === 'fixed') return 0;
+  let n = 0;
+  for(let i = fromIdx + 1; i < state.months.length; i++){
+    const m = state.months[i];
+    if(isMonthClosed(m)) continue;
+    m[key] = amount;
+    markFieldAnswered(m, key);
+    n++;
+  }
+  return n;
+}
+
+/* The offer, parked under the field that was just edited. */
+let forwardOffer = null;
+
+function renderForwardOffer(){
+  document.querySelectorAll('.fwd-offer').forEach(el=> el.remove());
+  if(!forwardOffer) return;
+  const input = document.querySelector(
+    'input[data-idx="' + forwardOffer.idx + '"][data-field="' + forwardOffer.key + '"]');
+  if(!input) return;
+  const host = input.closest('.mrow') || input.parentElement;
+  if(!host) return;
+  const nextYm = state.months[forwardOffer.idx + 1] ? state.months[forwardOffer.idx + 1].ym : null;
+  if(!nextYm) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'fwd-offer';
+  wrap.innerHTML =
+    '<span class="fwd-txt">' + esc(t('fwd_ask')
+      .replace('{amount}', fmtMoney(forwardOffer.amount))
+      .replace('{month}', monthLabel(nextYm))) + '</span>' +
+    '<span class="fwd-btns">' +
+      '<button type="button" class="fwd-yes">' + esc(t('fwd_yes')) + '</button>' +
+      '<button type="button" class="fwd-no" aria-label="' + esc(t('fwd_dismiss')) + '">✕</button>' +
+    '</span>';
+  host.insertAdjacentElement('afterend', wrap);
 }
 
 function deleteMonth(idx){
@@ -8653,6 +8774,17 @@ function plannerActualAverage(key){
   return Math.max(0, Math.round(avg / 10) * 10);
 }
 
+/* One sentence covering however many places the numbers were drawn from. */
+function plannerAmountsNote(d){
+  const kinds = new Set((d.chosen || []).map(k=> (d.catSrc && d.catSrc[k]) || 'blank'));
+  kinds.delete('blank');
+  if(!kinds.size) return t('planner_q_amounts_note');
+  if(kinds.size > 1) return t('planner_q_amounts_mixed');
+  if(kinds.has('actual')) return t('planner_q_amounts_actual').replace('{months}', LEARN_MIN_MONTHS);
+  if(kinds.has('budget')) return t('planner_q_amounts_budget');
+  return t('planner_q_amounts_plan');
+}
+
 /* Where the amounts on the step came from, so the note can say so. */
 function plannerAmountSource(d){
   if((d.chosen || []).some(k=> plannerActualAverage(k) !== null)) return 'actual';
@@ -8692,7 +8824,7 @@ function newPlannerDraft(){
     startYm: (state.months[0] && ymIndex(state.months[0].ym) > ymIndex(currentYm()))
       ? state.months[0].ym : currentYm(),
     gradYm: null,
-    income: state.defaultSalary || 0, side: 0,
+    income: plannerIncomeSeed('salary'), side: plannerIncomeSeed('side'),
     chosen: null,          // set from occupation on first sight of step 4
     cats: {},
   }, remembered);
@@ -8752,8 +8884,39 @@ function plannerAllCats(d){
   return plannerCatalogue().concat(own);
 }
 
+/* What this category is budgeted at right now — the figure in the first month
+   that has not closed, which is what the person is about to spend against. */
+function plannerBudgetFor(key){
+  return Math.round(plannedNowFor(key) || 0);
+}
+
+/* Income the app can already see, so the step does not ask for a salary that
+   is written down three tabs away. */
+function plannerIncomeSeed(field){
+  const stated = Number(field === 'side' ? 0 : state.defaultSalary) || 0;
+  if(stated > 0) return stated;
+  const from = ymIndex(currentYm());
+  const m = state.months.find(x=> ymIndex(x.ym) >= from) || state.months[state.months.length - 1];
+  if(!m) return 0;
+  return Math.round(field === 'side' ? effectiveSideIncome(m) : effectiveSalary(m));
+}
+
+/* Where each amount came from, so the step can show its working. */
+function plannerSeedFor(key){
+  const actual = plannerActualAverage(key);
+  if(actual !== null) return { amount: actual, src: 'actual' };
+  const budget = plannerBudgetFor(key);
+  if(budget > 0) return { amount: budget, src: 'budget' };
+  const prev = (state.plan && state.plan.cats && Number(state.plan.cats[key])) || 0;
+  if(prev > 0) return { amount: Math.round(prev), src: 'plan' };
+  return { amount: 0, src: 'blank' };
+}
+
 function plannerDefaultChosen(work){
   const all = plannerCatalogue();
+  // What someone already budgets for beats a guess drawn from their occupation.
+  const inUse = all.filter(k=> plannerBudgetFor(k) > 0 || learnRowsFor(k).length > 0);
+  if(inUse.length) return inUse;
   const want = PLANNER_WORK_CATS[work] || PLANNER_WORK_CATS.fixed;
   const picked = all.filter(k=> want.includes(k));
   return picked.length ? picked : all.slice();
@@ -9154,22 +9317,23 @@ function renderPlanner(){
     // once. After that the boxes are the person's to edit, and re-entering the
     // step must not undo what they just typed.
     if(!d.fromActuals){
+      // Deliberately overwrites anything inherited from a previous plan: the
+      // table is newer than the plan whenever the two disagree.
+      if(!d.catSrc) d.catSrc = {};
       d.chosen.forEach(k=>{
-        const actual = plannerActualAverage(k);
-        if(actual !== null) d.cats[k] = actual;
+        const seed = plannerSeedFor(k);
+        d.cats[k] = seed.amount;
+        d.catSrc[k] = seed.src;
       });
       d.fromActuals = true;
     }
     d.chosen.forEach(k=>{ if(d.cats[k] === undefined) d.cats[k] = 0; });
     body.innerHTML =
-      '<p class="planner-note">' + esc(
-        plannerAmountSource(d) === 'actual'
-          ? t('planner_q_amounts_actual').replace('{months}', LEARN_MIN_MONTHS)
-          : plannerAmountSource(d) === 'plan'
-            ? t('planner_q_amounts_plan')
-            : t('planner_q_amounts_note')) + '</p>' +
+      '<p class="planner-note">' + esc(plannerAmountsNote(d)) + '</p>' +
       '<div class="planner-rows">' + d.chosen.map(k=>
-        '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(plannerCatLabel(d, k)) + '</label>' +
+        '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(plannerCatLabel(d, k)) +
+          ((d.catSrc && d.catSrc[k] && d.catSrc[k] !== 'blank')
+            ? '<span class="pl-src">' + esc(t('planner_src_' + d.catSrc[k])) + '</span>' : '') + '</label>' +
         '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '"></div>').join('') +
       '</div><p class="planner-left" id="pl-left"></p>';
     updatePlannerLeft();
