@@ -2210,6 +2210,19 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 }
 .spc-title{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
 .spc-note{ margin:6px 0 0; font-size:12px; line-height:1.6; color:var(--ink-soft); }
+.bal-fields{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+.bal-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+.bal-row label{ flex:1 1 150px; min-width:0; font-size:12.5px; font-weight:600; color:var(--ink); }
+.bal-row input{
+  flex:0 0 118px; width:118px; min-height:var(--tap);
+  padding:8px 11px; border-radius:var(--radius-sm);
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:14px; font-weight:600; text-align:end;
+}
+.bal-note{ flex:1 1 100%; font-size:11px; color:var(--ink-soft); }
+.bal-total{ margin:11px 0 0; font-size:12.5px; font-weight:600; color:var(--ink); }
+.pd-sub{ margin:12px 0 0; font-size:12.5px; font-weight:600; color:var(--ink); }
+
 .spc-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:12px; }
 .spc-row label{ font-size:12.5px; font-weight:600; color:var(--ink); }
 .spc-row input{
@@ -4113,9 +4126,14 @@ const TRANSLATIONS = {
     planner_add_cat_ph:'Something else you spend on',
     planner_add_cat:'Add',
     check_title:'Money check',
-    check_note:'Enter what you actually had at the end of this month. If it does not match what the plan expected, record the difference — your goal dates are only as honest as the figures behind them.',
+    check_note:'Put in what each of your accounts actually held at the end of this month. If the total does not match what the plan expected, record the difference — your goal dates are only as honest as the figures behind them.',
     check_open_note:'This month is still running. The check opens once it is over, when there is a final figure worth comparing against.',
     check_held:'What you actually had',
+    bal_spend:'Salary / spending account',
+    bal_save:'Savings account',
+    bal_emg:'Emergency fund',
+    bal_emg_note:'the app has tracked {amount} here',
+    bal_total:'That is {amount} altogether.',
     check_expected:'The plan expected {amount}',
     check_short:'You have {amount} less than the plan expected.',
     check_extra:'You have {amount} more than the plan expected.',
@@ -4151,8 +4169,8 @@ const TRANSLATIONS = {
     planner_salday:'Which day does your salary usually land?',
     planner_salday_note:'Optional. Give a day and the app will ask, once a month, what you have left — one number instead of logging every purchase. You can change the date any month a weekend moves it.',
     payday_title:'Your salary is due — how did the month go?',
-    payday_note_body:'Rather than logging every purchase, tell the app what you have right now, across everything. It came in {income} this month, so whatever is left is what you did not spend.',
-    payday_held:'What you have right now',
+    payday_note_body:'Rather than logging every purchase, read your balances off your banking app. It came in {income} this month, so whatever is left is what you did not spend.',
+    payday_held:'What you have right now, in each account:',
     payday_day:'Salary lands on day',
     payday_expected:'Going by your plan, you would have {amount}',
     payday_go:'Work it out and close the month',
@@ -4458,9 +4476,14 @@ planner_open:'Plan this for me',
     planner_add_cat_ph:'شيء آخر تنفق عليه',
     planner_add_cat:'أضف',
     check_title:'مطابقة الرصيد',
-    check_note:'أدخل ما كان لديك فعلًا في نهاية هذا الشهر. إن لم يطابق ما توقّعته الخطة، فسجّل الفارق — فتواريخ أهدافك لا تكون أدق من الأرقام التي بُنيت عليها.',
+    check_note:'أدخل ما كان في كل حساب من حساباتك فعلًا في نهاية هذا الشهر. إن لم يطابق المجموع ما توقّعته الخطة، فسجّل الفارق — فتواريخ أهدافك لا تكون أدق من الأرقام التي بُنيت عليها.',
     check_open_note:'هذا الشهر لم ينتهِ بعد. تُفتح المطابقة بعد انتهائه، حين يصبح هناك رقم نهائي يستحق المقارنة.',
     check_held:'ما كان لديك فعلًا',
+    bal_spend:'حساب الراتب / المصروف',
+    bal_save:'حساب المدخرات',
+    bal_emg:'صندوق الطوارئ',
+    bal_emg_note:'التطبيق يتتبّع {amount} هنا',
+    bal_total:'المجموع {amount}.',
     check_expected:'توقّعت الخطة {amount}',
     check_short:'لديك {amount} أقل مما توقّعته الخطة.',
     check_extra:'لديك {amount} أكثر مما توقّعته الخطة.',
@@ -4496,8 +4519,8 @@ planner_open:'Plan this for me',
     planner_salday:'في أي يوم ينزل راتبك عادةً؟',
     planner_salday_note:'اختياري. حدّد يومًا وسيسألك التطبيق مرة في الشهر عمّا تبقّى لديك — رقم واحد بدل تسجيل كل عملية شراء. ويمكنك تغيير التاريخ في أي شهر تؤخّره فيه عطلة.',
     payday_title:'اقترب راتبك — كيف مضى الشهر؟',
-    payday_note_body:'بدل تسجيل كل عملية شراء، أخبر التطبيق بما لديك الآن في كل حساباتك. دخل هذا الشهر {income}، وما تبقّى هو ما لم تنفقه.',
-    payday_held:'ما لديك الآن',
+    payday_note_body:'بدل تسجيل كل عملية شراء، انقل أرصدتك من تطبيق البنك. دخل هذا الشهر {income}، وما تبقّى هو ما لم تنفقه.',
+    payday_held:'ما لديك الآن في كل حساب:',
     payday_day:'يوم نزول الراتب',
     payday_expected:'بحسب خطتك، كان يُفترض أن يكون لديك {amount}',
     payday_go:'احسبها وأغلق الشهر',
@@ -6380,10 +6403,8 @@ function renderPaydayCheck(){
     '<div class="payday">' +
       '<p class="pd-title">' + esc(t('payday_title')) + '</p>' +
       '<p class="pd-note">' + esc(t('payday_note_body').replace('{income}', fmtMoney(income))) + '</p>' +
-      '<div class="pd-row">' +
-        '<label for="pd-held">' + esc(t('payday_held')) + '</label>' +
-        '<input type="number" id="pd-held" inputmode="decimal" step="any" min="0" placeholder="0">' +
-      '</div>' +
+      '<p class="pd-sub">' + esc(t('payday_held')) + '</p>' +
+      balanceFieldsHtml('pd', m, idx) +
       '<div class="pd-row pd-day">' +
         '<label for="pd-day">' + esc(t('payday_day')) + '</label>' +
         '<input type="number" id="pd-day" min="1" max="31" step="1" value="' + (salaryDayFor(m) || '') + '">' +
@@ -6529,6 +6550,58 @@ function expectedHeld(idx){
   return total + rows[at].emergencyBalance;
 }
 
+/* Is the emergency fund actually in play? */
+function emergencyInUse(){
+  return (Number(state.emergencyThreshold) || 0) > 0 || (Number(state.emergencyStart) || 0) > 0;
+}
+
+/* One box per account, so nobody has to decide what the question means.
+   'pre' keeps the two cards' ids apart — both can be on screen at once. */
+function balanceFieldsHtml(pre, m, idx){
+  const parts = (m && m.heldParts) || {};
+  const row = (key, label, note)=>
+    '<div class="bal-row">' +
+      '<label for="' + pre + '-' + key + '">' + esc(label) + '</label>' +
+      '<input type="number" id="' + pre + '-' + key + '" data-bal="' + key + '" inputmode="decimal" ' +
+        'step="any" min="0" placeholder="0" value="' + (parts[key] === undefined ? '' : parts[key]) + '">' +
+      (note ? '<span class="bal-note">' + esc(note) + '</span>' : '') +
+    '</div>';
+
+  const { rows } = computeAll();
+  const at = Math.max(0, Math.min(idx, rows.length - 1));
+  const emg = rows[at] ? rows[at].emergencyBalance : 0;
+
+  return '<div class="bal-fields">' +
+    row('spend', t('bal_spend'), '') +
+    row('save',  t('bal_save'),  '') +
+    (emergencyInUse() ? row('emg', t('bal_emg'), t('bal_emg_note').replace('{amount}', fmtMoney(emg))) : '') +
+  '</div>';
+}
+
+/* Their sum, or null while every box is still empty. */
+function balanceTotal(m){
+  const p = (m && m.heldParts) || {};
+  const keys = ['spend', 'save'].concat(emergencyInUse() ? ['emg'] : []);
+  if(!keys.some(k=> p[k] !== undefined && p[k] !== null && p[k] !== '')){
+    // Months answered before the question was split by account kept a single
+    // total. That total is still the only figure the arithmetic uses, so it
+    // stands until the boxes are filled in.
+    return (m && m.held !== undefined && m.held !== null) ? Number(m.held) : null;
+  }
+  return keys.reduce((sum, k)=> sum + (Number(p[k]) || 0), 0);
+}
+
+/* Reads one box into the month, keeping m.held as the total everything else
+   already works from. */
+function setBalancePart(m, key, value){
+  if(!m) return;
+  if(!m.heldParts) m.heldParts = {};
+  if(value === '') delete m.heldParts[key];
+  else m.heldParts[key] = Number(value) || 0;
+  const total = balanceTotal(m);
+  if(total === null) delete m.held; else m.held = total;
+}
+
 function moneyCheckGap(idx){
   const m = state.months[idx];
   if(!m) return null;
@@ -6617,11 +6690,9 @@ function renderMoneyCheck(idx){
       '<p class="spc-title">' + esc(t('check_title')) + '</p>' +
       (asking ? '<p class="spc-ask">' + esc(t('check_needs_you')) + '</p>' : '') +
       '<p class="spc-note">' + esc(t('check_note')) + '</p>' +
-      '<div class="spc-row">' +
-        '<label for="spc-held">' + esc(t('check_held')) + '</label>' +
-        '<input type="number" id="spc-held" inputmode="decimal" step="any" min="0" placeholder="0" value="' +
-          (entered === null ? '' : entered) + '">' +
-      '</div>' +
+      balanceFieldsHtml('mc', m, idx) +
+      (entered === null ? '' :
+        '<p class="bal-total">' + esc(t('bal_total').replace('{amount}', fmtMoney(entered))) + '</p>') +
       '<p class="spc-expected">' + esc(t('check_expected').replace('{amount}', fmtMoney(expected))) + '</p>' +
       tail +
     '</div>';
@@ -6728,13 +6799,12 @@ function wireActualPanel(){
     // Stored on every keystroke but only redrawn once the field is left, so
     // typing a five-digit balance does not rebuild the card under the caret.
     check.addEventListener('input', e=>{
-      if(e.target.id !== 'spc-held') return;
-      const m = state.months[actualMonthIdx];
-      if(m) m.held = e.target.value === '' ? undefined : Number(e.target.value);
+      if(!e.target.matches('input[data-bal]')) return;
+      setBalancePart(state.months[actualMonthIdx], e.target.dataset.bal, e.target.value);
       scheduleSave();
     });
     check.addEventListener('change', e=>{
-      if(e.target.id !== 'spc-held') return;
+      if(!e.target.matches('input[data-bal]')) return;
       renderMoneyCheck(actualMonthIdx);
     });
     check.addEventListener('click', e=>{
@@ -6745,7 +6815,7 @@ function wireActualPanel(){
         renderActualPanel();
         const card = document.querySelector('.sp-check-card');
         if(card) card.scrollIntoView({ block:'center', behavior:'smooth' });
-        const box = document.getElementById('spc-held');
+        const box = document.getElementById('mc-spend');
         if(box) box.focus({ preventScroll:true });
       }
     });
@@ -6753,6 +6823,12 @@ function wireActualPanel(){
 
   const pd = document.getElementById('payday-check');
   if(pd){
+    pd.addEventListener('input', e=>{
+      if(!e.target.matches('input[data-bal]')) return;
+      const i = paydayDueIndex();
+      if(i !== -1) setBalancePart(state.months[i], e.target.dataset.bal, e.target.value);
+      scheduleSave();
+    });
     pd.addEventListener('change', e=>{
       if(e.target.id !== 'pd-day') return;
       const idx = paydayDueIndex();
@@ -6768,9 +6844,14 @@ function wireActualPanel(){
       if(e.target.closest('#pd-ok')){ paydayDone = null; renderPaydayCheck(); return; }
       if(!e.target.closest('#pd-go')) return;
       const idx = paydayDueIndex();
-      const box = document.getElementById('pd-held');
-      if(idx === -1 || !box || box.value === '') { if(box) box.focus(); return; }
-      const gap = applyPayday(idx, Number(box.value) || 0);
+      if(idx === -1) return;
+      const total = balanceTotal(state.months[idx]);
+      if(total === null){
+        const first = document.getElementById('pd-spend');
+        if(first) first.focus();
+        return;
+      }
+      const gap = applyPayday(idx, total);
       autoExtendForGoals();
       renderAll();
       scheduleSave();
