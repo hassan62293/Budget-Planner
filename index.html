@@ -2123,6 +2123,34 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
   font-weight:600; color:var(--ink);
 }
 
+.payday{
+  margin:0 0 16px; padding:14px 16px;
+  border:1px solid var(--emerald); border-radius:var(--radius);
+  background:var(--good-tint);
+}
+.pd-title{ margin:0; font-size:14px; font-weight:700; color:var(--ink); }
+.pd-note{ margin:7px 0 0; font-size:12px; line-height:1.65; color:var(--ink); }
+.pd-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:12px; }
+.pd-row label{ flex:1 1 130px; font-size:12.5px; font-weight:600; color:var(--ink); }
+.pd-row input{
+  flex:0 0 120px; width:120px; min-height:var(--tap);
+  padding:8px 11px; border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:14px; font-weight:600; text-align:end;
+}
+.pd-day input{ flex:0 0 84px; width:84px; }
+.pd-expected{ margin:10px 0 0; font-size:12.5px; color:var(--ink); }
+.pd-actions{ margin-top:12px; }
+.pd-actions button{
+  min-height:var(--tap); padding:10px 18px; width:100%;
+  font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+  border:1px solid var(--emerald); border-radius:var(--radius-sm);
+  background:var(--emerald); color:var(--paper);
+}
+:root[data-theme="dark"] .pd-actions button{ color:#1A1815; }
+.pd-result{ margin:10px 0 0; font-size:12.5px; font-weight:600; color:var(--ink); }
+.pd-result:empty{ display:none; }
+
 .mbrief{
   margin:0 0 16px; padding:14px 16px;
   border:1px solid var(--warn); border-radius:var(--radius);
@@ -3142,6 +3170,10 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
             <input type="number" id="setup-salary" step="any" min="0">
           </div>
           <div class="field">
+            <label for="setup-salary-day" class="cur-label" data-i18n="setup_salaryday_label">Salary usually lands on day</label>
+            <input type="number" id="setup-salary-day" min="1" max="31" step="1" placeholder="25">
+          </div>
+          <div class="field">
             <label data-i18n="setup_startmonth_label">Starting month</label>
             <input type="month" id="setup-start-month">
           </div>
@@ -3206,6 +3238,7 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
       <p class="section-note" data-i18n="actual_note">Record what you actually spend, whenever you spend it. Each bar fills as you approach what you planned for that category.</p>
 
       <div id="spend-alerts" class="goal-alerts"></div>
+      <div id="payday-check"></div>
       <div id="month-brief"></div>
 
       <div class="sp-head">
@@ -4114,6 +4147,20 @@ const TRANSLATIONS = {
     brief_none:'Nothing spent — add to savings',
     brief_planned:'Spent as planned',
     brief_more:'{n} earlier months are waiting on the same question.',
+    setup_salaryday_label:'Salary usually lands on day',
+    planner_salday:'Which day does your salary usually land?',
+    planner_salday_note:'Optional. Give a day and the app will ask, once a month, what you have left — one number instead of logging every purchase. You can change the date any month a weekend moves it.',
+    payday_title:'Your salary is due — how did the month go?',
+    payday_note_body:'Rather than logging every purchase, tell the app what you have right now, across everything. It came in {income} this month, so whatever is left is what you did not spend.',
+    payday_held:'What you have right now',
+    payday_day:'Salary lands on day',
+    payday_expected:'Going by your plan, you would have {amount}',
+    payday_go:'Work it out and close the month',
+    payday_note:'Payday check',
+    payday_ok:'Got it',
+    payday_over:'You spent {amount} more than planned — it comes out of this month’s savings.',
+    payday_under:'You have {amount} more than planned — it goes to your savings.',
+    payday_exact:'Spot on the plan. Month closed.',
     brief_all:'Answer for all {n} waiting months',
     brief_all_note:'Answering “nothing spent” for all of them would add {amount} to your savings.',
     unsettled_tag:'unsettled',
@@ -4445,6 +4492,20 @@ planner_open:'Plan this for me',
     brief_none:'لم أنفق شيئًا — أضفها للمدخرات',
     brief_planned:'أُنفقت كما خُطط',
     brief_more:'‏{n} أشهر سابقة تنتظر السؤال نفسه.',
+    setup_salaryday_label:'يوم نزول الراتب عادةً',
+    planner_salday:'في أي يوم ينزل راتبك عادةً؟',
+    planner_salday_note:'اختياري. حدّد يومًا وسيسألك التطبيق مرة في الشهر عمّا تبقّى لديك — رقم واحد بدل تسجيل كل عملية شراء. ويمكنك تغيير التاريخ في أي شهر تؤخّره فيه عطلة.',
+    payday_title:'اقترب راتبك — كيف مضى الشهر؟',
+    payday_note_body:'بدل تسجيل كل عملية شراء، أخبر التطبيق بما لديك الآن في كل حساباتك. دخل هذا الشهر {income}، وما تبقّى هو ما لم تنفقه.',
+    payday_held:'ما لديك الآن',
+    payday_day:'يوم نزول الراتب',
+    payday_expected:'بحسب خطتك، كان يُفترض أن يكون لديك {amount}',
+    payday_go:'احسبها وأغلق الشهر',
+    payday_note:'مطابقة يوم الراتب',
+    payday_ok:'تمام',
+    payday_over:'أنفقت {amount} أكثر مما خُطط — تُخصم من مدخرات هذا الشهر.',
+    payday_under:'لديك {amount} أكثر مما خُطط — تُضاف إلى مدخراتك.',
+    payday_exact:'مطابق للخطة تمامًا. أُغلق الشهر.',
     brief_all:'أجب عن كل الأشهر المنتظرة ({n})',
     brief_all_note:'اختيار «لم أنفق شيئًا» لها جميعًا سيضيف {amount} إلى مدخراتك.',
     unsettled_tag:'غير مسوّى',
@@ -5167,6 +5228,10 @@ function normalizeState(s){
   // Anyone arriving from before this was recorded gets the app's own starting
   // length, not their current one — which may already include auto-extension.
   if(typeof s.baseMonths !== 'number' || s.baseMonths < 1) s.baseMonths = 12;
+  if(s.salaryDay !== null && s.salaryDay !== undefined){
+    const d = Math.round(Number(s.salaryDay));
+    s.salaryDay = (d >= 1 && d <= 31) ? d : null;
+  } else s.salaryDay = null;
   if(!Array.isArray(s.retiredGoals)) s.retiredGoals = [];
   s.retiredGoals = s.retiredGoals
     .filter(h=> h && typeof h === 'object' && h.startYm && h.retiredYm)
@@ -5800,7 +5865,10 @@ function hasLoggedActual(m, key){
    what happened; anything never logged falls back to the plan. */
 function effectiveSpendValue(m, key){
   const planned = effectiveCategoryValue(m, key);
-  if(isMonthClosed(m)) return hasLoggedActual(m, key) ? actualOf(m, key) : planned;
+  // Settling is someone saying "this cycle is done", which is a stronger claim
+  // than the calendar's. Without this, a payday check taken on the 25th could
+  // not lower the month's spending until the 1st.
+  if(isMonthClosed(m) || m.settled) return hasLoggedActual(m, key) ? actualOf(m, key) : planned;
   // Still running. Spending less than planned so far proves nothing, because
   // the month has not finished — but spending MORE than planned is already
   // done, and no amount of restraint later brings it back.
@@ -6177,6 +6245,73 @@ function renderUnsettledBadge(){
     });
 }
 
+/* The day this month's salary is expected, per-month override winning. */
+function salaryDayFor(m){
+  const own = m && Number(m.salaryDay);
+  if(own >= 1 && own <= 31) return own;
+  const usual = Number(state.salaryDay);
+  return (usual >= 1 && usual <= 31) ? usual : null;
+}
+
+/* The month whose cycle is ending: the current one, once its salary day has
+   arrived and it has not already been settled. */
+function paydayDueIndex(){
+  if(!state.salaryDay && !state.months.some(m=> m.salaryDay)) return -1;
+  const i = state.months.findIndex(m=> m.ym === currentYm());
+  if(i === -1) return -1;
+  const m = state.months[i];
+  if(m.settled) return -1;
+  const day = salaryDayFor(m);
+  if(!day) return -1;
+  return (new Date()).getDate() >= day ? i : -1;
+}
+
+function paydayCat(){
+  if(state.paydayCat && state.categories.includes(state.paydayCat)) return state.paydayCat;
+  if(state.categories.includes('other')) return 'other';
+  return state.categories[state.categories.length - 1] || '';
+}
+
+/* One number, and the month is done. The difference lands in a single
+   nominated category rather than being spread over all of them, because the
+   app does not know the breakdown and should not invent one. */
+function applyPayday(idx, held){
+  const m = state.months[idx];
+  if(!m) return null;
+  const gap = held - expectedHeld(idx);
+  const cat = paydayCat();
+
+  if(gap < -0.5 && cat){
+    setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
+    addLogEntry(m, cat, -gap, t('payday_note'));
+  } else if(gap > 0.5){
+    // Underspending is money not spent, not money earned. Recording it as
+    // income would leave every category looking exactly on plan, and the
+    // learning card would never have anything to notice. So it comes off the
+    // nominated category first, and only a surplus bigger than that category
+    // — which cannot be spending at all — is treated as income.
+    let left = gap;
+    if(cat){
+      const now = effectiveSpendValue(m, cat);
+      const cut = Math.min(now, left);
+      if(cut > 0){
+        setActual(m, cat, now - cut);
+        addLogEntry(m, cat, -cut, t('payday_note'));
+        left -= cut;
+      }
+    }
+    if(left > 0.5) m.sideIncome = (Number(m.sideIncome) || 0) + left;
+  }
+  // Everything still unlogged is accepted at plan, which is what the rest of
+  // the cycle's spending was costed at all along.
+  unsettledCats(m).forEach(k=>{
+    if(!hasLoggedActual(m, k)) setActual(m, k, effectiveCategoryValue(m, k));
+  });
+  m.held = held;
+  m.settled = true;
+  return gap;
+}
+
 function renderMonthBrief(){
   const host = document.getElementById('month-brief');
   if(!host) return;
@@ -6224,8 +6359,44 @@ function renderMonthBrief(){
     '</div>';
 }
 
+let paydayDone = null;   // {ym, text} — what to say once the card has done its job
+
+function renderPaydayCheck(){
+  const host = document.getElementById('payday-check');
+  if(!host) return;
+  const idx = paydayDueIndex();
+  if(idx === -1){
+    host.innerHTML = (paydayDone && paydayDone.ym === currentYm())
+      ? '<div class="payday is-done"><p class="pd-result">' + esc(paydayDone.text) + '</p>' +
+        '<div class="pd-actions"><button type="button" id="pd-ok">' + esc(t('payday_ok')) + '</button></div></div>'
+      : '';
+    return;
+  }
+  const m = state.months[idx];
+  const expected = expectedHeld(idx);
+  const income = effectiveSalary(m) + effectiveSideIncome(m);
+
+  host.innerHTML =
+    '<div class="payday">' +
+      '<p class="pd-title">' + esc(t('payday_title')) + '</p>' +
+      '<p class="pd-note">' + esc(t('payday_note_body').replace('{income}', fmtMoney(income))) + '</p>' +
+      '<div class="pd-row">' +
+        '<label for="pd-held">' + esc(t('payday_held')) + '</label>' +
+        '<input type="number" id="pd-held" inputmode="decimal" step="any" min="0" placeholder="0">' +
+      '</div>' +
+      '<div class="pd-row pd-day">' +
+        '<label for="pd-day">' + esc(t('payday_day')) + '</label>' +
+        '<input type="number" id="pd-day" min="1" max="31" step="1" value="' + (salaryDayFor(m) || '') + '">' +
+      '</div>' +
+      '<p class="pd-expected">' + esc(t('payday_expected').replace('{amount}', fmtMoney(expected))) + '</p>' +
+      '<div class="pd-actions"><button type="button" id="pd-go">' + esc(t('payday_go')) + '</button></div>' +
+      '<p class="pd-result" id="pd-result"></p>' +
+    '</div>';
+}
+
 function renderActualPanel(){
   renderSpendAlerts();
+  renderPaydayCheck();
   renderMonthBrief();
   renderUnsettledBadge();
   const rowsHost = document.getElementById('sp-rows');
@@ -6577,6 +6748,38 @@ function wireActualPanel(){
         const box = document.getElementById('spc-held');
         if(box) box.focus({ preventScroll:true });
       }
+    });
+  }
+
+  const pd = document.getElementById('payday-check');
+  if(pd){
+    pd.addEventListener('change', e=>{
+      if(e.target.id !== 'pd-day') return;
+      const idx = paydayDueIndex();
+      const v = Math.round(Number(e.target.value));
+      if(idx === -1 || !(v >= 1 && v <= 31)) return;
+      // Recorded on the month, so a salary pushed by a weekend is remembered
+      // rather than argued with. Setting a later day simply waits.
+      state.months[idx].salaryDay = v;
+      renderActualPanel();
+      scheduleSave();
+    });
+    pd.addEventListener('click', e=>{
+      if(e.target.closest('#pd-ok')){ paydayDone = null; renderPaydayCheck(); return; }
+      if(!e.target.closest('#pd-go')) return;
+      const idx = paydayDueIndex();
+      const box = document.getElementById('pd-held');
+      if(idx === -1 || !box || box.value === '') { if(box) box.focus(); return; }
+      const gap = applyPayday(idx, Number(box.value) || 0);
+      autoExtendForGoals();
+      renderAll();
+      scheduleSave();
+      paydayDone = gap === null ? null : {
+        ym: currentYm(),
+        text: (gap < -0.5 ? t('payday_over') : gap > 0.5 ? t('payday_under') : t('payday_exact'))
+                .replace('{amount}', fmtMoney(Math.abs(gap))),
+      };
+      renderPaydayCheck();
     });
   }
 
@@ -7653,6 +7856,8 @@ function renderBudget(){
   renderEmptyReminder(rows);
   renderTotalsRow(totals);
 
+  const sd = document.getElementById('setup-salary-day');
+  if(sd) sd.value = state.salaryDay || '';
   document.getElementById('emergency-threshold').value = state.emergencyThreshold;
   document.getElementById('emergency-start').value = state.emergencyStart;
 
@@ -9086,6 +9291,7 @@ function newPlannerDraft(){
       ? state.months[0].ym : currentYm(),
     gradYm: null,
     income: plannerIncomeSeed('salary'), side: plannerIncomeSeed('side'),
+    salaryDay: state.salaryDay || null,
     chosen: null,          // set from occupation on first sight of step 4
     cats: {},
   }, remembered);
@@ -9553,6 +9759,9 @@ function renderPlanner(){
       '<input type="number" id="pl-income" inputmode="decimal" min="0" value="' + (d.income || '') + '"></div>' +
       '<div class="planner-field"><label for="pl-side">' + esc(t('planner_side')) + '</label>' +
       '<input type="number" id="pl-side" inputmode="decimal" min="0" value="' + (d.side || '') + '"></div>' +
+      '<div class="planner-field"><label for="pl-salday">' + esc(t('planner_salday')) + '</label>' +
+      '<input type="number" id="pl-salday" inputmode="numeric" min="1" max="31" step="1" placeholder="25" value="' + (d.salaryDay || '') + '">' +
+      '<p class="planner-sub">' + esc(t('planner_salday_note')) + '</p></div>' +
       '<div class="planner-field"><label for="pl-start">' + esc(t('planner_start')) + '</label>' +
       '<input type="month" id="pl-start" value="' + esc(d.startYm || currentYm()) + '">' +
       '<p class="planner-sub">' + esc(t('planner_start_note')) + '</p></div>' +
@@ -9757,6 +9966,11 @@ function plannerCapture(){
     const st = document.getElementById('pl-start');
     if(i) d.income = plannerNum(i.value);
     if(sd) d.side = plannerNum(sd.value);
+    const day = document.getElementById('pl-salday');
+    if(day){
+      const v = Math.round(Number(day.value));
+      d.salaryDay = (v >= 1 && v <= 31) ? v : null;
+    }
     if(g) d.gradYm = g.value || null;
     if(st && st.value) d.startYm = st.value;
   } else if(plannerStep === 5){
@@ -9814,6 +10028,9 @@ function applyPlannerPlan(){
     });
   }
   state.defaultSalary = plannerNum(d.income);
+  // Written whether set or cleared, so the wizard can also turn the payday
+  // check off for someone who decides they do not want it.
+  state.salaryDay = (d.salaryDay >= 1 && d.salaryDay <= 31) ? d.salaryDay : null;
 
   /* The occupation answer configuring what the fold hides. A fixed salary
      becomes a real open-ended period, so it fills every month by itself and
@@ -10175,6 +10392,13 @@ function wireEvents(){
       e.preventDefault();
       document.getElementById('btn-add-category').click();
     }
+  });
+
+  document.getElementById('setup-salary-day').addEventListener('change', e=>{
+    const v = Math.round(Number(e.target.value));
+    state.salaryDay = (v >= 1 && v <= 31) ? v : null;
+    renderAll();
+    scheduleSave();
   });
 
   document.getElementById('emergency-threshold').addEventListener('change', e=>{
