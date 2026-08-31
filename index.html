@@ -2221,6 +2221,9 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 }
 .bal-note{ flex:1 1 100%; font-size:11px; color:var(--ink-soft); }
 .bal-total{ margin:11px 0 0; font-size:12.5px; font-weight:600; color:var(--ink); }
+.bal-move{ margin:11px 0 0; }
+.bal-move p{ margin:0 0 4px; font-size:12.5px; line-height:1.6; color:var(--ink); }
+.bal-move p:last-child{ margin-bottom:0; color:var(--ink-soft); }
 .pd-sub{ margin:12px 0 0; font-size:12.5px; font-weight:600; color:var(--ink); }
 
 .spc-row{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:12px; }
@@ -4134,13 +4137,17 @@ const TRANSLATIONS = {
     bal_emg:'Emergency fund',
     bal_emg_note:'the app has tracked {amount} here',
     bal_total:'That is {amount} altogether.',
+    bal_baseline:'Noted. These are your starting balances — from next month the app can tell you what moved.',
+    bal_saved:'You put aside {amount} this month. The plan expected {planned}.',
+    bal_emg_moved:'Your emergency fund moved by {amount}. The plan expected {planned}.',
+    bal_left:'Left in your spending account: {amount}.',
     check_expected:'The plan expected {amount}',
     check_short:'You have {amount} less than the plan expected.',
     check_extra:'You have {amount} more than the plan expected.',
     check_match:'This matches the plan.',
     check_under:'Record it under',
     check_extra_as:'Where did it come from?',
-    check_extra_opening:'Money I already had',
+    check_extra_underspent:'I spent less than planned',
     check_extra_income:'Extra income this month',
     check_apply:'Record the difference',
     check_offset_note:'Money check adjustment',
@@ -4486,13 +4493,17 @@ planner_open:'Plan this for me',
     bal_emg:'صندوق الطوارئ',
     bal_emg_note:'التطبيق يتتبّع {amount} هنا',
     bal_total:'المجموع {amount}.',
+    bal_baseline:'سُجّلت. هذه أرصدتك الابتدائية — ومن الشهر القادم سيخبرك التطبيق بما تغيّر.',
+    bal_saved:'ادّخرت {amount} هذا الشهر. وتوقّعت الخطة {planned}.',
+    bal_emg_moved:'تغيّر صندوق الطوارئ بمقدار {amount}. وتوقّعت الخطة {planned}.',
+    bal_left:'المتبقي في حساب المصروف: {amount}.',
     check_expected:'توقّعت الخطة {amount}',
     check_short:'لديك {amount} أقل مما توقّعته الخطة.',
     check_extra:'لديك {amount} أكثر مما توقّعته الخطة.',
     check_match:'هذا مطابق للخطة.',
     check_under:'سجّله ضمن',
     check_extra_as:'من أين جاء؟',
-    check_extra_opening:'مال كان لديّ أصلًا',
+    check_extra_underspent:'أنفقت أقل مما خُطط',
     check_extra_income:'دخل إضافي هذا الشهر',
     check_apply:'سجّل الفارق',
     check_offset_note:'تسوية مطابقة الرصيد',
@@ -6305,7 +6316,10 @@ function paydayCat(){
 function applyPayday(idx, held){
   const m = state.months[idx];
   if(!m) return null;
-  const gap = held - expectedHeld(idx);
+  const mv = monthMovement(idx);
+  // Before any baseline exists there is nothing to reconcile — the balances are
+  // simply recorded, and next month has something to be measured against.
+  const gap = (mv && !mv.baseline) ? mv.gap : 0;
   const cat = paydayCat();
 
   if(gap < -0.5 && cat){
@@ -6327,10 +6341,11 @@ function applyPayday(idx, held){
         left -= cut;
       }
     }
-    // Whatever is left after the category has been reduced to zero is not
-    // underspending — there is no more spending to undo. It is money the app
-    // did not know about, which is an opening balance, not this month's income.
-    if(left > 0.5) state.forecast.start = (Number(state.forecast.start) || 0) + left;
+    // Whatever is left once the category has been reduced to zero cannot be
+    // spending that never happened, so it is income the plan did not know
+    // about. Nothing writes the opening balance behind the reader any more:
+    // that is what let a wrong figure compound unseen.
+    if(left > 0.5) m.sideIncome = (Number(m.sideIncome) || 0) + left;
   }
   // Everything still unlogged is accepted at plan, which is what the rest of
   // the cycle's spending was costed at all along.
@@ -6403,7 +6418,7 @@ function renderPaydayCheck(){
     return;
   }
   const m = state.months[idx];
-  const expected = expectedHeld(idx);
+  const mv = monthMovement(idx);
   const income = effectiveSalary(m) + effectiveSideIncome(m);
 
   host.innerHTML =
@@ -6416,7 +6431,11 @@ function renderPaydayCheck(){
         '<label for="pd-day">' + esc(t('payday_day')) + '</label>' +
         '<input type="number" id="pd-day" min="1" max="31" step="1" value="' + (salaryDayFor(m) || '') + '">' +
       '</div>' +
-      '<p class="pd-expected">' + esc(t('payday_expected').replace('{amount}', fmtMoney(expected))) + '</p>' +
+      (!mv ? '' : mv.baseline
+        ? '<p class="pd-expected">' + esc(t('bal_baseline')) + '</p>'
+        : '<p class="pd-expected">' + esc(t('bal_saved')
+            .replace('{amount}', fmtMoney(mv.saved))
+            .replace('{planned}', fmtMoney(mv.plannedSaving))) + '</p>') +
       '<div class="pd-actions"><button type="button" id="pd-go">' + esc(t('payday_go')) + '</button></div>' +
       '<p class="pd-result" id="pd-result"></p>' +
     '</div>';
@@ -6609,19 +6628,67 @@ function setBalancePart(m, key, value){
   if(total === null) delete m.held; else m.held = total;
 }
 
-function moneyCheckGap(idx){
+const BAL_KEYS = ['spend', 'save', 'emg'];
+
+function hasBalances(m){
+  const p = m && m.heldParts;
+  return !!p && BAL_KEYS.some(k=> p[k] !== undefined && p[k] !== null && p[k] !== '');
+}
+function balPart(m, key){
+  const p = (m && m.heldParts) || {};
+  return Number(p[key]) || 0;
+}
+
+/* The most recent earlier month whose balances were actually recorded. */
+function prevBalanceIdx(idx){
+  for(let i = idx - 1; i >= 0; i--) if(hasBalances(state.months[i])) return i;
+  return -1;
+}
+
+/* What moved this month, against what the plan said should move.
+   null while there is nothing yet to compare against. */
+function monthMovement(idx){
   const m = state.months[idx];
-  if(!m) return null;
-  const raw = m.held;
-  if(raw === undefined || raw === null || raw === '') return null;
-  const held = Number(raw);
-  if(!isFinite(held)) return null;
-  return held - expectedHeld(idx);
+  if(!m || !hasBalances(m)) return null;
+  const p = prevBalanceIdx(idx);
+  if(p === -1) return { baseline: true };
+
+  const before = state.months[p];
+  // Savings and the current account are one pot: money not spent is not spent
+  // whether it has been moved across yet or not.
+  const liquidNow    = balPart(m, 'spend') + balPart(m, 'save');
+  const liquidBefore = balPart(before, 'spend') + balPart(before, 'save');
+  const emgNow       = balPart(m, 'emg');
+  const emgBefore    = balPart(before, 'emg');
+
+  const { rows } = computeAll();
+  let plannedSaving = 0, plannedEmg = 0;
+  for(let i = p + 1; i <= idx; i++){          // covers any months skipped between checks
+    plannedSaving += rows[i] ? rows[i].savings : 0;
+    plannedEmg    += rows[i] ? rows[i].emergencyContribution : 0;
+  }
+
+  return {
+    baseline: false, fromYm: before.ym, months: idx - p,
+    saved: liquidNow - liquidBefore, plannedSaving,
+    emgMoved: emgNow - emgBefore, plannedEmg,
+    leftInSpending: balPart(m, 'spend'),
+    gap: (liquidNow - liquidBefore) - plannedSaving,
+  };
+}
+
+function moneyCheckGap(idx){
+  const mv = monthMovement(idx);
+  if(!mv || mv.baseline) return null;
+  return mv.gap;
 }
 
 function offsetCatDefault(){
   if(state.lastOffsetCat && state.categories.includes(state.lastOffsetCat)) return state.lastOffsetCat;
-  return state.categories[0] || '';
+  // Unexplained money belongs in the catch-all, not in whichever category
+  // happens to sit first — silently adjusting Rent reads as a mistake.
+  if(state.categories.includes('other')) return 'other';
+  return state.categories[state.categories.length - 1] || '';
 }
 
 /* The newest month that has finished. That is the one worth reconciling; the
@@ -6664,11 +6731,10 @@ function renderMoneyCheck(idx){
     return;
   }
 
-  const expected = expectedHeld(idx);
-  const raw = m.held;
-  const entered = (raw === undefined || raw === null || raw === '') ? null : Number(raw);
-  const gap = entered === null ? 0 : entered - expected;
-  const off = Math.abs(gap) >= 1;
+  const mv = monthMovement(idx);
+  const entered = mv ? balanceTotal(m) : null;
+  const gap = (mv && !mv.baseline) ? mv.gap : 0;
+  const off = (mv && !mv.baseline) && Math.abs(gap) >= 1;
 
   let tail = '';
   if(entered !== null && off){
@@ -6685,7 +6751,7 @@ function renderMoneyCheck(idx){
               esc(categoryLabel(c)) + '</option>').join('') + '</select>'
           : '<label class="spc-under" for="spc-extra">' + esc(t('check_extra_as')) + '</label>' +
             '<select id="spc-extra">' +
-              '<option value="opening">' + esc(t('check_extra_opening')) + '</option>' +
+              '<option value="underspent">' + esc(t('check_extra_underspent')) + '</option>' +
               '<option value="income">' + esc(t('check_extra_income')) + '</option>' +
             '</select>') +
         '<button type="button" id="spc-apply">' + esc(t('check_apply')) + '</button>' +
@@ -6702,9 +6768,19 @@ function renderMoneyCheck(idx){
       (asking ? '<p class="spc-ask">' + esc(t('check_needs_you')) + '</p>' : '') +
       '<p class="spc-note">' + esc(t('check_note')) + '</p>' +
       balanceFieldsHtml('mc', m, idx) +
-      (entered === null ? '' :
-        '<p class="bal-total">' + esc(t('bal_total').replace('{amount}', fmtMoney(entered))) + '</p>') +
-      '<p class="spc-expected">' + esc(t('check_expected').replace('{amount}', fmtMoney(expected))) + '</p>' +
+      (!mv ? '' : mv.baseline
+        ? '<p class="bal-total">' + esc(t('bal_baseline')) + '</p>'
+        : '<div class="bal-move">' +
+            '<p>' + esc(t('bal_saved')
+              .replace('{amount}', fmtMoney(mv.saved))
+              .replace('{planned}', fmtMoney(mv.plannedSaving))) + '</p>' +
+            (emergencyInUse()
+              ? '<p>' + esc(t('bal_emg_moved')
+                  .replace('{amount}', fmtMoney(mv.emgMoved))
+                  .replace('{planned}', fmtMoney(mv.plannedEmg))) + '</p>'
+              : '') +
+            '<p>' + esc(t('bal_left').replace('{amount}', fmtMoney(mv.leftInSpending))) + '</p>' +
+          '</div>') +
       tail +
     '</div>';
 }
@@ -6728,14 +6804,25 @@ function applyMoneyCheck(idx){
     setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
     addLogEntry(m, cat, -gap, t('check_offset_note'));
   } else {
-    const how = (document.getElementById('spc-extra') || {}).value || 'opening';
+    const how = (document.getElementById('spc-extra') || {}).value || 'underspent';
     if(how === 'income'){
       m.sideIncome = (Number(m.sideIncome) || 0) + gap;
     } else {
-      // Money that predates the table. Recording it here raises what the app
-      // knows you hold without pretending you earned it this month, so no
-      // month's savings rate and no goal date is flattered by it.
-      state.forecast.start = (Number(state.forecast.start) || 0) + gap;
+      // Spent less than planned. Taken off the nominated category first — only
+      // a surplus bigger than that category could hold is treated as income,
+      // since it cannot be spending that never happened.
+      const cat = offsetCatDefault();
+      let left = gap;
+      if(cat){
+        const now = effectiveSpendValue(m, cat);
+        const cut = Math.min(now, left);
+        if(cut > 0){
+          setActual(m, cat, now - cut);
+          addLogEntry(m, cat, -cut, t('check_offset_note'));
+          left -= cut;
+        }
+      }
+      if(left > 0.5) m.sideIncome = (Number(m.sideIncome) || 0) + left;
     }
   }
   autoExtendForGoals();
