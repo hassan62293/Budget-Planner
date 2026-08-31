@@ -2097,6 +2097,61 @@ nav.tabs button{ color:var(--ink); }
 .goal-alert.is-info{ border-inline-start-color:var(--good); background:var(--good-tint); }
 .ga-title{ margin:0; font-size:13.5px; font-weight:700; }
 .ga-body{ margin:6px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink); }
+/* Amber is light in both themes, so the figure on it is dark in both. */
+nav.tabs button[data-unsettled], #bottom-nav button[data-unsettled]{ position:relative; }
+nav.tabs button[data-unsettled]::after,
+#bottom-nav button[data-unsettled]::after{
+  content:attr(data-unsettled);
+  position:absolute; top:3px; inset-inline-end:3px;
+  min-width:17px; height:17px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:999px; background:var(--warn); color:#2C2A26;
+  font-size:10.5px; font-weight:700; line-height:1;
+}
+nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
+
+.mb-all{
+  display:flex; align-items:center; gap:9px; margin-top:12px;
+  font-size:12.5px; color:var(--ink); cursor:pointer;
+  /* The label is the tap target, not the 18px box inside it. */
+  min-height:var(--tap);
+}
+.mb-all input{ width:18px; height:18px; flex:0 0 auto; accent-color:var(--emerald); cursor:pointer; }
+.mb-warn{
+  margin:10px 0 0; padding:8px 10px; border-radius:var(--radius-sm);
+  background:var(--paper-raised); font-size:11.5px; line-height:1.55;
+  font-weight:600; color:var(--ink);
+}
+
+.mbrief{
+  margin:0 0 16px; padding:14px 16px;
+  border:1px solid var(--warn); border-radius:var(--radius);
+  background:var(--warn-tint);
+}
+.mb-title{ margin:0; font-size:14px; font-weight:700; color:var(--ink); }
+.mb-lines{ margin:9px 0 0; padding-inline-start:18px; }
+.mb-lines li{ font-size:12.5px; line-height:1.7; color:var(--ink); }
+.mb-ask{ margin:10px 0 0; font-size:12.5px; line-height:1.6; color:var(--ink); font-weight:600; }
+.mb-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.mb-actions button{
+  flex:1 1 150px; min-height:var(--tap); padding:9px 14px;
+  font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+  border-radius:var(--radius-sm);
+}
+.mb-none{ border:1px solid var(--emerald); background:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .mb-none{ color:#1A1815; }
+.mb-plan{ border:1px solid var(--ink); background:transparent; color:var(--ink); }
+.mb-plan:hover{ background:var(--ink); color:var(--paper); }
+.mb-more{ margin:10px 0 0; font-size:11.5px; color:var(--ink); }
+
+/* Amber is light in both themes, so the label on it is dark in both. */
+.unsettled-tag{
+  display:inline-block; vertical-align:middle;
+  margin-inline-start:6px; padding:2px 7px;
+  border-radius:999px; background:var(--warn); color:#2C2A26;
+  font-size:10px; font-weight:700; letter-spacing:0.02em; white-space:nowrap;
+}
+
 .sp-check-card{
   margin-top:18px; padding:15px 16px;
   border:1px solid var(--rule); border-radius:8px; background:var(--paper-raised);
@@ -2627,6 +2682,25 @@ nav.tabs button{ color:var(--ink); }
   font-family:inherit; font-size:15px; text-align:end;
 }
 .planner-row input:focus{ outline:2px solid var(--emerald); outline-offset:1px; border-color:var(--emerald); }
+.planner-row{ flex-wrap:wrap; }
+.pl-mode{ display:flex; flex:0 0 auto; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.plm-btn{
+  min-height:var(--tap); padding:0 11px; border:none; cursor:pointer;
+  font-family:inherit; font-size:11.5px; font-weight:600;
+  background:var(--paper); color:var(--ink-soft);
+}
+.plm-btn + .plm-btn{ border-inline-start:1px solid var(--rule); }
+.plm-btn.on{ background:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .plm-btn.on{ color:#1A1815; }
+.pl-mode-note{ margin-top:10px; }
+
+.planner-accounts{
+  margin-top:16px; padding:12px 14px;
+  border-inline-start:3px solid var(--emerald);
+  border-radius:var(--radius-sm); background:var(--good-tint);
+}
+.pa-title{ margin:0; font-size:12.5px; font-weight:700; color:var(--ink); }
+.pa-body{ margin:6px 0 0; font-size:12px; line-height:1.65; color:var(--ink); }
 
 .planner-left{
   margin:14px 0 0; padding:11px 13px; border-radius:8px;
@@ -3132,6 +3206,7 @@ nav.tabs button{ color:var(--ink); }
       <p class="section-note" data-i18n="actual_note">Record what you actually spend, whenever you spend it. Each bar fills as you approach what you planned for that category.</p>
 
       <div id="spend-alerts" class="goal-alerts"></div>
+      <div id="month-brief"></div>
 
       <div class="sp-head">
         <button type="button" class="ycal-nav" id="sp-prev" aria-label="Previous month">‹</button>
@@ -4025,6 +4100,23 @@ const TRANSLATIONS = {
     ov_legend_none:'Nothing logged yet',
     actions_more:'Backups, Excel and sharing',
     help_back:'Back to {tab}',
+    planner_varies:'Varies',
+    planner_fixed:'Fixed',
+    planner_mode_note:'Mark a cost as fixed if it is the same every month — rent, a subscription. Fixed costs count as spent even in a month you never log.',
+    accounts_title:'One habit worth having',
+    accounts_two:'Keep two accounts: one for your salary and day-to-day spending, and a separate one you move your savings into on payday. Money you cannot see is money you do not spend — and it is what makes these figures real rather than hoped for.',
+    accounts_three:'Keep three accounts: one for your salary and day-to-day spending, one you move your savings into on payday, and one for your emergency fund so it is never confused with money you are allowed to touch. Money you cannot see is money you do not spend.',
+    brief_title:'{month} has ended',
+    brief_fixed:'Fixed costs counted as spent: {amount}',
+    brief_logged:'You logged: {amount}',
+    brief_saved:'Saved this month, as it stands: {amount}',
+    brief_ask:'{n} categories had nothing logged — {cats}. Did you spend nothing on them, or not get round to logging?',
+    brief_none:'Nothing spent — add to savings',
+    brief_planned:'Spent as planned',
+    brief_more:'{n} earlier months are waiting on the same question.',
+    brief_all:'Answer for all {n} waiting months',
+    brief_all_note:'Answering “nothing spent” for all of them would add {amount} to your savings.',
+    unsettled_tag:'unsettled',
     planner_apply_q:'{n} months already have figures in them.',
     planner_apply_empty:'Fill only the empty months',
     planner_apply_all:'Update all of them',
@@ -4339,6 +4431,23 @@ planner_open:'Plan this for me',
     ov_legend_none:'لم يُسجّل شيء بعد',
     actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
     help_back:'العودة إلى {tab}',
+    planner_varies:'متغيّر',
+    planner_fixed:'ثابت',
+    planner_mode_note:'ضع علامة «ثابت» على ما يتكرر بالمبلغ نفسه كل شهر — الإيجار أو اشتراك. والالتزامات الثابتة تُحسب كمصروف حتى في شهر لم تسجّل فيه شيئًا.',
+    accounts_title:'عادة تستحق أن تُتّبع',
+    accounts_two:'احتفظ بحسابين: حساب لراتبك ومصروفك اليومي، وآخر منفصل تحوّل إليه مدخراتك يوم الراتب. فالمال الذي لا تراه هو مال لا تنفقه — وهو ما يجعل هذه الأرقام حقيقية لا متمنّاة.',
+    accounts_three:'احتفظ بثلاثة حسابات: حساب لراتبك ومصروفك اليومي، وحساب تحوّل إليه مدخراتك يوم الراتب، وحساب لصندوق الطوارئ حتى لا يختلط بما يُسمح لك بإنفاقه. فالمال الذي لا تراه هو مال لا تنفقه.',
+    brief_title:'انتهى {month}',
+    brief_fixed:'التزامات ثابتة حُسبت كمصروف: {amount}',
+    brief_logged:'ما سجّلته: {amount}',
+    brief_saved:'ما ادُّخر هذا الشهر حتى الآن: {amount}',
+    brief_ask:'‏{n} بنود لم يُسجّل فيها شيء — {cats}. هل لم تنفق عليها شيئًا، أم لم تتمكن من التسجيل؟',
+    brief_none:'لم أنفق شيئًا — أضفها للمدخرات',
+    brief_planned:'أُنفقت كما خُطط',
+    brief_more:'‏{n} أشهر سابقة تنتظر السؤال نفسه.',
+    brief_all:'أجب عن كل الأشهر المنتظرة ({n})',
+    brief_all_note:'اختيار «لم أنفق شيئًا» لها جميعًا سيضيف {amount} إلى مدخراتك.',
+    unsettled_tag:'غير مسوّى',
     planner_apply_q:'‏{n} شهرًا فيها أرقام بالفعل.',
     planner_apply_empty:'املأ الأشهر الفارغة فقط',
     planner_apply_all:'حدّثها جميعًا',
@@ -5698,6 +5807,43 @@ function effectiveSpendValue(m, key){
   return Math.max(planned, actualOf(m, key));
 }
 
+/* Variable categories in a finished month that were never logged. Fixed ones
+   are absent by design: an unlogged fixed cost is a cost that happened. */
+function unsettledCats(m){
+  if(!m || !isMonthClosed(m)) return [];
+  return state.categories.filter(k=>
+    state.fieldModes[k] !== 'fixed' && !hasLoggedActual(m, k));
+}
+
+function monthUnsettled(m){
+  return !!m && !m.settled && unsettledCats(m).length > 0;
+}
+
+/* The most recent finished month still holding an unanswered question. */
+function monthNeedingBrief(){
+  for(let i = state.months.length - 1; i >= 0; i--){
+    if(monthUnsettled(state.months[i])) return i;
+  }
+  return -1;
+}
+
+function unsettledCount(){
+  return state.months.filter(monthUnsettled).length;
+}
+
+/* Answering writes actuals, which is all "settled" has ever meant here.
+   'none' records an explicit zero — real data, and distinct from silence. */
+function settleMonth(idx, how){
+  const m = state.months[idx];
+  if(!m) return 0;
+  const cats = unsettledCats(m);
+  cats.forEach(k=>{
+    setActual(m, k, how === 'none' ? 0 : effectiveCategoryValue(m, k));
+  });
+  m.settled = true;
+  return cats.length;
+}
+
 /* How a closed month is being counted, for the badge that explains it. */
 function monthSpendBasis(m){
   if(!isMonthClosed(m)) return { closed:false, logged:0, total:state.categories.length };
@@ -6002,6 +6148,7 @@ function wireEntryTab(){
    is about now, so it opens on the current month and stepping is enough.
    ============================================================================ */
 let actualMonthIdx = -1;
+let briefAll = false;      // answer every waiting month, not just this one
 
 function actualTargetIndex(){
   if(actualMonthIdx >= 0 && actualMonthIdx < state.months.length) return actualMonthIdx;
@@ -6011,8 +6158,76 @@ function actualTargetIndex(){
   return state.months.length ? state.months.length - 1 : -1;
 }
 
+/* What answering "nothing spent" everywhere would add to savings. Stated
+   before it is done, because it is the one answer that can only flatter. */
+function unsettledWindfall(){
+  return state.months.filter(monthUnsettled).reduce((sum, m)=>
+    sum + unsettledCats(m).reduce((s2, k)=> s2 + effectiveCategoryValue(m, k), 0), 0);
+}
+
+/* A count on the Spent tab, in both navs. Set as an attribute and drawn with
+   ::after: applyLanguage writes textContent onto the desktop tab button, so a
+   child element would be wiped on every language switch. */
+function renderUnsettledBadge(){
+  const n = unsettledCount();
+  document.querySelectorAll('nav.tabs button[data-tab="actual"], #bottom-nav button[data-tab="actual"]')
+    .forEach(b=>{
+      if(n > 0) b.setAttribute('data-unsettled', n > 9 ? '9+' : String(n));
+      else b.removeAttribute('data-unsettled');
+    });
+}
+
+function renderMonthBrief(){
+  const host = document.getElementById('month-brief');
+  if(!host) return;
+  const idx = monthNeedingBrief();
+  if(idx === -1){ host.innerHTML = ''; return; }
+
+  const m = state.months[idx];
+  const cats = unsettledCats(m);
+  const { rows } = computeAll();
+  const row = rows[idx];
+
+  // What is already settled, so the brief opens with the month rather than
+  // with a question.
+  const counted = state.categories
+    .filter(k=> state.fieldModes[k] === 'fixed' && !hasLoggedActual(m, k))
+    .reduce((sum, k)=> sum + effectiveCategoryValue(m, k), 0);
+  const logged = state.categories
+    .filter(k=> hasLoggedActual(m, k))
+    .reduce((sum, k)=> sum + actualOf(m, k), 0);
+
+  const more = unsettledCount() - 1;
+  host.innerHTML =
+    '<div class="mbrief">' +
+      '<p class="mb-title">' + esc(t('brief_title').replace('{month}', monthLabel(m.ym))) + '</p>' +
+      '<ul class="mb-lines">' +
+        (counted > 0 ? '<li>' + esc(t('brief_fixed').replace('{amount}', fmtMoney(counted))) + '</li>' : '') +
+        (logged  > 0 ? '<li>' + esc(t('brief_logged').replace('{amount}', fmtMoney(logged))) + '</li>' : '') +
+        '<li>' + esc(t('brief_saved').replace('{amount}', fmtMoney(Math.max(0, row ? row.savings : 0)))) + '</li>' +
+      '</ul>' +
+      '<p class="mb-ask">' + esc(t('brief_ask')
+        .replace('{n}', cats.length)
+        .replace('{cats}', cats.map(categoryLabel).join(', '))) + '</p>' +
+      (more > 0
+        ? '<label class="mb-all"><input type="checkbox" id="mb-all-check"' + (briefAll ? ' checked' : '') + '>' +
+          '<span>' + esc(t('brief_all').replace('{n}', more + 1)) + '</span></label>'
+        : '') +
+      '<div class="mb-actions">' +
+        '<button type="button" class="mb-none" data-settle="none" data-idx="' + idx + '">' + esc(t('brief_none')) + '</button>' +
+        '<button type="button" class="mb-plan" data-settle="plan" data-idx="' + idx + '">' + esc(t('brief_planned')) + '</button>' +
+      '</div>' +
+      (more > 0 && briefAll
+        ? '<p class="mb-warn">' + esc(t('brief_all_note').replace('{amount}', fmtMoney(unsettledWindfall()))) + '</p>'
+        : '') +
+      (more > 0 && !briefAll ? '<p class="mb-more">' + esc(t('brief_more').replace('{n}', more)) + '</p>' : '') +
+    '</div>';
+}
+
 function renderActualPanel(){
   renderSpendAlerts();
+  renderMonthBrief();
+  renderUnsettledBadge();
   const rowsHost = document.getElementById('sp-rows');
   const totalHost = document.getElementById('sp-total');
   const monthEl = document.getElementById('sp-month');
@@ -6029,7 +6244,8 @@ function renderActualPanel(){
   }
   actualMonthIdx = idx;
   const m = state.months[idx];
-  monthEl.textContent = monthLabel(m.ym);
+  monthEl.innerHTML = esc(monthLabel(m.ym)) +
+    (monthUnsettled(m) ? ' <span class="unsettled-tag">' + esc(t('unsettled_tag')) + '</span>' : '');
   document.getElementById('sp-prev').disabled = idx <= 0;
   document.getElementById('sp-next').disabled = idx >= state.months.length - 1;
 
@@ -6363,6 +6579,24 @@ function wireActualPanel(){
       }
     });
   }
+
+  const brief = document.getElementById('month-brief');
+  if(brief) brief.addEventListener('click', e=>{
+    if(e.target.id === 'mb-all-check'){ briefAll = e.target.checked; renderMonthBrief(); return; }
+    const b = e.target.closest('button[data-settle]');
+    if(!b) return;
+    if(briefAll){
+      // Walk a copy: settling changes what monthUnsettled reports as it goes.
+      state.months.map((m, i)=> i).filter(i=> monthUnsettled(state.months[i]))
+        .forEach(i=> settleMonth(i, b.dataset.settle));
+      briefAll = false;
+    } else {
+      settleMonth(Number(b.dataset.idx), b.dataset.settle);
+    }
+    autoExtendForGoals();
+    renderAll();
+    scheduleSave();
+  });
 
   document.getElementById('sp-prev').addEventListener('click', ()=>{
     if(actualMonthIdx > 0){ actualMonthIdx--; renderActualPanel(); }
@@ -7242,7 +7476,7 @@ function renderOverviewRows(rows){
     const outcome = monthOutcome(r.m);
     const outCls = outcome === 'none' ? '' : ' ov-out-' + outcome;
     return `<button type="button" class="ov-row${empty ? ' is-empty' : ''}${outCls}" data-open="${idx}"${outcome === 'none' ? '' : ` title="${esc(outcomeTitle(outcome))}"`}>
-      <span class="ov-m">${monthLabel(r.m.ym)}</span>
+      <span class="ov-m">${monthLabel(r.m.ym)}${monthUnsettled(r.m) ? ' <span class="unsettled-tag">' + esc(t('unsettled_tag')) + '</span>' : ''}</span>
       <span class="ov-right">
         <span class="ov-saved ${r.savings >= 0 ? 'pos' : 'neg'}">${empty ? '—' : fmtMoney(r.savings)}</span>
         <span class="ov-rate ${rateCls}">${empty ? t('entry_status_empty') : fmtPct(r.rate)}</span>
@@ -7396,7 +7630,7 @@ function renderBudget(){
     const salaryLocked = state.fieldModes.salary==='fixed';
     const sideLocked = state.fieldModes.sideIncome==='fixed';
     let html = `
-      <td>${monthLabel(m.ym)}</td>
+      <td>${monthLabel(m.ym)}${monthUnsettled(m) ? ' <span class="unsettled-tag">' + esc(t('unsettled_tag')) + '</span>' : ''}</td>
       <td><span class="ro-val">${fmtMoney(effectiveSalary(m))}</span></td>
       <td><span class="ro-val">${fmtMoney(effectiveSideIncome(m))}</span></td>`;
     state.categories.forEach(key=>{
@@ -8901,6 +9135,12 @@ function plannerCatalogue(){
 
 /* A key added in this wizard has no entry in state.customLabels yet, because
    nothing is committed until the plan is applied. */
+/* Whatever the app already thinks, unless this run has said otherwise. */
+function plannerModeFor(d, k){
+  if(d && d.modes && d.modes[k]) return d.modes[k];
+  return state.fieldModes[k] === 'fixed' ? 'fixed' : 'variable';
+}
+
 function plannerCatLabel(d, k){
   return (d && d.custom && d.custom[k]) || categoryLabel(k);
 }
@@ -9361,7 +9601,12 @@ function renderPlanner(){
         '<div class="planner-row"><label for="pl-c-' + esc(k) + '">' + esc(plannerCatLabel(d, k)) +
           ((d.catSrc && d.catSrc[k] && d.catSrc[k] !== 'blank')
             ? '<span class="pl-src">' + esc(t('planner_src_' + d.catSrc[k])) + '</span>' : '') + '</label>' +
-        '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '"></div>').join('') +
+        '<input type="number" id="pl-c-' + esc(k) + '" data-camount="' + esc(k) + '" inputmode="decimal" min="0" value="' + plannerNum(d.cats[k]) + '">' +
+        '<span class="pl-mode">' +
+          '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'variable' ? ' on' : '') + '" data-pmode="variable" data-pk="' + esc(k) + '">' + esc(t('planner_varies')) + '</button>' +
+          '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'fixed' ? ' on' : '') + '" data-pmode="fixed" data-pk="' + esc(k) + '">' + esc(t('planner_fixed')) + '</button>' +
+        '</span></div>').join('') +
+      '<p class="planner-note pl-mode-note">' + esc(t('planner_mode_note')) + '</p>' +
       '</div><p class="planner-left" id="pl-left"></p>';
     updatePlannerLeft();
 
@@ -9381,7 +9626,13 @@ function renderPlanner(){
         '<p class="pam-note">' + esc(d.applyMode === 'all'
           ? t('planner_apply_all_note') : t('planner_apply_empty_note')) + '</p>' +
       '</div>';
-    body.innerHTML = plannerResultHtml(d, plannerOutcome(d)) + choice;
+    const emergencyOn = (Number(state.emergencyThreshold) || 0) > 0;
+    const accounts =
+      '<div class="planner-accounts">' +
+        '<p class="pa-title">' + esc(t('accounts_title')) + '</p>' +
+        '<p class="pa-body">' + esc(emergencyOn ? t('accounts_three') : t('accounts_two')) + '</p>' +
+      '</div>';
+    body.innerHTML = plannerResultHtml(d, plannerOutcome(d)) + accounts + choice;
   }
 }
 
@@ -9546,9 +9797,19 @@ function applyPlannerPlan(){
   }
   if(d.chosen.length){
     state.categories = d.chosen.slice();
+    const planStart = d.startYm || (state.months[0] && state.months[0].ym) || currentYm();
     state.categories.forEach(k=>{
-      if(!state.fieldModes[k]) state.fieldModes[k] = 'variable';
+      const mode = plannerModeFor(d, k);
+      state.fieldModes[k] = mode;
       if(!state.fixedSchedules[k]) state.fixedSchedules[k] = [];
+      // Only ever creates a schedule, never replaces one: existing periods are
+      // more specific than a single figure from a wizard.
+      if(mode === 'fixed' && !state.fixedSchedules[k].length){
+        state.fixedSchedules[k] = [{
+          id: 'pl' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
+          startYm: planStart, endYm: null, amount: plannerNum(d.cats[k]),
+        }];
+      }
       state.months.forEach(m=>{ if(m[k] === undefined) m[k] = 0; });
     });
   }
@@ -9741,6 +10002,14 @@ function wirePlanner(){
       if(again) again.focus();
       return;
     }
+    const pm = e.target.closest('button[data-pmode]');
+    if(pm){
+      plannerCapture();
+      if(!plannerDraft.modes) plannerDraft.modes = {};
+      plannerDraft.modes[pm.dataset.pk] = pm.dataset.pmode;
+      renderPlanner();
+      return;
+    }
     const pam = e.target.closest('button[data-applymode]');
     if(pam){
       plannerDraft.applyMode = pam.dataset.applymode;
@@ -9786,6 +10055,7 @@ function switchTab(tabName){
   if(tabName !== 'help' && typeof helpReturn !== 'undefined' && helpReturn) helpReturn = null;
   renderAll();
   if(typeof renderHelpReturn === 'function') renderHelpReturn();
+  if(typeof renderUnsettledBadge === 'function') renderUnsettledBadge();
 }
 
 /* ---------- events ---------- */
