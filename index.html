@@ -4139,7 +4139,9 @@ const TRANSLATIONS = {
     check_extra:'You have {amount} more than the plan expected.',
     check_match:'This matches the plan.',
     check_under:'Record it under',
-    check_extra_as:'Recorded as extra income',
+    check_extra_as:'Where did it come from?',
+    check_extra_opening:'Money I already had',
+    check_extra_income:'Extra income this month',
     check_apply:'Record the difference',
     check_offset_note:'Money check adjustment',
     check_needs_you:'Last month has ended — worth checking what you actually have.',
@@ -4489,7 +4491,9 @@ planner_open:'Plan this for me',
     check_extra:'لديك {amount} أكثر مما توقّعته الخطة.',
     check_match:'هذا مطابق للخطة.',
     check_under:'سجّله ضمن',
-    check_extra_as:'يُسجّل كدخل إضافي',
+    check_extra_as:'من أين جاء؟',
+    check_extra_opening:'مال كان لديّ أصلًا',
+    check_extra_income:'دخل إضافي هذا الشهر',
     check_apply:'سجّل الفارق',
     check_offset_note:'تسوية مطابقة الرصيد',
     check_needs_you:'انتهى الشهر الماضي — يستحق أن تتحقق مما لديك فعلًا.',
@@ -6323,7 +6327,10 @@ function applyPayday(idx, held){
         left -= cut;
       }
     }
-    if(left > 0.5) m.sideIncome = (Number(m.sideIncome) || 0) + left;
+    // Whatever is left after the category has been reduced to zero is not
+    // underspending — there is no more spending to undo. It is money the app
+    // did not know about, which is an opening balance, not this month's income.
+    if(left > 0.5) state.forecast.start = (Number(state.forecast.start) || 0) + left;
   }
   // Everything still unlogged is accepted at plan, which is what the rest of
   // the cycle's spending was costed at all along.
@@ -6676,7 +6683,11 @@ function renderMoneyCheck(idx){
             '<select id="spc-cat">' + state.categories.map(c=>
               '<option value="' + esc(c) + '"' + (c === offsetCatDefault() ? ' selected' : '') + '>' +
               esc(categoryLabel(c)) + '</option>').join('') + '</select>'
-          : '<span class="spc-under">' + esc(t('check_extra_as')) + '</span>') +
+          : '<label class="spc-under" for="spc-extra">' + esc(t('check_extra_as')) + '</label>' +
+            '<select id="spc-extra">' +
+              '<option value="opening">' + esc(t('check_extra_opening')) + '</option>' +
+              '<option value="income">' + esc(t('check_extra_income')) + '</option>' +
+            '</select>') +
         '<button type="button" id="spc-apply">' + esc(t('check_apply')) + '</button>' +
       '</div>';
   } else if(entered !== null){
@@ -6717,7 +6728,15 @@ function applyMoneyCheck(idx){
     setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
     addLogEntry(m, cat, -gap, t('check_offset_note'));
   } else {
-    m.sideIncome = (Number(m.sideIncome) || 0) + gap;
+    const how = (document.getElementById('spc-extra') || {}).value || 'opening';
+    if(how === 'income'){
+      m.sideIncome = (Number(m.sideIncome) || 0) + gap;
+    } else {
+      // Money that predates the table. Recording it here raises what the app
+      // knows you hold without pretending you earned it this month, so no
+      // month's savings rate and no goal date is flattered by it.
+      state.forecast.start = (Number(state.forecast.start) || 0) + gap;
+    }
   }
   autoExtendForGoals();
   renderAll();
