@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION on every deploy: activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
  */
-const CACHE_VERSION = 'v76';
+const CACHE_VERSION = 'v82';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is

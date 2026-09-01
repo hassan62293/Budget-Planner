@@ -321,7 +321,7 @@
   /* ledger balance strip */
   .strip{
     display:grid;
-    grid-template-columns:repeat(5,1fr);
+    grid-template-columns:repeat(6,1fr);
     border-top:1px solid var(--ink);
   }
   .strip .cell{
@@ -971,7 +971,7 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
 }
 
 @media (min-width:1024px){
-  .strip{ grid-template-columns:repeat(5,1fr); }
+  .strip{ grid-template-columns:repeat(6,1fr); }
 }
 
 /* ============================================================ PHONE ======= */
@@ -1000,7 +1000,8 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   .actions button{ flex:0 0 auto; min-height:38px; border-radius:999px; padding:9px 15px; }
 
   .strip{ grid-template-columns:repeat(2,1fr); }
-  .strip .cell:last-child{ grid-column:1 / -1; }
+  /* Six cells divide evenly into two columns, so the last one no longer has to
+     stretch across to avoid being stranded on a row of its own. */
 
   /* Tabs move to the bottom bar, so the top row goes away. */
   nav.tabs{ display:none; }
@@ -2299,6 +2300,24 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
   font-size:10.5px; font-weight:500; color:var(--ink-soft);
 }
 
+.period-months{ flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:8px; }
+.period-every{
+  min-height:var(--tap); padding:6px 10px; border-radius:var(--radius-sm);
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:12px;
+}
+.pmo-chips{ display:flex; flex-wrap:wrap; gap:5px; }
+.pmo-chip{
+  /* Twelve of these only ever appear once "certain months" is chosen, so they
+     can afford the same tap target as everything else in the app. */
+  min-height:var(--tap); min-width:44px; padding:5px 8px; cursor:pointer;
+  border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:var(--paper); color:var(--ink-soft);
+  font-family:inherit; font-size:11.5px; font-weight:600;
+}
+.pmo-chip.on{ background:var(--emerald); border-color:var(--emerald); color:var(--paper); }
+:root[data-theme="dark"] .pmo-chip.on{ color:#1A1815; }
+
 .planner-addcat{ display:flex; gap:8px; margin-top:12px; }
 .planner-addcat input{
   flex:1 1 auto; min-width:0; min-height:40px;
@@ -2350,6 +2369,9 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
   letter-spacing:-.015em; font-variant-numeric:tabular-nums;
 }
 .goal-sum-grid .v.good{ color:var(--good-ink); }
+.goal-sum-avg{
+  margin:7px 0 0; font-size:11.5px; line-height:1.6; color:var(--ink-soft);
+}
 .goal-sum-line{
   margin:12px 0 0; padding-top:11px; border-top:1px solid var(--rule);
   font-size:12.5px; line-height:1.6; color:var(--ink-soft);
@@ -2737,6 +2759,20 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 .plm-btn.on{ background:var(--emerald); color:var(--paper); }
 :root[data-theme="dark"] .plm-btn.on{ color:#1A1815; }
 .pl-mode-note{ margin-top:10px; }
+.pl-months{ flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:7px; }
+.pl-sched{ flex:1 1 160px; font-size:11.5px; font-weight:600; color:var(--ink); }
+.pl-replace{
+  flex:0 0 auto; min-height:var(--tap); padding:5px 13px; cursor:pointer;
+  font-family:inherit; font-size:11.5px; font-weight:600;
+  border:1px solid var(--ink); border-radius:var(--radius-sm);
+  background:transparent; color:var(--ink);
+}
+.pl-replace:hover{ background:var(--ink); color:var(--paper); }
+.pl-every{
+  min-height:34px; padding:5px 9px; border-radius:var(--radius-sm);
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:11.5px;
+}
 
 .planner-accounts{
   margin-top:16px; padding:12px 14px;
@@ -3043,6 +3079,7 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
     <div class="cell"><p class="k" data-i18n="strip_salary">Total income</p><p class="v" id="strip-salary">$0</p></div>
     <div class="cell"><p class="k" data-i18n="strip_spend">Total spend</p><p class="v" id="strip-spend">$0</p></div>
     <div class="cell"><p class="k" data-i18n="strip_savings">Total savings</p><p class="v" id="strip-savings">$0</p></div>
+    <div class="cell"><p class="k" data-i18n="strip_projected">Projected balance</p><p class="v" id="strip-projected">$0</p></div>
     <div class="cell"><p class="k" data-i18n="strip_rate">Savings rate</p><p class="v" id="strip-rate">0%</p></div>
     <div class="cell"><p class="k" data-i18n="strip_emergency">Emergency fund</p><p class="v" id="strip-emergency">$0</p></div>
   </div>
@@ -4174,6 +4211,10 @@ const TRANSLATIONS = {
     brief_none:'Nothing spent — add to savings',
     brief_planned:'Spent as planned',
     brief_more:'{n} earlier months are waiting on the same question.',
+    planner_sched_replace:'Replace with one amount',
+    period_every:'Every month',
+    period_certain:'Only certain months',
+    period_when_aria:'How often this is paid',
     setup_salaryday_label:'Salary usually lands on day',
     planner_salday:'Which day does your salary usually land?',
     planner_salday_note:'Optional. Give a day and the app will ask, once a month, what you have left — one number instead of logging every purchase. You can change the date any month a weekend moves it.',
@@ -4218,9 +4259,10 @@ const TRANSLATIONS = {
     tl_head:'What you would reach, and when',
     tl_by:'clears {date}',
     tl_late:'{n} months past your date',
-    goal_rule:'25% rule of thumb',
-    goal_plan_leaves:'Your plan saves',
-    goal_ceiling:'Left to spend',
+    goal_rule:'25% of average income',
+    goal_plan_leaves:'Your plan saves, on average',
+    goal_ceiling:'Left to spend, on average',
+    goal_avg_note:'Averaged across the {n} months you have entered. Individual months differ — a month a big bill lands in saves less, the rest save more.',
     goal_no_income:'Add your salary in the planning tab and this fills in.',
     goal_nothing_title:'Nothing left to save yet',
     goal_capped_title:'Longer than this planner covers',
@@ -4273,7 +4315,7 @@ const TRANSLATIONS = {
     fs_read_failed:"Couldn't read the linked file. Try reconnecting it.",
     alert_excel_import_error:"Could not read that file — make sure it's a .xlsx export from this planner (or has the same column layout).",
     excel_reconnect_needed:'Permission needed — click to reconnect your linked file.',
-    strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Total savings', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
+    strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Saved over these months', strip_projected:'Projected balance', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
     tab_budget:'Overview', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
 planner_open:'Plan this for me',
     planner_goal_add:'+ Add another goal',
@@ -4337,7 +4379,7 @@ planner_open:'Plan this for me',
     planner_q_amounts_plan:'These are what you set last time. Change any of them.',
     planner_no_spend:'You have not put in any spending yet.',
     planner_no_spend_note:'With nothing here the app would assume you spend nothing at all and save every penny, which would give you a date that cannot happen. Go back and put in roughly what each one costs you — a rough number is fine, and you can change it any time.',
-    planner_left:'Left over to save: {amount}',
+    planner_left:'Left over to save: {amount}', planner_left_avg:'Left over to save: {amount} a month on average — less in the months a bill lands, more in the rest',
     planner_left_none:'You are {amount} over what comes in. Nothing is left to save.',
     planner_result:'Here is your plan',
     planner_in:'Coming in',
@@ -4530,6 +4572,10 @@ planner_open:'Plan this for me',
     brief_none:'لم أنفق شيئًا — أضفها للمدخرات',
     brief_planned:'أُنفقت كما خُطط',
     brief_more:'‏{n} أشهر سابقة تنتظر السؤال نفسه.',
+    planner_sched_replace:'استبدلها بمبلغ واحد',
+    period_every:'كل شهر',
+    period_certain:'أشهر محددة فقط',
+    period_when_aria:'كم مرة يُدفع',
     setup_salaryday_label:'يوم نزول الراتب عادةً',
     planner_salday:'في أي يوم ينزل راتبك عادةً؟',
     planner_salday_note:'اختياري. حدّد يومًا وسيسألك التطبيق مرة في الشهر عمّا تبقّى لديك — رقم واحد بدل تسجيل كل عملية شراء. ويمكنك تغيير التاريخ في أي شهر تؤخّره فيه عطلة.',
@@ -4574,9 +4620,10 @@ planner_open:'Plan this for me',
     tl_head:'ما ستبلغه، ومتى',
     tl_by:'يسبق {date}',
     tl_late:'يتأخر {n} شهرًا عن تاريخك',
-    goal_rule:'قاعدة الـ 25%',
-    goal_plan_leaves:'خطتك تدّخر',
-    goal_ceiling:'المتبقي للإنفاق',
+    goal_rule:'‏25% من متوسط الدخل',
+    goal_plan_leaves:'متوسط ما تدّخره خطتك',
+    goal_ceiling:'متوسط المتبقي للإنفاق',
+    goal_avg_note:'متوسط محسوب على {n} شهرًا مما أدخلته. والأشهر تختلف — فالشهر الذي تحلّ فيه فاتورة كبيرة يُدّخر فيه أقل، وما عداه أكثر.',
     goal_no_income:'أضف راتبك في تبويب التخطيط ليُملأ هذا.',
     goal_nothing_title:'لا يتبقى شيء للادخار بعد',
     goal_capped_title:'أطول مما يغطيه هذا المخطط',
@@ -4629,7 +4676,7 @@ planner_open:'Plan this for me',
     fs_read_failed:'تعذّرت قراءة الملف المرتبط. حاول إعادة ربطه.',
     alert_excel_import_error:'تعذّرت قراءة هذا الملف — تأكد أنه ملف .xlsx مُصدَّر من هذا المخطط (أو له نفس ترتيب الأعمدة).',
     excel_reconnect_needed:'يلزم إذن — اضغط لإعادة ربط ملفك المرتبط.',
-    strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'إجمالي الادخار', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
+    strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'الادخار خلال هذه الأشهر', strip_projected:'الرصيد المتوقع', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
     tab_budget:'نظرة عامة', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
 planner_open:'خطّط لي',
     planner_goal_add:'+ أضف هدفًا آخر',
@@ -4693,7 +4740,7 @@ planner_open:'خطّط لي',
     planner_q_amounts_plan:'هذه ما حدّدته في المرة السابقة. غيّر أيًّا منها.',
     planner_no_spend:'لم تُدخل أي إنفاق بعد.',
     planner_no_spend_note:'وبلا شيء هنا سيفترض التطبيق أنك لا تنفق شيئًا وتدّخر كل ريال، فيعطيك تاريخًا لا يمكن أن يقع. ارجع وأدخل ما يكلّفك كل بند تقريبًا؛ والرقم التقريبي يكفي، ويمكنك تغييره متى شئت.',
-    planner_left:'المتبقي للادخار: {amount}',
+    planner_left:'المتبقي للادخار: {amount}', planner_left_avg:'المتبقي للادخار: {amount} شهريًا في المتوسط — أقل في الأشهر التي تحلّ فيها فاتورة، وأكثر في غيرها',
     planner_left_none:'تجاوزت ما يدخل عليك بمقدار {amount}، فلم يبقَ شيء للادخار.',
     planner_result:'هذه خطتك',
     planner_in:'الداخل',
@@ -4951,8 +4998,8 @@ function goalSummaryLine(rule, actual, ceiling, plannedSpend, overCeiling){
   const ar = lang === 'ar';
   if(actual >= rule){
     return ar
-      ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا، وهو عند قاعدة الـ 25% أو فوقها.')
-      : ('Your plan saves ' + fmtMoney(actual) + ' a month, at or above the 25% mark.');
+      ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا في المتوسط، وهو عند قاعدة الـ 25% أو فوقها.')
+      : ('Your plan saves ' + fmtMoney(actual) + ' a month on average, at or above the 25% mark.');
   }
   if(overCeiling > 0){
     return ar
@@ -4960,8 +5007,8 @@ function goalSummaryLine(rule, actual, ceiling, plannedSpend, overCeiling){
       : ('Reaching the 25% mark would mean trimming about ' + fmtMoney(rule - actual) + ' of planned spending a month.');
   }
   return ar
-    ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا. وقاعدة الـ 25% تعني ' + fmtMoney(rule) + '.')
-    : ('Your plan saves ' + fmtMoney(actual) + ' a month. The 25% rule of thumb would be ' + fmtMoney(rule) + '.');
+    ? ('خطتك تدّخر ' + fmtMoney(actual) + ' شهريًا في المتوسط. وقاعدة الـ 25% تعني ' + fmtMoney(rule) + '.')
+    : ('Your plan saves ' + fmtMoney(actual) + ' a month on average. The 25% rule of thumb would be ' + fmtMoney(rule) + '.');
 }
 function overrunTitle(amount, label){
   return lang === 'ar'
@@ -5270,6 +5317,14 @@ function normalizeState(s){
     const d = Math.round(Number(s.salaryDay));
     s.salaryDay = (d >= 1 && d <= 31) ? d : null;
   } else s.salaryDay = null;
+  Object.keys(s.fixedSchedules || {}).forEach(k=>{
+    (s.fixedSchedules[k] || []).forEach(p=>{
+      if(!Array.isArray(p.months)){ delete p.months; return; }
+      const clean = p.months.map(Number).filter(n=> n >= 1 && n <= 12);
+      const uniq = clean.filter((n, i)=> clean.indexOf(n) === i).sort((a, b)=> a - b);
+      if(uniq.length && uniq.length < 12) p.months = uniq; else delete p.months;
+    });
+  });
   if(!Array.isArray(s.retiredGoals)) s.retiredGoals = [];
   s.retiredGoals = s.retiredGoals
     .filter(h=> h && typeof h === 'object' && h.startYm && h.retiredYm)
@@ -5452,15 +5507,35 @@ function scheduleSave(){
   saveTimer = setTimeout(saveNow, 350);
 }
 
+/* 1-12 from a "YYYY-MM". */
+function monthNumOf(ym){ return Number(String(ym).slice(5, 7)) || 0; }
+
+/* A period with no month list runs every month — which is what every schedule
+   written before this meant, so they carry on unchanged. */
+function periodCoversMonth(p, ym){
+  if(!Array.isArray(p.months) || !p.months.length) return true;
+  return p.months.indexOf(monthNumOf(ym)) !== -1;
+}
+
 function getFixedAmountForMonth(key, ym){
   const periods = state.fixedSchedules[key] || [];
-  let best = null;
-  periods.forEach(p=>{
-    if(ym >= p.startYm && (!p.endYm || ym <= p.endYm)){
-      if(!best || p.startYm > best.startYm) best = p;
-    }
-  });
-  return best ? (Number(best.amount)||0) : 0;
+  const inRange = periods.filter(p=> ym >= p.startYm && (!p.endYm || ym <= p.endYm));
+  if(!inRange.length) return 0;
+
+  // A period that names this month is talking about it specifically, so it is
+  // heard before any period that merely runs through it. Without this, two
+  // schedules covering the same span cancel each other out and only the later
+  // one is ever read.
+  const named = inRange.filter(p=> Array.isArray(p.months) && p.months.length
+                                   && p.months.indexOf(monthNumOf(ym)) !== -1);
+  const every = inRange.filter(p=> !Array.isArray(p.months) || !p.months.length);
+  const pool  = named.length ? named : every;
+  if(!pool.length) return 0;      // only month-specific periods, none for this month
+
+  // Within a group the latest start still wins, so replacing a rate by adding
+  // a later period works exactly as it always has.
+  const best = pool.reduce((a, b)=> b.startYm > a.startYm ? b : a);
+  return Number(best.amount) || 0;
 }
 function effectiveValue(m, key){
   return (state.fieldModes[key]==='fixed') ? getFixedAmountForMonth(key, m.ym) : (Number(m[key])||0);
@@ -5708,7 +5783,30 @@ function periodRowHtml(key, p){
     <input type="month" class="period-end" value="${p.endYm||''}" ${open?'hidden':''}>
     <input type="number" class="period-amount" value="${p.amount||0}">
     <button type="button" class="period-remove" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button>
+    ${periodMonthsHtml(p)}
   </div>`;
+}
+
+/* Which months this actually falls in. Hidden behind "every month" until
+   somebody says otherwise, so the common case stays a single line. */
+function periodMonthsHtml(p){
+  const some = Array.isArray(p.months) && p.months.length > 0;
+  // Names come from the same place monthLabel gets them, so there is no
+  // second list of month names to fall out of step.
+  const chips = Array.from({ length: 12 }, (_, i)=>{
+    const n = i + 1;
+    const on = some && p.months.indexOf(n) !== -1;
+    const name = new Date(2000, i, 1).toLocaleDateString('en-US', { month: 'short' });
+    return '<button type="button" class="pmo-chip' + (on ? ' on' : '') + '" data-mon="' + n + '"' +
+      ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(name) + '</button>';
+  }).join('');
+  return '<div class="period-months">' +
+    '<select class="period-every" aria-label="' + esc(t('period_when_aria')) + '">' +
+      '<option value="all"' + (some ? '' : ' selected') + '>' + esc(t('period_every')) + '</option>' +
+      '<option value="some"' + (some ? ' selected' : '') + '>' + esc(t('period_certain')) + '</option>' +
+    '</select>' +
+    '<div class="pmo-chips"' + (some ? '' : ' hidden') + '>' + chips + '</div>' +
+  '</div>';
 }
 
 function fieldRowHtml(key, label){
@@ -5753,6 +5851,33 @@ function renderPlanningModes(){
     const endEl = row.querySelector('.period-end');
     startEl.addEventListener('change', e=> updatePeriod(key,pid,'startYm', e.target.value, false));
     endEl.addEventListener('change', e=> updatePeriod(key,pid,'endYm', e.target.value || null, false));
+    const everyEl = row.querySelector('.period-every');
+    if(everyEl) everyEl.addEventListener('change', e=>{
+      const p = (state.fixedSchedules[key] || []).find(x=> x.id === pid);
+      if(!p) return;
+      if(e.target.value === 'all') delete p.months;
+      // Opens on the month the period starts in, which is the one month it is
+      // certainly meant to cover.
+      else p.months = [monthNumOf(p.startYm) || 1];
+      renderAll();
+      scheduleSave();
+    });
+    row.querySelectorAll('.pmo-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const p = (state.fixedSchedules[key] || []).find(x=> x.id === pid);
+        if(!p) return;
+        const n = Number(chip.dataset.mon);
+        const list = Array.isArray(p.months) ? p.months.slice() : [];
+        const at = list.indexOf(n);
+        if(at === -1) list.push(n); else list.splice(at, 1);
+        // Emptying it would silently mean "every month", which is the opposite
+        // of what unticking the last month looks like it should do.
+        p.months = list.length ? list.sort((a, b)=> a - b) : [n];
+        renderAll();
+        scheduleSave();
+      });
+    });
+
     startEl.addEventListener('blur', ()=> renderAll());
     endEl.addEventListener('blur', ()=> renderAll());
     row.querySelector('.period-end-mode').addEventListener('change', e=>{
@@ -7415,7 +7540,7 @@ function monthsFromNowLabel(n){
 function renderGoalSummary(){
   const host = document.getElementById('goal-summary');
   if(!host) return;
-  const { avgIncome, avgSavings } = goalBasis();
+  const { avgIncome, avgSavings, months } = goalBasis();
   const ruleAmount = avgIncome * RULE_OF_THUMB;
   const required = requiredMonthlyForDeadlines();
   const targetSaving = required > 0 ? required : Math.max(avgSavings, 0);
@@ -7438,6 +7563,7 @@ function renderGoalSummary(){
         <div><p class="k">${t('goal_ceiling')}</p><p class="v">${fmtMoney(ceiling)}</p></div>
       </div>
       <p class="goal-sum-line">${goalSummaryLine(ruleAmount, avgSavings, ceiling, plannedSpend, overCeiling)}</p>
+      ${months > 0 ? '<p class="goal-sum-avg">' + esc(t('goal_avg_note').replace('{n}', months)) + '</p>' : ''}
     </div>`;
 }
 
@@ -8455,6 +8581,14 @@ function renderStrip(totals){
   const sv = document.getElementById('strip-savings');
   sv.textContent = fmtMoney(totals.savings);
   sv.className = 'v ' + (totals.savings>=0?'pos':'neg');
+  // The same sum the starting-balance note spells out, so the two can never
+  // disagree about what you are projected to hold.
+  const proj = document.getElementById('strip-projected');
+  if(proj){
+    const projected = (Number(state.forecast.start) || 0) + totals.savings;
+    proj.textContent = fmtMoney(projected);
+    proj.className = 'v ' + (projected >= 0 ? 'pos' : 'neg');
+  }
   document.getElementById('strip-rate').textContent = fmtPct(totals.rate);
   const {rows} = computeAll();
   const lastBal = rows.length ? rows[rows.length-1].emergencyBalance : (Number(state.emergencyStart)||0);
@@ -9534,6 +9668,69 @@ function plannerModeFor(d, k){
   return state.fieldModes[k] === 'fixed' ? 'fixed' : 'variable';
 }
 
+/* Months chosen during this run, or whatever the app already had. Empty means
+   every month, the same as everywhere else. */
+/* More than one period means somebody has laid this out in detail, and a
+   wizard with one amount box cannot represent it. */
+function plannerDetailed(d, k){
+  if(d && d.replaceSched && d.replaceSched[k]) return false;
+  return (state.fixedSchedules[k] || []).length > 1;
+}
+
+function plannerMonthsFor(d, k){
+  if(d && d.modeMonths && Array.isArray(d.modeMonths[k])) return d.modeMonths[k];
+  const periods = state.fixedSchedules[k] || [];
+  if(periods.length !== 1) return [];          // nothing, or too much to flatten
+  return Array.isArray(periods[0].months) ? periods[0].months.slice() : [];
+}
+
+/* The amount the wizard should show for a single-period schedule, so what is
+   on screen is what is actually set. */
+function plannerFixedAmount(k){
+  const periods = state.fixedSchedules[k] || [];
+  return periods.length === 1 ? (Number(periods[0].amount) || 0) : null;
+}
+
+/* "Jan 1,200 · Apr 3,200" — what is already there, said out loud. */
+function plannerScheduleSummary(k){
+  return (state.fixedSchedules[k] || []).map(p=>{
+    const when = (Array.isArray(p.months) && p.months.length)
+      ? p.months.map(n=> new Date(2000, n - 1, 1).toLocaleDateString('en-US', { month:'short' })).join('/')
+      : t('period_every');
+    return when + ' ' + fmtMoney(Number(p.amount) || 0);
+  }).join('  ·  ');
+}
+
+function plannerMonthsHtml(d, k){
+  if(plannerModeFor(d, k) !== 'fixed') return '';
+
+  // Laid out in detail already: show it rather than flatten it, and make
+  // replacing it a deliberate act instead of a silent one.
+  if(plannerDetailed(d, k)){
+    return '<div class="pl-months pl-detailed">' +
+      '<span class="pl-sched">' + esc(plannerScheduleSummary(k)) + '</span>' +
+      '<button type="button" class="pl-replace" data-plrep="' + esc(k) + '">' +
+        esc(t('planner_sched_replace')) + '</button>' +
+    '</div>';
+  }
+  const chosen = plannerMonthsFor(d, k);
+  const some = chosen.length > 0;
+  const chips = Array.from({ length: 12 }, (_, i)=>{
+    const n = i + 1;
+    const name = new Date(2000, i, 1).toLocaleDateString('en-US', { month: 'short' });
+    return '<button type="button" class="pmo-chip' + (chosen.indexOf(n) !== -1 ? ' on' : '') + '"' +
+      ' data-plmon="' + n + '" data-plk="' + esc(k) + '"' +
+      ' aria-pressed="' + (chosen.indexOf(n) !== -1 ? 'true' : 'false') + '">' + esc(name) + '</button>';
+  }).join('');
+  return '<div class="pl-months">' +
+    '<select class="pl-every" data-plevery="' + esc(k) + '" aria-label="' + esc(t('period_when_aria')) + '">' +
+      '<option value="all"' + (some ? '' : ' selected') + '>' + esc(t('period_every')) + '</option>' +
+      '<option value="some"' + (some ? ' selected' : '') + '>' + esc(t('period_certain')) + '</option>' +
+    '</select>' +
+    (some ? '<div class="pmo-chips">' + chips + '</div>' : '') +
+  '</div>';
+}
+
 function plannerCatLabel(d, k){
   return (d && d.custom && d.custom[k]) || categoryLabel(k);
 }
@@ -9563,6 +9760,12 @@ function plannerIncomeSeed(field){
 
 /* Where each amount came from, so the step can show its working. */
 function plannerSeedFor(key){
+  // A fixed category's real figure lives on its schedule, not in the month
+  // cells, so read it from there before anything else.
+  if(state.fieldModes[key] === 'fixed'){
+    const set = plannerFixedAmount(key);
+    if(set !== null && set > 0) return { amount: set, src: 'budget' };
+  }
   const actual = plannerActualAverage(key);
   if(actual !== null) return { amount: actual, src: 'actual' };
   const budget = plannerBudgetFor(key);
@@ -9582,8 +9785,29 @@ function plannerDefaultChosen(work){
   return picked.length ? picked : all.slice();
 }
 
+/* What a category costs per month on average. A bill that lands in two months
+   of twelve costs a sixth of its amount each month — subtracting all of it
+   every month is how a comfortable plan came to look unaffordable. */
+function plannerMonthlyCost(d, k){
+  const amount = plannerNum(d.cats[k]);
+  if(plannerModeFor(d, k) !== 'fixed') return amount;
+  const months = plannerMonthsFor(d, k);
+  if(!months.length || months.length >= 12) return amount;
+  return amount * (months.length / 12);
+}
+
 function plannerChosenSum(d){
-  return (d.chosen || []).reduce((sum, k)=> sum + plannerNum(d.cats[k]), 0);
+  return (d.chosen || []).reduce((sum, k)=> sum + plannerMonthlyCost(d, k), 0);
+}
+
+/* Does anything in this plan land only in certain months? If so the headline
+   is an average and should say so. */
+function plannerHasSeasonal(d){
+  if(!d) return false;
+  return (d.chosen || []).some(k=>
+    plannerModeFor(d, k) === 'fixed' &&
+    plannerMonthsFor(d, k).length > 0 &&
+    plannerMonthsFor(d, k).length < 12);
 }
 
 function plannerBiggest(d){
@@ -10001,7 +10225,7 @@ function renderPlanner(){
         '<span class="pl-mode">' +
           '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'variable' ? ' on' : '') + '" data-pmode="variable" data-pk="' + esc(k) + '">' + esc(t('planner_varies')) + '</button>' +
           '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'fixed' ? ' on' : '') + '" data-pmode="fixed" data-pk="' + esc(k) + '">' + esc(t('planner_fixed')) + '</button>' +
-        '</span></div>').join('') +
+        '</span>' + plannerMonthsHtml(d, k) + '</div>').join('') +
       '<p class="planner-note pl-mode-note">' + esc(t('planner_mode_note')) + '</p>' +
       '</div><p class="planner-left" id="pl-left"></p>';
     updatePlannerLeft();
@@ -10037,8 +10261,9 @@ function updatePlannerLeft(){
   if(!el || !plannerDraft) return;
   const o = plannerOutcome(plannerDraft);
   el.className = 'planner-left ' + (o.save > 0 ? 'is-good' : 'is-bad');
+  const seasonal = plannerHasSeasonal(plannerDraft);
   el.textContent = o.save > 0
-    ? t('planner_left').replace('{amount}', fmtMoney(o.save))
+    ? t(seasonal ? 'planner_left_avg' : 'planner_left').replace('{amount}', fmtMoney(o.save))
     : t('planner_left_none').replace('{amount}', fmtMoney(Math.abs(o.save)));
 }
 
@@ -10205,11 +10430,19 @@ function applyPlannerPlan(){
       if(!state.fixedSchedules[k]) state.fixedSchedules[k] = [];
       // Only ever creates a schedule, never replaces one: existing periods are
       // more specific than a single figure from a wizard.
-      if(mode === 'fixed' && !state.fixedSchedules[k].length){
-        state.fixedSchedules[k] = [{
-          id: 'pl' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
-          startYm: planStart, endYm: null, amount: plannerNum(d.cats[k]),
-        }];
+      // Written unless it is a detailed schedule being deliberately kept —
+      // otherwise the wizard would take an answer and quietly ignore it.
+      if(mode === 'fixed' && !plannerDetailed(d, k)){
+        const months = plannerMonthsFor(d, k);
+        const existing = (state.fixedSchedules[k] || [])[0];
+        const period = {
+          id: (existing && existing.id) || ('pl' + Date.now() + '-' + Math.random().toString(36).slice(2, 5)),
+          startYm: (existing && existing.startYm) || planStart,
+          endYm: existing ? existing.endYm : null,
+          amount: plannerNum(d.cats[k]),
+        };
+        if(months.length && months.length < 12) period.months = months.slice();
+        state.fixedSchedules[k] = [period];
       }
       state.months.forEach(m=>{ if(m[k] === undefined) m[k] = 0; });
     });
@@ -10406,6 +10639,28 @@ function wirePlanner(){
       if(again) again.focus();
       return;
     }
+    const rep = e.target.closest('button[data-plrep]');
+    if(rep){
+      plannerCapture();
+      if(!plannerDraft.replaceSched) plannerDraft.replaceSched = {};
+      plannerDraft.replaceSched[rep.dataset.plrep] = true;
+      renderPlanner();
+      return;
+    }
+    const plc = e.target.closest('button[data-plmon]');
+    if(plc){
+      plannerCapture();
+      const k = plc.dataset.plk, n = Number(plc.dataset.plmon);
+      if(!plannerDraft.modeMonths) plannerDraft.modeMonths = {};
+      const list = plannerMonthsFor(plannerDraft, k).slice();
+      const at = list.indexOf(n);
+      if(at === -1) list.push(n); else list.splice(at, 1);
+      // Never emptied by unticking: an empty list means every month, which is
+      // the opposite of what removing the last one looks like it should do.
+      plannerDraft.modeMonths[k] = list.length ? list.sort((a, b)=> a - b) : [n];
+      renderPlanner();
+      return;
+    }
     const pm = e.target.closest('button[data-pmode]');
     if(pm){
       plannerCapture();
@@ -10429,6 +10684,16 @@ function wirePlanner(){
       return;
     }
     if(e.target === overlay) closePlanner();
+  });
+
+  overlay.addEventListener('change', e=>{
+    const sel = e.target.closest('select[data-plevery]');
+    if(!sel) return;
+    plannerCapture();
+    const k = sel.dataset.plevery;
+    if(!plannerDraft.modeMonths) plannerDraft.modeMonths = {};
+    plannerDraft.modeMonths[k] = sel.value === 'all' ? [] : [1];
+    renderPlanner();
   });
 
   overlay.addEventListener('input', e=>{
