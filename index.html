@@ -821,6 +821,12 @@
   --row-empty:#FDFAF2;
   --row-hover:#FBF5E6;
   --scrim:rgba(44,42,38,.55);
+  /* Chart series. Each clears 3:1 on the card behind it, and salary/side
+     clear 3:1 against each other because they meet inside one column. */
+  --chart-salary:#0C447C;
+  --chart-side:#4E9AD6;
+  --chart-spend:#B0472F;
+  --chart-save:#1F6F54;
 }
 
 /* Dark mode. The base stylesheet already draws everything from these token
@@ -853,6 +859,10 @@
     --row-empty:#252119;
     --row-hover:#2E2A22;
     --scrim:rgba(0,0,0,.62);
+    --chart-salary:#3E7CB1;
+    --chart-side:#B5DCF7;
+    --chart-spend:#E08A70;
+    --chart-save:#5FC79A;
   }
 }
 :root[data-theme="dark"]{
@@ -879,6 +889,10 @@
   --row-empty:#252119;
   --row-hover:#2E2A22;
   --scrim:rgba(0,0,0,.62);
+  --chart-salary:#3E7CB1;
+  --chart-side:#B5DCF7;
+  --chart-spend:#E08A70;
+  --chart-save:#5FC79A;
 }
 
 /* --------------------------------------------------------------- base ---- */
@@ -8742,7 +8756,7 @@ function renderDashboard(){
     if(chartRate) chartRate.destroy();
     chartRate = new Chart(document.getElementById('chart-rate'), {
       type:'line',
-      data:{ labels:months, datasets:[{ data:rateSeries, borderColor:'#1F6F54', backgroundColor:'rgba(31,111,84,0.12)', fill:true, tension:0.25, pointRadius:2 }]},
+      data:{ labels:months, datasets:[{ data:rateSeries, borderColor:chartSave(), backgroundColor:'rgba(31,111,84,0.12)', fill:true, tension:0.25, pointRadius:2 }]},
       options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>v+'%' } } } }
     });
 
@@ -8751,18 +8765,30 @@ function renderDashboard(){
       data:{ labels:months, datasets:[
         // Stacked, so a month carrying extra income still shows where it came
         // from without spending a fourth bar on it.
-        { type:'bar', label:t('series_salary'), data:salarySeries, backgroundColor:'#0C447C', stack:'in' },
-        { type:'bar', label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:'#3C3489', stack:'in' },
-        { type:'bar', label:t('series_expenses'), data:spendSeries, backgroundColor:'#B0472F', stack:'out' },
-        { type:'line', label:t('series_savings'), data:savingsSeries,
-          borderColor:'#1F6F54', backgroundColor:'#1F6F54',
+        { type:'bar', label:t('series_salary'), data:salarySeries, backgroundColor:chartSalary(),
+          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false },
+        { type:'bar', label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:chartSide(),
+          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false },
+        { type:'bar', label:t('series_expenses'), data:spendSeries, backgroundColor:chartSpend(), stack:'out' },
+        // Its own stack, so a stacked y scale cannot add it onto the bars.
+        { type:'line', label:t('series_savings'), data:savingsSeries, stack:'net',
+          borderColor:chartSave(), backgroundColor:chartSave(),
           tension:0.3, borderWidth:2, pointRadius:2.5 }
       ]},
       options:{ maintainAspectRatio:false,
         plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
-          tooltip:{ callbacks:{ label:c=> ' ' + c.dataset.label + ': ' + fmtMoney(c.parsed.y) } } },
+          tooltip:{ callbacks:{
+            label:c=> ' ' + c.dataset.label + ': ' + fmtMoney(c.parsed.y),
+            // The column is two segments; give the figure it adds up to rather
+            // than making it something to work out by eye.
+            footer:items=>{
+              if(!items.length) return '';
+              const i = items[0].dataIndex;
+              const tot = (Number(salarySeries[i]) || 0) + (Number(sideIncomeSeries[i]) || 0);
+              return t('series_income') + ': ' + fmtMoney(tot);
+            } } } },
         scales:{ x:{ stacked:true, grid:{display:false} },
-                 y:{ stacked:false, ticks:{ callback:v=>fmtMoney(v) } } } }
+                 y:{ stacked:true, ticks:{ callback:v=>fmtMoney(v) } } } }
     });
 
     if(chartWaterfall) chartWaterfall.destroy();
@@ -9018,6 +9044,15 @@ function chartInk(){ return chartCss('--ink', '#2C2A26'); }
 function chartInkSoft(){ return chartCss('--ink-soft', '#6E685C'); }
 function chartRule(){ return chartCss('--rule', '#EBE3D5'); }
 function chartFont(){ return chartCss('--font-body', 'system-ui') || 'system-ui'; }
+/* Series colours, per theme. Read at build time like the rest, so the repaint
+   on a theme change picks them up with no extra wiring. */
+function chartSalary(){ return chartCss('--chart-salary', '#0C447C'); }
+function chartSide(){   return chartCss('--chart-side',   '#4E9AD6'); }
+function chartSpend(){  return chartCss('--chart-spend',  '#B0472F'); }
+function chartSave(){   return chartCss('--chart-save',   '#1F6F54'); }
+/* The card behind the bars, used as a hairline so two stacked segments have a
+   drawn boundary instead of relying on their fills differing. */
+function chartCard(){ return chartCss('--paper-raised', '#FFFFFF'); }
 
 /* Categories worth their own slice, with the rest gathered into one.
    Built from the live totals, never from a fixed list. */
