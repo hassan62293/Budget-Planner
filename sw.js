@@ -11,8 +11,13 @@
  *
  * Bump CACHE_VERSION on every deploy: activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
+ *
+ * Numbering is v<major>.<minor>.<patch>. It carries on from the old plain
+ * counter — v86 became v1.8.6 — so the next few are v1.8.7, v1.8.8, v1.8.9,
+ * then v1.9.0. The string is only ever compared for equality and shown in the
+ * footer, so the shape is free to change; what matters is that it CHANGES.
  */
-const CACHE_VERSION = 'v82';
+const CACHE_VERSION = 'v1.8.7';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is

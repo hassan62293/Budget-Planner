@@ -370,7 +370,10 @@
   }
   nav.tabs button.active{
     background:var(--paper-raised);
-    color:var(--ink);
+    color:var(--emerald-deep);
+    font-weight:600;
+    border-color:var(--emerald);
+    box-shadow:inset 0 3px 0 0 var(--emerald);
   }
   main{padding-top:26px;}
   section.panel{display:none;}
@@ -970,6 +973,29 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   .strip{ grid-template-columns:repeat(3,1fr); }
 }
 
+/* Chart heights are NOT inside a media query: a doughnut with outside labels
+   and a waterfall with a row per category need their height at every width,
+   and nesting them under a tablet breakpoint left both collapsed on desktop. */
+.chart-canvas-box.is-tall{ height:520px; }
+.chart-canvas-box.is-donut{ height:430px; }
+/* The canvas fills its box by CSS rather than by Chart.js measuring in time.
+   A canvas is replaced content: if its size is left to a measurement taken
+   before layout settled it simply keeps that size, and in RTL the undersized
+   canvas sits against the right edge with dead space beside it — which is the
+   iPad symptom. Chart.js still resizes the backing store on its next pass. */
+.chart-canvas-box > canvas{ width:100% !important; height:100% !important; }
+.donut-legend{ list-style:none; margin:12px 0 0; padding:0; }
+.donut-legend li{
+  display:flex; align-items:center; gap:9px;
+  padding:7px 2px; border-top:1px solid var(--rule); font-size:12px;
+}
+.donut-legend li:first-child{ border-top:none; }
+.dl-dot{ width:11px; height:11px; border-radius:3px; flex:0 0 auto; }
+.dl-name{ flex:1 1 auto; min-width:0; color:var(--ink); font-weight:600;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dl-amt{ flex:0 0 auto; color:var(--ink); font-variant-numeric:tabular-nums; }
+.dl-pct{ flex:0 0 34px; text-align:end; color:var(--ink-soft); font-weight:600; }
+
 @media (min-width:1024px){
   .strip{ grid-template-columns:repeat(6,1fr); }
 }
@@ -1117,6 +1143,13 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   padding:5px 2px; min-height:var(--tap);
 }
 .bottom-nav button.on{ color:var(--emerald); }
+/* A bar above the icon, so the current tab is findable at a glance rather than
+   by comparing shades of text. */
+.bottom-nav button.on::before{
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:26px; height:3px; border-radius:0 0 3px 3px; background:var(--emerald);
+}
+.bottom-nav button{ position:relative; }
 .bottom-nav button .ic{ font-size:16px; line-height:1; }
 .bottom-nav .fab{
   width:46px; height:46px; border-radius:15px; margin-top:-16px;
@@ -3327,17 +3360,22 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 
       <div id="charts-unavailable-dashboard" class="reminder-banner" style="display:none;"></div>
       <div class="charts">
-        <div class="chart-card">
+        <div class="chart-card wide">
           <h3 data-i18n="chart_category_title">Spending by category</h3>
-          <div class="chart-canvas-box"><canvas id="chart-category"></canvas></div>
+          <div class="chart-canvas-box is-donut"><canvas id="chart-category"></canvas></div>
+          <ul class="donut-legend" id="chart-category-legend" hidden></ul>
         </div>
-        <div class="chart-card">
+        <div class="chart-card wide">
           <h3 data-i18n="chart_rate_title">Savings rate trend</h3>
           <div class="chart-canvas-box"><canvas id="chart-rate"></canvas></div>
         </div>
         <div class="chart-card wide">
           <h3 data-i18n="chart_trend_title">Monthly trend — salary, expenses, savings</h3>
           <div class="chart-canvas-box"><canvas id="chart-trend"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <h3 data-i18n="chart_fall_title">From income to savings — the whole period</h3>
+          <div class="chart-canvas-box is-tall"><canvas id="chart-waterfall"></canvas></div>
         </div>
       </div>
     </section>
@@ -4315,6 +4353,10 @@ const TRANSLATIONS = {
     fs_read_failed:"Couldn't read the linked file. Try reconnecting it.",
     alert_excel_import_error:"Could not read that file — make sure it's a .xlsx export from this planner (or has the same column layout).",
     excel_reconnect_needed:'Permission needed — click to reconnect your linked file.',
+    chart_fall_title:'From income to savings — the whole period',
+    chart_total_spend:'Total spend',
+    chart_small_slice:'Smaller items ({n})',
+    series_income:'Income',
     strip_salary:'Total income', strip_spend:'Total spend', strip_savings:'Saved over these months', strip_projected:'Projected balance', strip_rate:'Savings rate', strip_emergency:'Emergency fund',
     tab_budget:'Overview', tab_dashboard:'Dashboard', tab_forecast_base:'Forecast', tab_help:'How to use', help_h2:'How to use',
 planner_open:'Plan this for me',
@@ -4676,6 +4718,10 @@ planner_open:'Plan this for me',
     fs_read_failed:'تعذّرت قراءة الملف المرتبط. حاول إعادة ربطه.',
     alert_excel_import_error:'تعذّرت قراءة هذا الملف — تأكد أنه ملف .xlsx مُصدَّر من هذا المخطط (أو له نفس ترتيب الأعمدة).',
     excel_reconnect_needed:'يلزم إذن — اضغط لإعادة ربط ملفك المرتبط.',
+    chart_fall_title:'من الدخل إلى الادخار — الفترة كاملة',
+    chart_total_spend:'إجمالي المصروفات',
+    chart_small_slice:'بنود أصغر ({n})',
+    series_income:'الدخل',
     strip_salary:'إجمالي الدخل', strip_spend:'إجمالي المصروفات', strip_savings:'الادخار خلال هذه الأشهر', strip_projected:'الرصيد المتوقع', strip_rate:'معدل الادخار', strip_emergency:'صندوق الطوارئ',
     tab_budget:'نظرة عامة', tab_dashboard:'لوحة المعلومات', tab_forecast_base:'التوقعات', tab_help:'طريقة الاستخدام', help_h2:'طريقة الاستخدام',
 planner_open:'خطّط لي',
@@ -8596,7 +8642,7 @@ function renderStrip(totals){
 }
 
 /* ---------- dashboard ---------- */
-let chartCategory, chartRate, chartTrend, chartForecast;
+let chartCategory, chartRate, chartTrend, chartForecast, chartWaterfall;
 
 function renderChartsNotice(elementId){
   const el = document.getElementById(elementId);
@@ -8641,11 +8687,29 @@ function renderDashboard(){
   }
   if(chartsAvailable && document.getElementById('panel-dashboard').classList.contains('active')){
     if(chartCategory) chartCategory.destroy();
+    const dRows = donutRows(totals);
+    const dTotal = dRows.reduce((a, r)=> a + r[1], 0);
+    const dWide = donutBoxIsWide();
     chartCategory = new Chart(document.getElementById('chart-category'), {
-      type:'bar',
-      data:{ labels:catLabels, datasets:[{ data:catData, backgroundColor: catData.map((_,i)=>palette[i % palette.length]) }]},
-      options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>fmtMoney(v) } } } }
+      type:'doughnut',
+      data:{ labels:dRows.map(r=>r[0]),
+             datasets:[{ data:dRows.map(r=>r[1]),
+                         backgroundColor:dRows.map((_,i)=>palette[i % palette.length]),
+                         borderColor:chartCss('--paper-raised','#fff'), borderWidth:2 }]},
+      options:{ maintainAspectRatio:false, cutout:'58%',
+        layout:{ padding: dWide
+          ? { left:96, right:96, top:16, bottom:16 }
+          : { left:8, right:8, top:8, bottom:8 } },
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:c=> ' ' + fmtMoney(c.parsed) } } } },
+      plugins:[donutCentre, donutLabels]
     });
+    chartCategory.$rows = dRows;
+    chartCategory.$wide = dWide;
+    settleCharts();
+    chartCategory.$centre = { label: t('chart_total_spend'), value: fmtMoney(dTotal) };
+    chartCategory.update('none');
+    renderDonutLegend(dRows, dWide);
 
     if(chartRate) chartRate.destroy();
     chartRate = new Chart(document.getElementById('chart-rate'), {
@@ -8656,18 +8720,299 @@ function renderDashboard(){
 
     if(chartTrend) chartTrend.destroy();
     chartTrend = new Chart(document.getElementById('chart-trend'), {
-      type:'bar',
       data:{ labels:months, datasets:[
-        { label:t('series_salary'), data:salarySeries, backgroundColor:'#0C447C' },
-        { label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:'#3C3489' },
-        { label:t('series_expenses'), data:spendSeries, backgroundColor:'#B0472F' },
-        { label:t('series_savings'), data:savingsSeries, backgroundColor:'#1F6F54' }
+        // Stacked, so a month carrying extra income still shows where it came
+        // from without spending a fourth bar on it.
+        { type:'bar', label:t('series_salary'), data:salarySeries, backgroundColor:'#0C447C', stack:'in' },
+        { type:'bar', label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:'#3C3489', stack:'in' },
+        { type:'bar', label:t('series_expenses'), data:spendSeries, backgroundColor:'#B0472F', stack:'out' },
+        { type:'line', label:t('series_savings'), data:savingsSeries,
+          borderColor:'#1F6F54', backgroundColor:'#1F6F54',
+          tension:0.3, borderWidth:2, pointRadius:2.5 }
       ]},
-      options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{ y:{ ticks:{ callback:v=>fmtMoney(v) } } } }
+      options:{ maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+          tooltip:{ callbacks:{ label:c=> ' ' + c.dataset.label + ': ' + fmtMoney(c.parsed.y) } } },
+        scales:{ x:{ stacked:true, grid:{display:false} },
+                 y:{ stacked:false, ticks:{ callback:v=>fmtMoney(v) } } } }
+    });
+
+    if(chartWaterfall) chartWaterfall.destroy();
+    const wRows = state.categories
+      .map(c=> [categoryLabel(c), Number(totals[c]) || 0])
+      .filter(r=> r[1] > 0)
+      .sort((a, b)=> b[1] - a[1]);
+    let running = totals.income;
+    const wData = [[0, totals.income]];
+    const wCols = ['#1F6F54'];
+    wRows.forEach((r, i)=>{
+      const next = running - r[1];
+      wData.push([next, running]);
+      running = next;
+      wCols.push(palette[(i + 1) % palette.length]);
+    });
+    wData.push([0, running]);
+    wCols.push('#0C447C');
+    chartWaterfall = new Chart(document.getElementById('chart-waterfall'), {
+      type:'bar',
+      data:{ labels:[t('series_income')].concat(wRows.map(r=>r[0])).concat([t('series_savings')]),
+             datasets:[{ data:wData, backgroundColor:wCols, borderSkipped:false }]},
+      options:{ indexAxis:'y', maintainAspectRatio:false,
+        layout:{ padding:{ right:96 } },
+        scales:{ y:{ grid:{display:false} },
+                 x:{ beginAtZero:true, ticks:{ callback:v=>fmtMoney(v) } } },
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:c=>{
+            const d = c.raw, isTotal = (c.dataIndex === 0 || c.dataIndex === wData.length - 1);
+            return ' ' + (isTotal ? fmtMoney(d[1]) : '−' + fmtMoney(d[1] - d[0]));
+          } } } } },
+      plugins:[fallValues]
     });
   }
 
   return totals;
+}
+
+/* Charts are created as the panel becomes visible, which is a frame before it
+   has its real width. Resizing after layout is what stops a chart rendering
+   into a slice of its canvas. */
+let chartResizeWatcher = null;
+function allCharts(){
+  return [chartCategory, chartRate, chartTrend, chartForecast, chartWaterfall].filter(Boolean);
+}
+
+/* Match every canvas to the box it lives in. Chart.js normally does this from
+   its own measurement; doing it here as well means a box that reached its real
+   width late still ends up with a canvas the same size. */
+function fitChartsToBoxes(){
+  let changed = false;
+  allCharts().forEach(c=>{
+    const box = c.canvas && c.canvas.parentElement;
+    if(!box) return;
+    const w = box.clientWidth, h = box.clientHeight;
+    if(w < 1 || h < 1) return;                       // hidden: nothing to fit to
+    if(Math.abs(c.width - w) > 1 || Math.abs(c.height - h) > 1){
+      try{ c.resize(w, h); changed = true; }catch(e){}
+    }
+  });
+  return changed;
+}
+
+function settleChartsOnce(){
+  // A rotation can cross the doughnut's threshold, and its mode is fixed at
+  // construction — resizing alone would leave labels drawn for the wrong width.
+  if(chartCategory && typeof donutBoxIsWide === 'function'
+     && chartCategory.$wide !== donutBoxIsWide()){
+    renderAll();
+    return;
+  }
+  fitChartsToBoxes();
+}
+
+function settleCharts(){
+  // Three passes rather than one: the failure this fixes is a layout that
+  // settles late, and picking a single moment to correct it is a guess.
+  requestAnimationFrame(settleChartsOnce);
+  setTimeout(settleChartsOnce, 150);
+  setTimeout(settleChartsOnce, 500);
+
+  if(chartResizeWatcher || typeof ResizeObserver === 'undefined') return;
+  let pending = false;
+  chartResizeWatcher = new ResizeObserver(()=>{
+    if(pending) return;                    // one pass per frame, never a loop
+    pending = true;
+    requestAnimationFrame(()=>{ pending = false; settleChartsOnce(); });
+  });
+  // Each BOX, not the grid around them: the grid has its width from the start
+  // and never changes, so watching it meant the callback never fired again.
+  document.querySelectorAll('.chart-canvas-box').forEach(b=>{
+    try{ chartResizeWatcher.observe(b); }catch(e){}
+  });
+  window.addEventListener('orientationchange', ()=> setTimeout(settleCharts, 200));
+}
+
+/* Enough canvas to give up a column each side and still have a ring worth
+   looking at. Below this the labels go underneath instead. */
+function donutIsWide(c){ return !!(c && c.$wide); }
+
+/* Decided from the box before the chart exists, because the padding it implies
+   has to be part of the options the chart is built with. */
+function donutBoxIsWide(){
+  const box = document.querySelector('.chart-canvas-box.is-donut');
+  return !!box && box.clientWidth >= 620;
+}
+
+/* Total in the middle of the ring. */
+const donutCentre = {
+  id:'donutCentre',
+  afterDatasetsDraw(c){
+    const meta = c.getDatasetMeta(0);
+    if(!meta.data.length || !c.$centre) return;
+    const ctx = c.ctx, x = meta.data[0].x, y = meta.data[0].y;
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle = chartInkSoft();
+    ctx.font = '600 12px ' + chartFont();
+    ctx.fillText(c.$centre.label, x, y - 16);
+    ctx.fillStyle = chartInk();
+    ctx.font = '700 21px ' + chartFont();
+    ctx.fillText(c.$centre.value, x, y + 8);
+    ctx.restore();
+  }
+};
+
+/* Share inside the ring, name and amount outside in a column per side. */
+const donutLabels = {
+  id:'donutLabels',
+  afterDatasetsDraw(c){
+    const meta = c.getDatasetMeta(0);
+    const rows = c.$rows;
+    if(!meta.data.length || !rows) return;
+    const ctx = c.ctx;
+    const total = rows.reduce((a, r)=> a + r[1], 0) || 1;
+
+    // The share always fits inside the band; the rest depends on the width.
+    const drawShares = ()=> meta.data.forEach((arc, i)=>{
+      const pct = rows[i][1] / total;
+      if(pct < 0.045) return;
+      const a = (arc.startAngle + arc.endAngle) / 2;
+      const r = arc.innerRadius + (arc.outerRadius - arc.innerRadius) / 2;
+      ctx.save();
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 12px ' + chartFont();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(Math.round(pct * 100) + '%', arc.x + Math.cos(a) * r, arc.y + Math.sin(a) * r);
+      ctx.restore();
+    });
+
+    if(!donutIsWide(c)){ drawShares(); return; }
+
+    const sides = { left:[], right:[] };
+
+    meta.data.forEach((arc, i)=>{
+      const a = (arc.startAngle + arc.endAngle) / 2;
+      const right = Math.cos(a) >= 0;
+      sides[right ? 'right' : 'left'].push({
+        i, arc, a, right,
+        anchorX: arc.x + Math.cos(a) * (arc.outerRadius + 2),
+        anchorY: arc.y + Math.sin(a) * (arc.outerRadius + 2),
+        y: arc.y + Math.sin(a) * (arc.outerRadius + 18),
+      });
+    });
+
+    // Spread within the chart area, guarding BOTH edges: correcting only the
+    // bottom pushed the topmost label off the canvas, where it was clipped.
+    const top = c.chartArea.top + 10, bottom = c.chartArea.bottom - 10;
+    Object.values(sides).forEach(list=>{
+      if(!list.length) return;
+      list.sort((p, q)=> p.y - q.y);
+      const gap = Math.min(30, (bottom - top) / list.length);
+      list.forEach((p, k)=>{
+        if(p.y < top) p.y = top;
+        if(k && p.y - list[k-1].y < gap) p.y = list[k-1].y + gap;
+      });
+      for(let k = list.length - 1; k >= 0; k--){
+        const limit = (k === list.length - 1) ? bottom : list[k+1].y - gap;
+        if(list[k].y > limit) list[k].y = limit;
+      }
+      if(list[0].y < top) list[0].y = top;
+    });
+
+    drawShares();
+    ctx.save();
+
+    // A fixed distance from the ring, not the card edge — against the edge the
+    // leader lines stretched most of the way across a laptop.
+    const arc0 = meta.data[0], ringR = arc0.outerRadius;
+    const colR = Math.min(c.chartArea.right - 4, arc0.x + ringR + 96);
+    const colL = Math.max(c.chartArea.left + 4, arc0.x - ringR - 96);
+    [].concat(sides.left, sides.right).forEach(p=>{
+      const elbowX = p.arc.x + Math.cos(p.a) * (p.arc.outerRadius + 16);
+      const col = p.right ? colR : colL;
+      ctx.strokeStyle = chartRule(); ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(p.anchorX, p.anchorY);
+      ctx.lineTo(elbowX, p.y);
+      ctx.lineTo(col + (p.right ? -6 : 6), p.y);
+      ctx.stroke();
+      // Text runs AWAY from the ring: a right-hand label starts at its column
+      // and reads outward, a left-hand one ends there. Inverted, both columns
+      // wrote back over the doughnut.
+      ctx.textAlign = p.right ? 'left' : 'right'; ctx.textBaseline='middle';
+      ctx.fillStyle = chartInk();
+      ctx.font = '600 11px ' + chartFont();
+      ctx.fillText(rows[p.i][0], col, p.y - 6);
+      ctx.fillStyle = chartInkSoft();
+      ctx.font = '11px ' + chartFont();
+      ctx.fillText(fmtMoney(rows[p.i][1]), col, p.y + 7);
+    });
+    ctx.restore();
+  }
+};
+
+/* The step each bar represents, written at its open end. */
+const fallValues = {
+  id:'fallValues',
+  afterDatasetsDraw(c){
+    const meta = c.getDatasetMeta(0), data = c.data.datasets[0].data;
+    const ctx = c.ctx;
+    ctx.save();
+    ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.font = '600 10.5px ' + chartFont();
+    meta.data.forEach((bar, i)=>{
+      const isTotal = (i === 0 || i === data.length - 1);
+      const v = isTotal ? data[i][1] : (data[i][1] - data[i][0]);
+      ctx.fillStyle = isTotal ? chartInk() : chartInkSoft();
+      ctx.fillText((isTotal ? '' : '−') + fmtMoney(v), Math.max(bar.x, bar.base) + 6, bar.y);
+    });
+    ctx.restore();
+  }
+};
+
+/* Read from the live theme so the charts follow light and dark. */
+function chartCss(name, fallback){
+  try{
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }catch(e){ return fallback; }
+}
+function chartInk(){ return chartCss('--ink', '#2C2A26'); }
+function chartInkSoft(){ return chartCss('--ink-soft', '#6E685C'); }
+function chartRule(){ return chartCss('--rule', '#EBE3D5'); }
+function chartFont(){ return chartCss('--font-body', 'system-ui') || 'system-ui'; }
+
+/* Categories worth their own slice, with the rest gathered into one.
+   Built from the live totals, never from a fixed list. */
+/* Name, amount and share under the chart. Carries what the outside labels
+   would have said, for the widths where they cannot be drawn. */
+function renderDonutLegend(rows, wide){
+  const el = document.getElementById('chart-category-legend');
+  if(!el) return;
+  if(wide || !rows.length){ el.hidden = true; el.innerHTML = ''; return; }
+  const total = rows.reduce((a, r)=> a + r[1], 0) || 1;
+  const palette = ['#1F6F54','#B0472F','#E7A93D','#5a6478','#3C3489','#0C447C'];
+  el.hidden = false;
+  el.innerHTML = rows.map((r, i)=>
+    '<li><span class="dl-dot" style="background:' + palette[i % palette.length] + '"></span>' +
+    '<span class="dl-name">' + esc(r[0]) + '</span>' +
+    '<span class="dl-amt">' + esc(fmtMoney(r[1])) + '</span>' +
+    '<span class="dl-pct">' + Math.round(r[1] / total * 100) + '%</span></li>').join('');
+}
+
+function donutRows(totals){
+  const all = state.categories
+    .map(c=> [categoryLabel(c), Number(totals[c]) || 0])
+    .filter(r=> r[1] > 0)
+    .sort((a, b)=> b[1] - a[1]);
+  const sum = all.reduce((a, r)=> a + r[1], 0);
+  if(!sum) return [];
+  const big = all.filter(r=> r[1] / sum >= 0.03);
+  const small = all.filter(r=> r[1] / sum < 0.03);
+  if(small.length > 1){
+    return big.concat([[ t('chart_small_slice').replace('{n}', small.length),
+                         small.reduce((a, r)=> a + r[1], 0) ]]);
+  }
+  return all;                              // one small item labels itself fine
 }
 
 /* ---------- forecast ---------- */
@@ -10725,6 +11070,7 @@ function switchTab(tabName){
   renderAll();
   if(typeof renderHelpReturn === 'function') renderHelpReturn();
   if(typeof renderUnsettledBadge === 'function') renderUnsettledBadge();
+  if(tabName === 'dashboard' && typeof settleCharts === 'function') settleCharts();
 }
 
 /* ---------- events ---------- */
