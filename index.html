@@ -3051,6 +3051,33 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 /* The credit sits under it now, so it gives up the rule it used to draw. */
 .foot .foot-credit{ margin-top:8px; padding-top:0; border-top:none; }
 
+
+/* ---------------------------------------------- dark-mode form controls ---- */
+/* These inputs set an amber background but no colour, so they inherited the
+   UA default — black, which on the dark amber measured 1.43:1. Declared here
+   rather than edited in place because this sheet loads after the inline one. */
+.setup-fields input[type="number"],
+.setup-fields input[type="month"],
+.custom-add input,
+.period-row input[type="month"],
+.period-row input[type="number"],
+input.month-input,
+.rules-box input,
+.assump-field input{
+  color:var(--ink);
+}
+
+/* The parts of a form control the browser paints itself — the calendar icon in
+   a month field, the picker popup, number spinners, a select's dropdown list —
+   follow color-scheme, not our colours. The page carries a hardcoded
+   <meta name="color-scheme" content="light">; this overrides it and, unlike the
+   meta, tracks the theme. All three states, matching the token blocks above. */
+:root{ color-scheme:light; }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; }
+}
+:root[data-theme="dark"]{ color-scheme:dark; }
+
 </style>
 </head>
 <body>

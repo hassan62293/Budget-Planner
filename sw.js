@@ -9,7 +9,10 @@
  *      Intelligent Tracking Prevention from deleting saved budgets after seven
  *      days of not opening it. Installed web apps get their own usage counter.
  *
- * Bump CACHE_VERSION on every deploy: activate() deletes any cache that is not
+ * Bump CACHE_VERSION on every BUILD, not merely every deploy: a browser only
+ * installs a new worker when sw.js itself changes, so shipping two different
+ * builds under one version leaves the old shell cached with no way to update.
+ * activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
  *
  * Numbering is v<major>.<minor>.<patch>. It carries on from the old plain
@@ -17,7 +20,7 @@
  * then v1.9.0. The string is only ever compared for equality and shown in the
  * footer, so the shape is free to change; what matters is that it CHANGES.
  */
-const CACHE_VERSION = 'v1.8.9';
+const CACHE_VERSION = 'v1.9.0';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is
