@@ -17,7 +17,7 @@
  * then v1.9.0. The string is only ever compared for equality and shown in the
  * footer, so the shape is free to change; what matters is that it CHANGES.
  */
-const CACHE_VERSION = 'v1.8.7';
+const CACHE_VERSION = 'v1.8.8';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is

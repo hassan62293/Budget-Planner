@@ -8539,12 +8539,30 @@ function applyTheme(mode){
   // 'auto' leaves the root unstamped so the OS setting decides.
   if(mode === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', mode);
+  // A canvas keeps whatever was painted on it. Without this the charts hold
+  // their old colours until some unrelated action happens to redraw them.
+  repaintChartsForTheme();
   const meta = document.querySelector('meta[name="theme-color"]');
   if(meta){
     const dark = mode === 'dark' ||
       (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     meta.setAttribute('content', dark ? '#1E1C19' : '#4A7C63');
   }
+}
+
+/* Rebuilt rather than resized: every colour in these charts — series fills,
+   label ink, the doughnut's slice borders — was chosen at construction from
+   the palette that was live at the time. */
+function repaintChartsForTheme(){
+  if(typeof Chart === 'undefined') return;
+  applyChartTheme();
+  // Deferred so the new custom properties have resolved before anything reads
+  // them, and skipped entirely before the first render has happened.
+  requestAnimationFrame(()=>{
+    if(typeof renderDashboard === 'function' && typeof state !== 'undefined' && state.months){
+      try{ renderAll(); }catch(e){}
+    }
+  });
 }
 
 function currentTheme(){
@@ -8566,6 +8584,15 @@ function wireTheme(){
   const mode = currentTheme();
   btn.textContent = mode === 'light' ? '☀' : mode === 'dark' ? '☾' : '◐';
   btn.setAttribute('title', t('theme_' + mode));
+
+  // On 'auto' the palette can change without anyone touching the button —
+  // sunset, or the OS switching schedule.
+  try{
+    const os = window.matchMedia('(prefers-color-scheme: dark)');
+    const onOsChange = ()=>{ if(currentTheme() === 'auto') repaintChartsForTheme(); };
+    if(os.addEventListener) os.addEventListener('change', onOsChange);
+    else if(os.addListener) os.addListener(onOsChange);
+  }catch(e){}
 }
 
 /* ---------- bottom navigation ---------- */
@@ -8685,6 +8712,7 @@ function renderDashboard(){
   if(document.getElementById('panel-dashboard').classList.contains('active')){
     renderChartsNotice('charts-unavailable-dashboard');
   }
+  if(chartsAvailable) applyChartTheme();
   if(chartsAvailable && document.getElementById('panel-dashboard').classList.contains('active')){
     if(chartCategory) chartCategory.destroy();
     const dRows = donutRows(totals);
@@ -8976,6 +9004,16 @@ function chartCss(name, fallback){
     return v || fallback;
   }catch(e){ return fallback; }
 }
+/* Chart.js draws its axes, grid and legend from these. Set before anything is
+   built, and again whenever the theme changes, because they are read at draw
+   time rather than stored per chart. */
+function applyChartTheme(){
+  if(typeof Chart === 'undefined') return;
+  Chart.defaults.color = chartInkSoft();
+  Chart.defaults.borderColor = chartRule();
+  Chart.defaults.font.family = chartFont();
+}
+
 function chartInk(){ return chartCss('--ink', '#2C2A26'); }
 function chartInkSoft(){ return chartCss('--ink-soft', '#6E685C'); }
 function chartRule(){ return chartCss('--rule', '#EBE3D5'); }
@@ -9097,6 +9135,7 @@ function renderForecast(dashTotals){
   if(document.getElementById('panel-forecast').classList.contains('active')){
     renderChartsNotice('charts-unavailable-forecast');
   }
+  if(chartsAvailable) applyChartTheme();
   if(chartsAvailable && document.getElementById('panel-forecast').classList.contains('active')){
     if(chartForecast) chartForecast.destroy();
     chartForecast = new Chart(document.getElementById('chart-forecast'), {
