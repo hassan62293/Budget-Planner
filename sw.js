@@ -15,12 +15,18 @@
  * activate() deletes any cache that is not
  * the current one, so a stale shell can never survive an update.
  *
- * Numbering is v<major>.<minor>.<patch>. It carries on from the old plain
- * counter — v86 became v1.8.6 — so the next few are v1.8.7, v1.8.8, v1.8.9,
- * then v1.9.0. The string is only ever compared for equality and shown in the
- * footer, so the shape is free to change; what matters is that it CHANGES.
+ * Numbering carries a build counter in its last three digits, so the build
+ * number can be read straight off the version:
+ *
+ *     v1.1.0.0  ->  build 100        v1.1.1.0  ->  build 110
+ *     v1.1.0.1  ->  build 101        v1.9.9.9  ->  build 999
+ *
+ * It follows the old three-part shape, which ran from v86 (as v1.8.6) up to
+ * v1.9.9 — build 99 — and then had nowhere left to go. Nothing parses this
+ * string: it is compared for equality and shown in the footer, so the only
+ * rule that matters is that it CHANGES on every build.
  */
-const CACHE_VERSION = 'v1.9.7';
+const CACHE_VERSION = 'v1.1.0.4';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is

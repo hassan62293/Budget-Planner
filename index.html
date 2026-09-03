@@ -710,13 +710,15 @@
 
   .actions-more{ margin:-6px 0 18px; }
   .actions-more > summary{
-    display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    cursor:pointer;
     font-family:var(--font-body); font-size:12.5px; font-weight:500;
     color:var(--ink); padding:7px 0; min-height:var(--tap); list-style:none;
   }
+  .actions-more > summary::marker{ content:''; }
   .actions-more > summary::-webkit-details-marker{ display:none; }
   .actions-more > summary::before{
-    content:'▸'; font-size:10px; transition:transform .15s ease; flex:0 0 auto;
+    content:'▸'; font-size:10px; transition:transform .15s ease;
+    display:inline-block; margin-inline-end:7px;   /* was the flex gap */
   }
   .actions-more[open] > summary::before{ transform:rotate(90deg); }
   /* A chevron is not mirrored by the bidi algorithm, so it is turned by hand. */
@@ -1139,15 +1141,18 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   text-decoration:underline; text-underline-offset:2px;
 }
 
-/* A (!) that opens one help topic in place. */
-.help-tip{
+/* A (!) that opens one help topic in place.
+   NOT .help-tip — that name already belongs to the tinted paragraph at the end
+   of a help section, and giving it a 17px width squeezed every one of those
+   into a column one word wide. */
+.help-tipbtn{
   flex:0 0 auto; width:17px; height:17px; border-radius:50%; padding:0; cursor:pointer;
   border:1px solid var(--emerald-deep); background:transparent; color:var(--emerald-deep);
   font-family:inherit; font-size:11px; font-weight:700; line-height:1;
   display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;
 }
-.help-tip:hover{ background:var(--emerald-deep); color:var(--paper); }
-.help-tip:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+.help-tipbtn:hover{ background:var(--emerald-deep); color:var(--paper); }
+.help-tipbtn:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
 
 /* On a phone the sheet comes up from the bottom, under the thumb, so reading it
    never costs the reader their place in the form behind it. */
@@ -1669,6 +1674,34 @@ a[role="button"]{
    started — so it is built to be scanned, not read straight through.
    ============================================================================ */
 .help-content{ max-width:68ch; }
+
+/* Thirty topics behave as a list you open one at a time.
+
+   The summary keeps its own display. Overriding it — display:flex looks
+   harmless and lays the row out nicely — stops some engines recognising it as
+   the disclosure control: the box then collapses to the lid while the content
+   inside still paints, landing on top of the sections below. The row layout
+   goes on the heading instead, which is an ordinary element and safe to style. */
+.help-fold > summary{
+  cursor:pointer; list-style:none; padding:9px 0;
+}
+.help-fold > summary::-webkit-details-marker{ display:none; }
+.help-fold > summary::marker{ content:''; }
+.help-fold > summary h3{
+  margin:0; min-width:0; min-height:var(--tap);
+  display:flex; align-items:center; gap:9px;
+}
+.help-fold > summary h3::after{
+  content:'⌄'; margin-inline-start:auto; flex:0 0 auto;
+  font-size:15px; line-height:1; color:var(--ink-soft);
+  transition:transform .15s ease;
+}
+.help-fold[open] > summary h3::after{ transform:rotate(180deg); }
+.help-fold > summary:hover h3{ color:var(--emerald-deep); }
+.help-fold > summary:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; border-radius:6px; }
+/* Each topic reads as its own row rather than as a run of headings. */
+.help-content .help-section{ border-top:1px solid var(--rule); }
+.help-content .help-section:first-of-type{ border-top:none; }
 .help-lede{
   font-size:15px; line-height:1.7; color:var(--ink);
   margin:0 0 22px; padding-bottom:20px; border-bottom:1px solid var(--rule);
@@ -1922,6 +1955,44 @@ nav.tabs button{ color:var(--ink); }
 
 /* ---- one row per category ---- */
 .sp-rows{ display:flex; flex-direction:column; gap:9px; margin-top:14px; }
+
+/* Two ways of reading the same month. */
+.sp-viewtoggle{ display:flex; gap:0; margin-top:14px;
+  border:1px solid var(--rule); border-radius:var(--radius-sm); overflow:hidden; width:fit-content; }
+.sp-viewtoggle button{
+  font-family:inherit; font-size:12px; font-weight:600; cursor:pointer;
+  padding:8px 15px; min-height:var(--tap);
+  border:none; background:transparent; color:var(--ink-soft);
+}
+.sp-viewtoggle button.on{ background:var(--emerald); color:var(--paper); }
+
+.sp-day{ border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:var(--paper-raised); padding:10px 12px; }
+.sp-day-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding-bottom:7px; border-bottom:1px solid var(--rule); }
+.sp-day-name{ font-weight:700; font-size:12.5px; }
+.sp-day-total{ font-weight:700; font-variant-numeric:tabular-nums; }
+.sp-day-list{ list-style:none; margin:0; padding:0; }
+.sp-day-list li{ display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:7px 0; border-bottom:1px solid var(--rule); font-size:12px; }
+.sp-day-list li:last-child{ border-bottom:none; }
+.spd-cat{ font-weight:600; flex:0 0 auto; }
+.spd-note{ flex:1 1 120px; min-width:0; color:var(--ink-soft); }
+.spd-note.is-blank{ font-style:italic; }
+.spd-amt{ font-variant-numeric:tabular-nums; font-weight:600; flex:0 0 auto; }
+.sp-day-empty{ color:var(--ink-soft); font-size:12.5px; padding:14px 2px; }
+
+/* Small enough to sit in a row, large enough to tap. */
+.spi-date{
+  flex:0 0 auto; font-family:var(--font-mono); font-size:11px; direction:ltr;
+  padding:3px 5px; border-radius:3px; min-height:30px;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink);
+}
+.spi-date:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+.spi-tag{
+  display:inline-block; margin-inline-start:6px; padding:1px 6px; border-radius:9px;
+  background:var(--warn-tint); color:var(--warn-ink, var(--ink)); font-size:9.5px; font-weight:700;
+}
 .sp-row{
   background:var(--paper-raised); border-radius:var(--radius-sm);
   box-shadow:var(--shadow-sm); padding:11px 13px;
@@ -2674,14 +2745,16 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
   background:var(--paper-raised);
   overflow:hidden;
 }
+/* No display override: a summary that is not laid out as itself stops being
+   recognised as the disclosure, and its contents paint over the page below. */
 .help-toc > summary{
   list-style:none; cursor:pointer;
   padding:13px 15px;
   font-family:var(--font-body); font-size:14px; font-weight:600;
   color:var(--emerald-deep);
-  display:flex; align-items:center; gap:8px;
   min-height:var(--tap);
 }
+.help-toc > summary::marker{ content:''; }
 .help-toc > summary::-webkit-details-marker{ display:none; }
 /* The disclosure triangle is drawn rather than inherited, so it can be turned
    under RTL and rotated on open without fighting the UA's own marker. */
@@ -2698,7 +2771,7 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 .help-toc > summary:hover{ background:var(--good-tint); }
 .help-toc > summary:focus-visible{ outline:2px solid var(--emerald); outline-offset:-2px; }
 .help-toc-n{
-  margin-inline-start:auto;
+  float:inline-end;                 /* was margin-inline-start:auto, under flex */
   font-weight:500; font-size:12px; color:var(--ink-soft);
 }
 .help-toc ol{
@@ -2726,9 +2799,15 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 .help-back:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
 
 @media (min-width:700px){
-  .help-toc ol{ columns:2; column-gap:8px; }
-  .help-toc li{ break-inside:avoid; }
+  /* Grid, not columns: the links inside are flex boxes, and flex inside a
+     multi-column container fragments badly enough to render on top of the
+     content below it. A grid gives the same two columns and cannot fragment. */
+  .help-toc ol{ display:grid; grid-template-columns:1fr 1fr; column-gap:8px; }
 }
+/* Whatever the layout, the list stays inside its own box. */
+.help-toc ol{ max-width:100%; }
+.help-toc li{ min-width:0; }
+.help-toc a{ overflow-wrap:anywhere; }
 
 /* ---------------------------------------------------------------------------
    How to use — "Show me in the app", and the ring it leaves on the control
@@ -2750,13 +2829,19 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 /* The ring that says "this is the thing you just read about". Outline rather
    than box-shadow so it takes the theme's own accent and never repaints a
    background the control is relying on. */
+/* Colour only. Animating outline-offset changes where the ring is painted, and
+   an outline sits outside the layout box, so the browser has to infer the area
+   it must repaint. Get that wrong while the element is also changing height —
+   which is exactly what opening a fold does — and the paint from the old height
+   is left on screen. A fixed offset keeps the repainted area constant. */
 @keyframes spotlight-ring{
-  0%   { outline-color:var(--emerald); outline-offset:2px; }
-  60%  { outline-color:var(--emerald); outline-offset:7px; }
-  100% { outline-color:transparent;    outline-offset:7px; }
+  0%   { outline-color:var(--emerald); }
+  60%  { outline-color:var(--emerald); }
+  100% { outline-color:transparent;    }
 }
 .spotlight{
   outline:3px solid transparent;
+  outline-offset:4px;
   border-radius:10px;
   animation:spotlight-ring 1.3s ease-out 2;
 }
@@ -2774,14 +2859,15 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 }
 .fold > summary{
   list-style:none; cursor:pointer;
-  display:flex; align-items:center; gap:9px;
   min-height:var(--tap); padding:12px 15px;
   font-family:var(--font-body); font-size:13.5px; font-weight:600;
   color:var(--ink);
 }
+.fold > summary::marker{ content:''; }
 .fold > summary::-webkit-details-marker{ display:none; }
 .fold > summary::before{
   content:'▸'; font-size:11px; line-height:1; color:var(--ink-soft);
+  display:inline-block; margin-inline-end:9px;   /* was the flex gap */
   transition:transform .15s ease;
 }
 [dir="rtl"] .fold > summary::before{ content:'◂'; }
@@ -3241,6 +3327,7 @@ input.month-input,
     <details class="actions-more" id="actions-more">
       <summary data-i18n="actions_more">Backups, Excel and sharing</summary>
       <div class="actions actions-more-body">
+        <button id="btn-clear-spending" data-i18n="btn_clear_spending">Clear logged spending</button>
         <button id="btn-export" data-i18n="btn_export">Export data (.json)</button>
         <button id="btn-import" data-i18n="btn_import">Import data</button>
         <button id="btn-export-excel" data-i18n="btn_export_excel">Export to Excel (.xlsx)</button>
@@ -3501,6 +3588,7 @@ input.month-input,
 
       <p class="sp-basis" id="sp-basis"></p>
       <div class="sp-total" id="sp-total"></div>
+      <div class="sp-viewtoggle" id="sp-viewtoggle"></div>
       <div class="sp-rows" id="sp-rows"></div>
       <div id="sp-check"></div>
     </section>
@@ -3699,6 +3787,16 @@ input.month-input,
           <p class="help-tip">Spending you logged before notes existed still counts. It appears as a single line called <i>Logged before notes were added</i>, so the itemised lines and the category total can never look like they disagree.</p>
         </div>
 
+
+        <div class="help-section" data-goto="spent">
+          <h3>Your spending, day by day</h3>
+          <p>Above the categories there is a switch: <b>By category</b> or <b>By day</b>. Same month, same amounts — read two ways.</p>
+          <p style="margin-top:8px;"><b>By category</b> answers “am I within my plan for groceries?”. <b>By day</b> answers “where did this month actually go?” — every day you spent something, what it came to, and each amount underneath it.</p>
+          <p style="margin-top:8px;"><b>The date is yours to correct.</b> An amount is filed under the day you added it, which is right if you log as you go. Catching up on a week of receipts on a Friday would otherwise pile all of them onto Friday — so every entry carries a date you can change, in either view. Change it and the entry moves to the day it belongs to.</p>
+          <p style="margin-top:8px;">Anything logged before dates existed shows under <b>No date yet</b>, at the end. Give it a date and it joins the rest.</p>
+          <p style="margin-top:8px;"><b>Settlements are in there too</b>, marked as such. When the payday or money check closes a gap it records that as an amount, and leaving it out would make the days stop adding up to the month. It is marked so you never mistake it for something you bought.</p>
+        </div>
+
         <div class="help-section" data-goto="basis">
           <h3>What happens when a month ends</h3>
           <p>While a month is still running, your savings are worked out from your <strong>plan</strong>. That is deliberate: half a month of logged spending set against a full month's income would look like an enormous surplus that isn't real.</p>
@@ -3751,7 +3849,7 @@ input.month-input,
           <h3>Amounts you know, and amounts you estimate</h3>
           <p><b>Both are budgets.</b> Whichever you choose, you are writing a number to measure your real spending against — and you still log what you actually spend either way. The only difference is how sure you are when you write it.</p>
           <p style="margin-top:8px;">Some things you already know — rent, a subscription. Others you do not — groceries, fuel.</p>
-          <p style="margin-top:8px;">Under <b>Fixed vs. variable</b>, mark anything steady as <b>fixed</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you can't overwrite them by accident. Leave everything else as <b>variable</b> and enter it month by month.</p>
+          <p style="margin-top:8px;">Under <b>Which amounts do you already know?</b>, mark anything you are sure of as <b>I know it</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you cannot overwrite them by accident — they say <b>“Comes from your plan”</b> underneath, with a link to where the real spending goes. Leave everything else as <b>I'll estimate it</b> and enter it month by month.</p>
           <p style="margin-top:8px;">A fixed amount runs over a <b>period</b>, and you say where that period stops:</p>
           <ul class="help-list">
             <li><b>To the end of the plan</b> — it applies for as long as your table runs, and keeps up on its own if the table later stretches to reach a goal.</li>
@@ -3868,11 +3966,13 @@ input.month-input,
           <ul class="help-list">
             <li><span class="help-key">Export to Excel (.xlsx)</span> downloads a workbook with your budget, dashboard and forecast.</li>
             <li><span class="help-key">Load from Excel</span> reads one back in, if you'd rather edit in a spreadsheet.</li>
+            <li><span class="help-key">Clear logged spending</span> empties what you have recorded as actually spent, in every month, and keeps your plan, categories and goals exactly as they are. Useful for starting your real records cleanly. It cannot be undone.</li>
             <li><span class="help-key">Connect Excel file…</span> (Chrome or Edge on a computer) links one specific file, so updating and reloading always use that same file.</li>
           </ul>
           <p style="margin-top:10px;"><b>Using OneDrive?</b> Choose a file inside your synced OneDrive folder and it uploads itself each time you update.</p>
           <p style="margin-top:8px;"><b>On a phone?</b> Connecting a file doesn't work there — use <span class="help-key">Share / Back Up…</span> instead.</p>
           <p style="margin-top:8px;"><b>Share button not working?</b> It only works over a real <code>https://</code> link — not on a file opened from your downloads, or inside another app's file viewer.</p>
+          <p style="margin-top:10px;"><b>The Spending notes sheet is a record, not an input.</b> It carries every amount you logged, with its date, sorted — the whole history, ready to sort or pivot. But loading a workbook back in only reads your budget, so a date or a note edited there does not come home. Correct those in the app, where the change sticks.</p>
         </div>
 
         <div class="help-section" data-goto="language">
@@ -3989,6 +4089,16 @@ input.month-input,
           <p class="help-tip">وما سجّلته قبل وجود الملاحظات يبقى محسوبًا، ويظهر في سطر واحد باسم <i>سُجّل قبل إضافة الملاحظات</i>، حتى لا تبدو السطور المفصّلة ومجموع الفئة مختلفة أبدًا.</p>
         </div>
 
+
+        <div class="help-section" data-goto="spent">
+          <h3>إنفاقك يومًا بيوم</h3>
+          <p>فوق الفئات مفتاح: <b>حسب الفئة</b> أو <b>حسب اليوم</b>. الشهر نفسه والمبالغ نفسها — بقراءتين.</p>
+          <p style="margin-top:8px;"><b>حسب الفئة</b> يجيب عن «هل أنا ضمن خطتي للبقالة؟». و<b>حسب اليوم</b> يجيب عن «أين ذهب هذا الشهر فعلًا؟» — كل يوم أنفقت فيه، وكم بلغ، وكل مبلغ تحته.</p>
+          <p style="margin-top:8px;"><b>والتاريخ لك أن تصحّحه.</b> يُقيَّد المبلغ في اليوم الذي أضفته فيه، وهذا صحيح إن كنت تسجّل أولًا بأول. أما أن تستدرك فواتير أسبوع يوم الجمعة فسيكدّسها كلها على الجمعة — لذلك يحمل كل قيد تاريخًا تستطيع تغييره، في أيٍّ من العرضين. غيّره فينتقل القيد إلى يومه.</p>
+          <p style="margin-top:8px;">وما سُجّل قبل وجود التواريخ يظهر تحت <b>بلا تاريخ بعد</b> في الآخر. امنحه تاريخًا فينضمّ إلى البقية.</p>
+          <p style="margin-top:8px;"><b>والتسويات موجودة أيضًا</b>، ومعلَّمة. فحين يسدّ فحص الراتب أو فحص المال فرقًا، يسجّله مبلغًا، وإخراجه كان سيجعل الأيام لا تساوي الشهر. وهو معلَّم كي لا تخلطه بشيء اشتريته.</p>
+        </div>
+
         <div class="help-section" data-goto="basis">
           <h3>ماذا يحدث عند انتهاء الشهر</h3>
           <p>ما دام الشهر جاريًا، تُحتسب مدّخراتك من <strong>خطتك</strong>. وهذا مقصود: فنصف شهر من الإنفاق المسجّل أمام دخل شهر كامل سيبدو فائضًا هائلًا غير حقيقي.</p>
@@ -4041,7 +4151,7 @@ input.month-input,
           <h3>مبالغ تعرفها ومبالغ تقدّرها</h3>
           <p><b>كلاهما ميزانية.</b> أيًّا اخترت، فأنت تكتب رقمًا تقيس عليه إنفاقك الحقيقي — وتسجّل ما تنفقه فعلًا في الحالتين. والفرق الوحيد هو مدى يقينك حين تكتبه.</p>
           <p>بعض البنود ثابتة كل شهر — الإيجار، أو اشتراك ما. وبعضها يتغيّر — البقالة، الوقود.</p>
-          <p style="margin-top:8px;">ضمن <b>ثابت أم متغيّر</b>، اجعل الثابت <b>ثابتًا</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ. واترك الباقي <b>متغيّرًا</b> وأدخله شهرًا بشهر.</p>
+          <p style="margin-top:8px;">ضمن <b>أي المبالغ تعرفها مسبقًا؟</b>، علّم ما أنت واثق منه بـ<b>«أعرفه»</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ — ومكتوب تحتها <b>«مأخوذ من خطتك»</b> مع رابط يأخذك إلى حيث يُسجَّل الإنفاق الحقيقي. واترك الباقي بـ<b>«سأقدّره»</b> وأدخله شهرًا بشهر.</p>
           <p style="margin-top:8px;">ويسري المبلغ الثابت على <b>فترة</b>، وأنت تحدّد أين تنتهي هذه الفترة:</p>
           <ul class="help-list">
             <li><b>حتى نهاية الخطة</b> — يسري ما دام جدولك ممتدًا، ويواكب ذلك تلقائيًا إن طال الجدول لاحقًا لبلوغ هدف.</li>
@@ -4158,11 +4268,13 @@ input.month-input,
           <ul class="help-list">
             <li><span class="help-key">تصدير إلى إكسل (.xlsx)</span> ينزّل مصنّفًا يضم ميزانيتك ولوحة المعلومات والتوقعات.</li>
             <li><span class="help-key">تحميل من إكسل</span> يقرأ ملفًا مرة أخرى، إن كنت تفضّل التعديل في جدول بيانات.</li>
+            <li><span class="help-key">امسح الإنفاق المسجَّل</span> يفرّغ ما سجّلته إنفاقًا فعليًا في كل الأشهر، ويُبقي خطتك وفئاتك وأهدافك كما هي تمامًا. مفيد لتبدأ سجلّك الحقيقي نظيفًا. ولا يمكن التراجع عنه.</li>
             <li><span class="help-key">ربط ملف إكسل…</span> (Chrome أو Edge على الحاسوب) يربط ملفًا بعينه، فيعمل التحديث وإعادة التحميل دائمًا مع الملف نفسه.</li>
           </ul>
           <p style="margin-top:10px;"><b>تستخدم OneDrive؟</b> اختر ملفًا داخل مجلد OneDrive المتزامن، وسيُرفع تلقائيًا مع كل تحديث.</p>
           <p style="margin-top:8px;"><b>على الجوال؟</b> ربط ملف لا يعمل هناك — استخدم <span class="help-key">مشاركة / نسخ احتياطي…</span> بدلًا منه.</p>
           <p style="margin-top:8px;"><b>زر المشاركة لا يعمل؟</b> يعمل فقط عبر رابط <code>https://</code> حقيقي — لا مع ملف مفتوح من التنزيلات أو داخل عارض ملفات تطبيق آخر.</p>
+          <p style="margin-top:10px;"><b>وورقة «ملاحظات الإنفاق» سجلّ لا مدخل.</b> تحمل كل مبلغ سجّلته بتاريخه ومرتَّبًا — التاريخ كاملًا، جاهزًا للفرز أو لجداول محورية. لكن تحميل المصنّف مرة أخرى لا يقرأ إلا ميزانيتك، فالتاريخ أو الملاحظة التي تعدّلها هناك لا تعود. صحّحها في التطبيق حيث يثبت التغيير.</p>
         </div>
 
         <div class="help-section" data-goto="language">
@@ -4266,7 +4378,7 @@ input.month-input,
 <div id="reset-confirm-overlay" class="modal-overlay" style="display:none;">
   <div class="modal-card">
     <h3 data-i18n="reset_confirm_title">Reset all data?</h3>
-    <p data-i18n="reset_confirm_message">You'll permanently lose all your data and your customized setup — months, categories, fixed/variable settings, and everything else. This can't be undone.</p>
+    <p data-i18n="reset_confirm_message">You'll permanently lose all your data and your customized setup — months, categories, what you know and what you estimate, and everything else. This can't be undone.</p>
     <div class="modal-actions">
       <button id="btn-reset-no" data-i18n="btn_no">Cancel</button>
       <button id="btn-reset-yes" class="danger" data-i18n="btn_yes">OK</button>
@@ -4460,14 +4572,14 @@ const TRANSLATIONS = {
     ov_legend_none:'Nothing logged yet',
     actions_more:'Backups, Excel and sharing',
     help_back:'Back to {tab}',
-    planner_varies:'Varies',
-    planner_fixed:'Fixed',
-    planner_mode_note:'Mark a cost as fixed if it is the same every month — rent, a subscription. Fixed costs count as spent even in a month you never log.',
+    planner_varies:'I\u2019ll estimate',
+    planner_fixed:'I know it',
+    planner_mode_note:'Both are budgets — the difference is only how sure you are when you write the number. Mark what you already know, like rent or a subscription, and type it once. Estimate the rest. An amount you know counts as spent even in a month you never log.',
     accounts_title:'One habit worth having',
     accounts_two:'Keep two accounts: one for your salary and day-to-day spending, and a separate one you move your savings into on payday. Money you cannot see is money you do not spend — and it is what makes these figures real rather than hoped for.',
     accounts_three:'Keep three accounts: one for your salary and day-to-day spending, one you move your savings into on payday, and one for your emergency fund so it is never confused with money you are allowed to touch. Money you cannot see is money you do not spend.',
     brief_title:'{month} has ended',
-    brief_fixed:'Fixed costs counted as spent: {amount}',
+    brief_fixed:'Amounts you already know, counted as spent: {amount}',
     brief_logged:'You logged: {amount}',
     brief_saved:'Saved this month, as it stands: {amount}',
     brief_ask:'{n} categories had nothing logged — {cats}. Did you spend nothing on them, or not get round to logging?',
@@ -4542,6 +4654,14 @@ const TRANSLATIONS = {
     entry_done:'Done',
     entry_delete:'Remove this month',
     thresh_label:'Warn at',
+    spview_cat:'By category', spview_day:'By day',
+    sp_no_date:'No date yet',
+    sp_settlement:'settlement',
+    sp_date_aria:'Date this was spent',
+    sp_day_empty:'Nothing logged for this month yet. Amounts you add will appear here, day by day.',
+    xl_note_date:'Date',
+    btn_clear_spending:'Clear logged spending',
+    clear_spending_confirm:'Clear everything you have logged as actually spent, in every month?\n\nThis removes your logged amounts and the individual entries behind them.\n\nIt keeps your plan, your categories, what you know and what you estimate, your goals and your settings.\n\nThis cannot be undone.',
     setup_prior_salary_label:'Salary already received that covers your first month',
     setup_prior_salary_hint:'Your pay lands late in the month, so it covers the month after. The first month is funded by pay you received before this plan began, which no month here holds. Do not add your starting savings — that already includes it. The last month\u2019s pay covers the month after the plan ends, so it is not counted here.',
     thresh_aria:'Warning threshold',
@@ -4561,7 +4681,7 @@ const TRANSLATIONS = {
     qa_save:'Add',
     qa_income:'Income',
     qa_expenses:'Expenses',
-    qa_no_categories:'Every category is on a fixed schedule, so there is nothing to add to here. Switch one to variable first.',
+    qa_no_categories:'Every category is on a set schedule, so there is nothing to add to here. Switch one to \u201cI\u2019ll estimate\u201d first.',
     theme_auto:'Theme: match my device',
     theme_light:'Theme: light',
     theme_dark:'Theme: dark',
@@ -4678,7 +4798,7 @@ planner_open:'Plan this for me',
     legend_in:'Your input', legend_out:'Calculated automatically',
     setup_title:'Set up your table',
     setup_note:'Choose how many years to start with and the first month — this builds the table below. You can still add or remove months anytime.',
-    fold_setup:'Set up your table, categories and fixed amounts',
+    fold_setup:'Set up your table, categories and known amounts',
     fold_rules:'Emergency fund and starting balances',
     setup_years_label:'Number of years', setup_startmonth_label:'Starting month', btn_generate:'Generate months table',
     columns_title:'Table columns',
@@ -4733,7 +4853,7 @@ planner_open:'Plan this for me',
     alert_import_error:'Could not read that file — make sure it is a JSON export from this planner.',
     confirm_reset:'Reset all data? This clears every month, assumption and balance.',
     reset_confirm_title:'Reset all data?',
-    reset_confirm_message:"You'll permanently lose all your data and your customized setup — months, categories, fixed/variable settings, and everything else. This can't be undone.",
+    reset_confirm_message:"You'll permanently lose all your data and your customized setup — months, categories, what you know and what you estimate, and everything else. This can't be undone.",
     btn_yes:'OK', btn_no:'Cancel',
     announcement_modal_title:'📣 Announcement', btn_got_it:'Got it',
     msg_saving:'Saving…', msg_saved:'Saved', msg_editing:'Editing…', msg_savefailed:'Save failed — use Export to back up',
@@ -4834,14 +4954,14 @@ planner_open:'Plan this for me',
     ov_legend_none:'لم يُسجّل شيء بعد',
     actions_more:'النسخ الاحتياطي وإكسل والمشاركة',
     help_back:'العودة إلى {tab}',
-    planner_varies:'متغيّر',
-    planner_fixed:'ثابت',
-    planner_mode_note:'ضع علامة «ثابت» على ما يتكرر بالمبلغ نفسه كل شهر — الإيجار أو اشتراك. والالتزامات الثابتة تُحسب كمصروف حتى في شهر لم تسجّل فيه شيئًا.',
+    planner_varies:'سأقدّره',
+    planner_fixed:'أعرفه',
+    planner_mode_note:'كلاهما ميزانية — والفرق الوحيد هو مدى يقينك حين تكتب الرقم. علّم ما تعرفه مسبقًا، كالإيجار أو اشتراك، واكتبه مرة واحدة. وقدّر الباقي. وما تعرفه يُحسب كمصروف حتى في شهر لم تسجّل فيه شيئًا.',
     accounts_title:'عادة تستحق أن تُتّبع',
     accounts_two:'احتفظ بحسابين: حساب لراتبك ومصروفك اليومي، وآخر منفصل تحوّل إليه مدخراتك يوم الراتب. فالمال الذي لا تراه هو مال لا تنفقه — وهو ما يجعل هذه الأرقام حقيقية لا متمنّاة.',
     accounts_three:'احتفظ بثلاثة حسابات: حساب لراتبك ومصروفك اليومي، وحساب تحوّل إليه مدخراتك يوم الراتب، وحساب لصندوق الطوارئ حتى لا يختلط بما يُسمح لك بإنفاقه. فالمال الذي لا تراه هو مال لا تنفقه.',
     brief_title:'انتهى {month}',
-    brief_fixed:'التزامات ثابتة حُسبت كمصروف: {amount}',
+    brief_fixed:'مبالغ تعرفها مسبقًا حُسبت كمصروف: {amount}',
     brief_logged:'ما سجّلته: {amount}',
     brief_saved:'ما ادُّخر هذا الشهر حتى الآن: {amount}',
     brief_ask:'‏{n} بنود لم يُسجّل فيها شيء — {cats}. هل لم تنفق عليها شيئًا، أم لم تتمكن من التسجيل؟',
@@ -4916,6 +5036,14 @@ planner_open:'Plan this for me',
     entry_done:'تم',
     entry_delete:'احذف هذا الشهر',
     thresh_label:'نبّهني عند',
+    spview_cat:'حسب الفئة', spview_day:'حسب اليوم',
+    sp_no_date:'بلا تاريخ بعد',
+    sp_settlement:'تسوية',
+    sp_date_aria:'تاريخ الإنفاق',
+    sp_day_empty:'لم يُسجَّل شيء لهذا الشهر بعد. وما تضيفه سيظهر هنا يومًا بيوم.',
+    xl_note_date:'التاريخ',
+    btn_clear_spending:'امسح الإنفاق المسجَّل',
+    clear_spending_confirm:'هل تمسح كل ما سجّلته إنفاقًا فعليًا، في كل الأشهر؟\n\nسيزيل ذلك مبالغك المسجّلة والقيود المفردة التي تقف خلفها.\n\nويُبقي خطتك وفئاتك وما تعرفه وما تقدّره وأهدافك وإعداداتك.\n\nولا يمكن التراجع عن هذا.',
     setup_prior_salary_label:'الراتب المستلم سابقًا الذي يغطي شهرك الأول',
     setup_prior_salary_hint:'راتبك ينزل في أواخر الشهر، فهو يغطي الشهر التالي. والشهر الأول يُموَّل من راتب استلمته قبل بدء هذه الخطة، ولا يحمله أي شهر هنا. لا تُضِف رصيد ادخارك الابتدائي — فهو يتضمنه أصلًا. وراتب الشهر الأخير يغطي الشهر التالي لنهاية الخطة، لذا لا يُحتسب هنا.',
     thresh_aria:'حد التنبيه',
@@ -4935,7 +5063,7 @@ planner_open:'Plan this for me',
     qa_save:'إضافة',
     qa_income:'الدخل',
     qa_expenses:'المصروفات',
-    qa_no_categories:'جميع الفئات على جدول ثابت، لذا لا يوجد ما يُضاف إليه هنا. غيّر إحداها إلى متغيّر أولاً.',
+    qa_no_categories:'جميع الفئات على جدول محدّد، لذا لا يوجد ما يُضاف إليه هنا. غيّر إحداها إلى «سأقدّره» أولًا.',
     theme_auto:'المظهر: حسب الجهاز',
     theme_light:'المظهر: فاتح',
     theme_dark:'المظهر: داكن',
@@ -5052,7 +5180,7 @@ planner_open:'خطّط لي',
     legend_in:'إدخالك', legend_out:'يُحسب تلقائيًا',
     setup_title:'إعداد الجدول',
     setup_note:'اختر عدد السنوات التي تريد البدء بها والشهر الأول — سيُنشئ هذا الجدول أدناه. يمكنك إضافة أشهر أو حذفها في أي وقت.',
-    fold_setup:'إعداد الجدول والفئات والمبالغ الثابتة',
+    fold_setup:'إعداد الجدول والفئات والمبالغ المعروفة',
     fold_rules:'صندوق الطوارئ والأرصدة الابتدائية',
     setup_years_label:'عدد السنوات', setup_startmonth_label:'الشهر الأول', btn_generate:'إنشاء جدول الأشهر',
     columns_title:'أعمدة الجدول',
@@ -5107,7 +5235,7 @@ planner_open:'خطّط لي',
     alert_import_error:'تعذّرت قراءة هذا الملف — تأكّد أنه ملف JSON مُصدَّر من هذا المخطط.',
     confirm_reset:'هل تريد إعادة تعيين جميع البيانات؟ سيؤدي هذا إلى مسح كل شهر وافتراض ورصيد.',
     reset_confirm_title:'إعادة تعيين جميع البيانات؟',
-    reset_confirm_message:'ستفقد نهائيًا جميع بياناتك وإعداداتك المخصصة — الأشهر، والفئات، وإعدادات الثابت/المتغيّر، وكل شيء آخر. لا يمكن التراجع عن هذا.',
+    reset_confirm_message:'ستفقد نهائيًا جميع بياناتك وإعداداتك المخصصة — الأشهر، والفئات، وما تعرفه وما تقدّره، وكل شيء آخر. لا يمكن التراجع عن هذا.',
     btn_yes:'موافق', btn_no:'إلغاء',
     announcement_modal_title:'📣 إعلان', btn_got_it:'حسنًا',
     msg_saving:'جارٍ الحفظ…', msg_saved:'تم الحفظ', msg_editing:'جارٍ التعديل…', msg_savefailed:'فشل الحفظ — استخدم زر التصدير للنسخ الاحتياطي',
@@ -6367,10 +6495,35 @@ function unitemisedOf(m, key){
   const rest = actualOf(m, key) - logSum(m, key);
   return rest > 0.005 ? rest : 0;
 }
-function addLogEntry(m, key, amount, note){
+/* 'YYYY-MM-DD' for a date input, or '' when an entry predates the stamp.
+   Local parts, not toISOString: that shifts across the date line for anyone
+   east or west of UTC and would file an evening purchase under the next day. */
+function entryDate(e){
+  const ms = e && Number(e.t);
+  if(!isFinite(ms) || ms <= 0) return '';
+  const d = new Date(ms);
+  if(isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')
+       + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+/* Midday, so a timezone shift either way cannot roll the date over. */
+function ymdToStamp(ymd){
+  const p = String(ymd || '').split('-').map(Number);
+  if(p.length !== 3 || !p.every(n=> isFinite(n))) return 0;
+  return new Date(p[0], p[1]-1, p[2], 12, 0, 0).getTime();
+}
+
+function entryIsSettlement(e){ return !!(e && e.s); }
+
+function addLogEntry(m, key, amount, note, settlement){
   if(!m.log) m.log = {};
   if(!Array.isArray(m.log[key])) m.log[key] = [];
-  m.log[key].push({ a: Number(amount) || 0, n: String(note || '').trim().slice(0, NOTE_MAX), t: Date.now() });
+  const row = { a: Number(amount) || 0, n: String(note || '').trim().slice(0, NOTE_MAX), t: Date.now() };
+  // Flagged where it is written, not guessed from the note: someone can type
+  // the same words into a real purchase.
+  if(settlement) row.s = 1;
+  m.log[key].push(row);
 }
 /* Removing one entry takes its amount back out of the total, so the two never
    drift. Clamped at zero: a total edited by other means could otherwise be
@@ -6850,7 +7003,7 @@ function applyPayday(idx, held){
 
   if(gap < -0.5 && cat){
     setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
-    addLogEntry(m, cat, -gap, t('payday_note'));
+    addLogEntry(m, cat, -gap, t('payday_note'), true);
   } else if(gap > 0.5){
     // Underspending is money not spent, not money earned. Recording it as
     // income would leave every category looking exactly on plan, and the
@@ -6863,7 +7016,7 @@ function applyPayday(idx, held){
       const cut = Math.min(now, left);
       if(cut > 0){
         setActual(m, cat, now - cut);
-        addLogEntry(m, cat, -cut, t('payday_note'));
+        addLogEntry(m, cat, -cut, t('payday_note'), true);
         left -= cut;
       }
     }
@@ -6967,6 +7120,8 @@ function renderPaydayCheck(){
     '</div>';
 }
 
+let spendView = 'cat';          // 'cat' | 'day'
+
 function renderActualPanel(){
   renderSpendAlerts();
   renderPaydayCheck();
@@ -7023,6 +7178,19 @@ function renderActualPanel(){
       <span class="sp-left">${left >= 0 ? t('pvs_left') + ' ' + fmtMoney(left) : t('pvs_over') + ' ' + fmtMoney(-left)}</span>
     </div>`;
 
+  const vt = document.getElementById('sp-viewtoggle');
+  if(vt) vt.innerHTML =
+      '<button type="button" data-spview="cat"' + (spendView === 'cat' ? ' class="on"' : '') + '>'
+    + esc(t('spview_cat')) + '</button>'
+    + '<button type="button" data-spview="day"' + (spendView === 'day' ? ' class="on"' : '') + '>'
+    + esc(t('spview_day')) + '</button>';
+
+  if(spendView === 'day'){
+    rowsHost.innerHTML = renderSpendDays(m);
+    renderMoneyCheck(idx);
+    return;
+  }
+
   rowsHost.innerHTML = state.categories.map(key=>{
     const p = effectiveCategoryValue(m, key);
     const a = actualOf(m, key);
@@ -7074,7 +7242,10 @@ function renderSpendItems(m, key){
 
   const rows = list.map((e, i)=> `
     <li>
-      <span class="spi-note${e.n ? '' : ' is-blank'}">${e.n ? esc(e.n) : esc(t('sp_item_none'))}</span>
+      <input type="date" class="spi-date" value="${entryDate(e)}"
+             data-edate="${key}" data-i="${i}" aria-label="${esc(t('sp_date_aria'))}">
+      <span class="spi-note${e.n ? '' : ' is-blank'}">${e.n ? esc(e.n) : esc(t('sp_item_none'))}${
+        entryIsSettlement(e) ? ' <span class="spi-tag">' + esc(t('sp_settlement')) + '</span>' : ''}</span>
       <span class="spi-amt">${fmtMoney(Number(e.a) || 0)}</span>
       <button type="button" class="spi-del" data-del="${key}" data-i="${i}"
               title="${esc(t('sp_item_remove'))}"
@@ -7092,6 +7263,55 @@ function renderSpendItems(m, key){
       <p class="spi-head">${esc(t('sp_items'))}</p>
       <ul>${rows}${restRow}</ul>
     </div>`;
+}
+
+/* Every logged amount in the month, gathered by the day it happened. Undated
+   entries — logged before the stamp existed — sort last under their own head
+   rather than being hidden, because their date can be filled in from here. */
+function spendDaysFor(m){
+  const byDay = {};
+  state.categories.forEach(key=>{
+    logOf(m, key).forEach((e, i)=>{
+      const d = entryDate(e);
+      (byDay[d] = byDay[d] || []).push({ key, e, i });
+    });
+  });
+  const dated = Object.keys(byDay).filter(Boolean).sort();
+  if(byDay['']) dated.push('');
+  return dated.map(d=> ({ day: d, rows: byDay[d],
+    total: byDay[d].reduce((sum, r)=> sum + (Number(r.e.a) || 0), 0) }));
+}
+
+function dayHeading(ymd){
+  if(!ymd) return t('sp_no_date');
+  const p = ymd.split('-').map(Number);
+  const d = new Date(p[0], p[1]-1, p[2]);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
+  try{ return d.toLocaleDateString(locale, { weekday:'long', day:'numeric', month:'long' }); }
+  catch(e){ return ymd; }
+}
+
+function renderSpendDays(m){
+  const days = spendDaysFor(m);
+  if(!days.length) return '<p class="sp-day-empty">' + esc(t('sp_day_empty')) + '</p>';
+  return days.map(d=> `
+    <div class="sp-day">
+      <div class="sp-day-head">
+        <span class="sp-day-name">${esc(dayHeading(d.day))}</span>
+        <span class="sp-day-total">${fmtMoney(d.total)}</span>
+      </div>
+      <ul class="sp-day-list">${d.rows.map(r=> `
+        <li>
+          <span class="spd-cat">${esc(categoryLabel(r.key))}</span>
+          <span class="spd-note${r.e.n ? '' : ' is-blank'}">${r.e.n ? esc(r.e.n) : esc(t('sp_item_none'))}${
+            entryIsSettlement(r.e) ? ' <span class="spi-tag">' + esc(t('sp_settlement')) + '</span>' : ''}</span>
+          <input type="date" class="spi-date" value="${entryDate(r.e)}"
+                 data-edate="${r.key}" data-i="${r.i}" aria-label="${esc(t('sp_date_aria'))}">
+          <span class="spd-amt">${fmtMoney(Number(r.e.a) || 0)}</span>
+          <button type="button" class="spi-del" data-del="${r.key}" data-i="${r.i}"
+                  title="${esc(t('sp_item_remove'))}" aria-label="${esc(t('sp_item_remove'))}">✕</button>
+        </li>`).join('')}</ul>
+    </div>`).join('');
 }
 
 /* Everything held at the end of month idx: the opening balance, every month's
@@ -7333,7 +7553,7 @@ function applyMoneyCheck(idx){
     // On top of what the month already counts for this category — see the note
     // at the head of this patch for why the raw actual is the wrong base.
     setActual(m, cat, effectiveSpendValue(m, cat) + (-gap));
-    addLogEntry(m, cat, -gap, t('check_offset_note'));
+    addLogEntry(m, cat, -gap, t('check_offset_note'), true);
   } else {
     const how = (document.getElementById('spc-extra') || {}).value || 'underspent';
     if(how === 'income'){
@@ -7349,7 +7569,7 @@ function applyMoneyCheck(idx){
         const cut = Math.min(now, left);
         if(cut > 0){
           setActual(m, cat, now - cut);
-          addLogEntry(m, cat, -cut, t('check_offset_note'));
+          addLogEntry(m, cat, -cut, t('check_offset_note'), true);
           left -= cut;
         }
       }
@@ -7421,6 +7641,30 @@ function wireActualPanel(){
       renderAll();
       scheduleSave();
     }
+  });
+
+  // On the panel, not on #sp-rows: the toggle sits beside that list, so a
+  // listener bound to the list never sees the click.
+  document.getElementById('panel-actual').addEventListener('click', e=>{
+    const vbtn = e.target.closest('button[data-spview]');
+    if(!vbtn) return;
+    spendView = vbtn.dataset.spview === 'day' ? 'day' : 'cat';
+    renderActualPanel();
+  });
+
+  // Moving an entry to the day it actually happened.
+  document.getElementById('panel-actual').addEventListener('change', e=>{
+    const d = e.target.closest('input[data-edate]');
+    if(!d) return;
+    const idx = actualTargetIndex();
+    if(idx === -1) return;
+    const list = logOf(state.months[idx], d.dataset.edate);
+    const entry = list[Number(d.dataset.i)];
+    if(!entry) return;
+    const stamp = ymdToStamp(d.value);
+    if(stamp) entry.t = stamp; else delete entry.t;
+    renderActualPanel();
+    scheduleSave();
   });
 
   // Enter submits, so a whole shop can be logged without leaving the keyboard.
@@ -9745,18 +9989,40 @@ function buildWorkbook(){
 
   /* One row per logged amount, newest month last. Skipped when there is
      nothing itemised rather than exporting an empty sheet. */
-  const noteAoa = [[t('th_month'), t('xl_note_cat'), t('xl_note_note'), t('xl_note_amt')]];
+  const noteAoa = [[t('xl_note_date'), t('th_month'), t('xl_note_cat'), t('xl_note_note'), t('xl_note_amt')]];
+  // Gathered first so the whole history can be sorted by date rather than by
+  // the order the categories happen to be in. A real Date object, not text —
+  // Excel cannot group or filter a string, so a pivot by week needs this.
+  const noteRows = [];
   state.months.forEach(m=>{
     state.categories.forEach(key=>{
       logOf(m, key).forEach(e=>{
-        noteAoa.push([monthLabel(m.ym), categoryLabel(key), e.n || '', Number(e.a) || 0]);
+        const ymd = entryDate(e);
+        noteRows.push({
+          sort: ymd || '9999-99-99',
+          cells: [ ymd ? new Date(ymdToStamp(ymd)) : '',
+                   monthLabel(m.ym), categoryLabel(key),
+                   (e.n || '') + (entryIsSettlement(e) ? ' [' + t('sp_settlement') + ']' : ''),
+                   Number(e.a) || 0 ]
+        });
       });
     });
   });
+  noteRows.sort((a, b)=> a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0);
+  noteRows.forEach(r=> noteAoa.push(r.cells));
   if(noteAoa.length > 1){
     const ws4 = XLSX.utils.aoa_to_sheet(noteAoa);
-    ws4['!cols'] = [{wch:14},{wch:20},{wch:38},{wch:12}];
-    applyMoneyFormat(ws4, noteAoa.length - 1, [3]);
+    ws4['!cols'] = [{wch:13},{wch:14},{wch:20},{wch:38},{wch:12}];
+    applyMoneyFormat(ws4, noteAoa.length - 1, [4]);
+    // aoa_to_sheet has already turned each Date into Excel's own serial number
+    // with a US default format, so testing for a Date here would never match.
+    // The cell is already a real date to Excel — this only makes it readable,
+    // and unambiguous for anyone who does not read m/d/y.
+    for(let r = 1; r < noteAoa.length; r++){
+      const ref = XLSX.utils.encode_cell({ c:0, r });
+      const cell = ws4[ref];
+      if(cell && cell.v !== '' && cell.v !== undefined) cell.z = 'yyyy-mm-dd';
+    }
     XLSX.utils.book_append_sheet(wb, ws4, t('xl_note_sheet').slice(0,31));
   }
 
@@ -10220,7 +10486,7 @@ let helpReturn = null;
 
 /* A (!) that opens one help topic where the reader already is. */
 function helpTipHtml(topic){
-  return '<button type="button" class="help-tip" data-helptip="' + topic + '"'
+  return '<button type="button" class="help-tipbtn" data-helptip="' + topic + '"'
        + ' aria-label="' + esc(t('helptip_aria')) + '">!</button>';
 }
 
@@ -10236,6 +10502,14 @@ function openHelpSheet(topic){
   const copy = sec.cloneNode(true);
   // the in-page jump button belongs to the help page, not to this sheet
   copy.querySelectorAll('.help-goto').forEach(b=> b.remove());
+  // cloneNode copies ids, and the section carries the one the contents list
+  // links to — leaving two elements answering to it. Strip every id from the
+  // copy before it joins the document, then give the heading the one the
+  // dialog's aria-labelledby needs.
+  copy.removeAttribute('id');
+  copy.querySelectorAll('[id]').forEach(el=> el.removeAttribute('id'));
+  // A folded copy would open to a closed lid; the sheet is the content.
+  copy.querySelectorAll('details').forEach(d=> d.open = true);
   const h = copy.querySelector('h3');
   if(h) h.id = 'help-sheet-title';
   body.innerHTML = '';
@@ -10248,6 +10522,11 @@ function openHelpSheet(topic){
 function closeHelpSheet(){
   const overlay = document.getElementById('help-sheet-overlay');
   if(overlay) overlay.style.display = 'none';
+  // Emptied rather than left hidden: a copy of a help section sitting in the
+  // document for the rest of the session is one more thing to go wrong, and
+  // the sheet rebuilds itself from the live section every time it opens.
+  const body = document.getElementById('help-sheet-body');
+  if(body) body.innerHTML = '';
 }
 
 function gotoHelpTopic(topic){
@@ -10265,11 +10544,25 @@ function gotoHelpTopic(topic){
     // above it the scroll lands on a closed lid.
     let d = el.closest('details');
     while(d){ d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
+    // The section's own fold is a child, not an ancestor, so the walk above
+    // cannot reach it. Open the target's fold, and the fold of the section it
+    // sits in when the topic is tagged on something deeper.
+    const ownFold = el.querySelector(':scope > .help-fold');
+    if(ownFold) ownFold.open = true;
+    const parentSection = el.closest('.help-section');
+    if(parentSection){
+      const pf = parentSection.querySelector(':scope > .help-fold');
+      if(pf) pf.open = true;
+    }
     el.scrollIntoView({ behavior:'smooth', block:'start' });
+    // A frame later, so a fold that just opened has already reflowed and the
+    // ring never animates over an element that is still changing size.
     el.classList.remove('spotlight');
-    void el.offsetWidth;
-    el.classList.add('spotlight');
-    setTimeout(()=> el.classList.remove('spotlight'), 2600);
+    requestAnimationFrame(()=>{
+      void el.offsetWidth;
+      el.classList.add('spotlight');
+      setTimeout(()=> el.classList.remove('spotlight'), 2600);
+    });
   });
 }
 
@@ -10324,9 +10617,11 @@ function gotoAppFeature(key){
     if(!el) return;
     el.scrollIntoView({ behavior:'smooth', block:'center' });
     el.classList.remove('spotlight');
-    void el.offsetWidth;               // restart the ring if it is already on
-    el.classList.add('spotlight');
-    setTimeout(()=> el.classList.remove('spotlight'), 2600);
+    requestAnimationFrame(()=>{
+      void el.offsetWidth;             // restart the ring if it is already on
+      el.classList.add('spotlight');
+      setTimeout(()=> el.classList.remove('spotlight'), 2600);
+    });
   });
 }
 
@@ -10347,6 +10642,46 @@ function decorateHelpGoto(host){
     // than beside the step number.
     const host2 = el.matches('li') ? (el.querySelector('div') || el) : el;
     host2.appendChild(btn);
+  });
+}
+
+/* Each section becomes its own <details>, with its heading as the lid. Called
+   after the contents list is built, and safe to call again: a section already
+   carrying a .help-fold is left alone. */
+function foldHelpSections(hostId){
+  const host = document.getElementById(hostId);
+  if(!host) return;
+  const secs = [...host.querySelectorAll('.help-section')];
+  secs.forEach((sec, i)=>{
+    let det = sec.querySelector(':scope > .help-fold');
+
+    if(!det){
+      const h3 = sec.querySelector(':scope > h3');
+      if(!h3) return;
+
+      // everything after the heading is the body of the fold
+      const body = [];
+      for(let n = h3.nextSibling; n; n = n.nextSibling) body.push(n);
+
+      det = document.createElement('details');
+      det.className = 'help-fold';
+      const sum = document.createElement('summary');
+
+      sec.removeChild(h3);
+      sum.appendChild(h3);          // kept, not replaced: buildHelpToc reads it
+      det.appendChild(sum);
+      body.forEach(node=> det.appendChild(node));
+      sec.appendChild(det);
+
+      // The first one open, so the page does not read as an empty list.
+      if(i === 0) det.open = true;
+      return;
+    }
+
+    // Already folded. Anything sitting beside the fold arrived after it — the
+    // back link is re-added on every render, and the goto button is added later
+    // still — and would show while the section is collapsed. Put it inside.
+    [...sec.children].forEach(node=>{ if(node !== det) det.appendChild(node); });
   });
 }
 
@@ -10396,6 +10731,10 @@ function renderHelpTocs(){
   buildHelpToc('help-content-ar', 'ha');
   decorateHelpGoto(document.getElementById('help-content-en'));
   decorateHelpGoto(document.getElementById('help-content-ar'));
+  // Last, so every button that belongs to a section is already in place and
+  // gets folded away with it.
+  foldHelpSections('help-content-en');
+  foldHelpSections('help-content-ar');
 }
 
 function wireHelpToc(){
@@ -10416,6 +10755,9 @@ function wireHelpToc(){
     const toc = target.closest('.help-toc') ? null : link.closest('.help-toc');
     if(toc) toc.open = false;   // chose a topic: get the index out of the way
     if(target.classList.contains('help-toc')) target.open = true;
+    // Landing on a closed lid tells the reader nothing, so open it.
+    const fold = target.querySelector(':scope > .help-fold');
+    if(fold) fold.open = true;
     target.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 }
@@ -11798,6 +12140,12 @@ function wireEvents(){
   });
   document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
   document.getElementById('btn-connect-excel').addEventListener('click', onExcelLinkClick);
+  document.getElementById('btn-clear-spending').addEventListener('click', ()=>{
+    if(!confirm(t('clear_spending_confirm'))) return;
+    state.months.forEach(m=>{ m.actual = {}; m.log = {}; });
+    renderAll();
+    scheduleSave();
+  });
   document.getElementById('btn-share-excel').addEventListener('click', shareBackupFiles);
   document.getElementById('btn-reload-linked').addEventListener('click', reloadFromLinkedFile);
   document.getElementById('btn-import-excel').addEventListener('click', ()=>{
