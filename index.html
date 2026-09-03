@@ -827,6 +827,15 @@
   --chart-side:#4E9AD6;
   --chart-spend:#B0472F;
   --chart-save:#1F6F54;
+  /* Category slices. Each clears 3:1 on the card, and each can carry a
+     readable label. The gold is darker than the amber used elsewhere because
+     amber on a white card measures 2.07. */
+  --chart-c1:#1F6F54;
+  --chart-c2:#B0472F;
+  --chart-c3:#9A6B12;
+  --chart-c4:#5a6478;
+  --chart-c5:#3C3489;
+  --chart-c6:#0C447C;
 }
 
 /* Dark mode. The base stylesheet already draws everything from these token
@@ -863,6 +872,12 @@
     --chart-side:#B5DCF7;
     --chart-spend:#E08A70;
     --chart-save:#5FC79A;
+    --chart-c1:#5FC79A;
+    --chart-c2:#E08A70;
+    --chart-c3:#E7A93D;
+    --chart-c4:#A3AFC7;
+    --chart-c5:#B0A4EE;
+    --chart-c6:#7FB3E3;
   }
 }
 :root[data-theme="dark"]{
@@ -893,6 +908,12 @@
   --chart-side:#B5DCF7;
   --chart-spend:#E08A70;
   --chart-save:#5FC79A;
+  --chart-c1:#5FC79A;
+  --chart-c2:#E08A70;
+  --chart-c3:#E7A93D;
+  --chart-c4:#A3AFC7;
+  --chart-c5:#B0A4EE;
+  --chart-c6:#7FB3E3;
 }
 
 /* --------------------------------------------------------------- base ---- */
@@ -1105,6 +1126,48 @@ input[type="number"]{ -moz-appearance:textfield; appearance:textfield; }
   min-height:var(--tap);
 }
 .mrow-lbl{ display:flex; align-items:center; gap:9px; min-width:0; font-size:12.5px; font-weight:600; }
+.mrow-wrap{ display:flex; flex-direction:column; gap:3px; }
+/* Says where the real number goes, at the moment the greyed box makes people
+   think they are stuck with what they typed. */
+.mrow-locked{
+  display:flex; align-items:center; flex-wrap:wrap; gap:6px;
+  margin:0; padding:0 10px 2px; font-size:11px; color:var(--ink-soft);
+}
+.mrow-jump{
+  border:none; background:none; padding:0; cursor:pointer;
+  font-family:inherit; font-size:11px; font-weight:600; color:var(--emerald-deep);
+  text-decoration:underline; text-underline-offset:2px;
+}
+
+/* A (!) that opens one help topic in place. */
+.help-tip{
+  flex:0 0 auto; width:17px; height:17px; border-radius:50%; padding:0; cursor:pointer;
+  border:1px solid var(--emerald-deep); background:transparent; color:var(--emerald-deep);
+  font-family:inherit; font-size:11px; font-weight:700; line-height:1;
+  display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;
+}
+.help-tip:hover{ background:var(--emerald-deep); color:var(--paper); }
+.help-tip:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
+/* On a phone the sheet comes up from the bottom, under the thumb, so reading it
+   never costs the reader their place in the form behind it. */
+.help-sheet-overlay{ align-items:flex-end; padding:0; }
+.help-sheet-card{
+  position:relative; max-width:560px; width:100%;
+  max-height:78vh; overflow-y:auto;
+  border-radius:16px 16px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+}
+.help-sheet-card .help-section{ margin:0; }
+.help-sheet-close{
+  position:absolute; inset-inline-end:12px; top:10px;
+  width:32px; height:32px; border-radius:50%; cursor:pointer;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink-soft);
+  font-size:13px; line-height:1;
+}
+@media (min-width:700px){
+  .help-sheet-overlay{ align-items:center; padding:20px; }
+  .help-sheet-card{ border-radius:12px; max-height:80vh; padding:24px 26px; }
+}
 .mrow-lbl .nm{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .mdot{ width:4px; height:18px; border-radius:3px; flex:0 0 auto; background:var(--good); }
 .mdot.warn{ background:var(--warn); }
@@ -1979,6 +2042,14 @@ nav.tabs button{ color:var(--ink); }
   font-variant-numeric:tabular-nums;
 }
 .sp-spent-k{ font-size:11px; color:var(--ink-soft); }
+/* Pushed to the far end of the row, where the eye already goes for the total
+   card's equivalent figure. */
+.sp-remain{
+  margin-inline-start:auto; font-size:12px; font-weight:600;
+  font-variant-numeric:tabular-nums; color:var(--good-ink);
+}
+.sp-row.is-warn .sp-remain{ color:var(--warn-ink); }
+.sp-row.is-over .sp-remain{ color:var(--bad-ink); }
 .is-warn .sp-spent-v{ color:var(--warn-ink); }
 .is-over .sp-spent-v{ color:var(--bad-ink); }
 .is-good .sp-spent-v{ color:var(--good-ink); }
@@ -3052,10 +3123,56 @@ nav.tabs button[data-unsettled]{ padding-inline-end:26px; }
 .foot .foot-credit{ margin-top:8px; padding-top:0; border-top:none; }
 
 
+/* Placeholders were left at the browser default #757575, which fails 4.5:1 in
+   dark and in three cases in light too. --ink-soft is what the two styled
+   placeholders already used, measuring 5.18 and 7.72. opacity is pinned because
+   Firefox dims placeholders by default. */
+/* Sits with the fixed/variable toggle it belongs to, and wraps under it on a
+   narrow screen rather than squeezing the label. */
+/* The planner's own row, which lays its controls out differently. */
+.pl-thresh{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; color:var(--ink-soft); white-space:nowrap;
+}
+.pl-thresh-in{
+  font-family:var(--font-mono); font-size:11.5px; text-align:center; direction:ltr;
+  width:52px; padding:5px 4px; border-radius:3px;
+  border:1px solid var(--amber-border); background:var(--amber-bg); color:var(--ink);
+}
+.pl-thresh-in:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+.pl-thresh-u{ font-weight:600; }
+
+.pm-thresh{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; color:var(--ink-soft); white-space:nowrap;
+}
+.pm-thresh-in{
+  font-family:var(--font-mono); font-size:11.5px; text-align:center; direction:ltr;
+  width:52px; padding:5px 4px; border-radius:3px;
+  border:1px solid var(--amber-border); background:var(--amber-bg); color:var(--ink);
+}
+.pm-thresh-in:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+.pm-thresh-u{ font-weight:600; }
+
+input::placeholder,
+textarea::placeholder{ color:var(--ink-soft); opacity:1; }
+
+/* Month pickers are selects so their month names can be localised; a native
+   month input draws its own text from the browser's locale instead. */
+select.month-select{
+  font-family:var(--font-body); font-size:11.5px;
+  border:1px solid var(--amber-border); background:var(--amber-bg); color:var(--ink);
+  border-radius:3px; padding:5px 6px; max-width:100%;
+}
+select.month-select:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
+.setup-fields select.month-select{ font-size:13px; padding:8px 9px; width:150px; }
+.period-row select.month-select{ width:132px; }
+
 /* ---------------------------------------------- dark-mode form controls ---- */
 /* These inputs set an amber background but no colour, so they inherited the
    UA default — black, which on the dark amber measured 1.43:1. Declared here
    rather than edited in place because this sheet loads after the inline one. */
+select.month-select,
 .setup-fields input[type="number"],
 .setup-fields input[type="month"],
 .custom-add input,
@@ -3300,9 +3417,14 @@ input.month-input,
             <label for="setup-salary-day" class="cur-label" data-i18n="setup_salaryday_label">Salary usually lands on day</label>
             <input type="number" id="setup-salary-day" min="1" max="31" step="1" placeholder="25">
           </div>
+          <div class="field" id="prior-salary-field" hidden>
+            <label for="setup-prior-salary" class="cur-label" data-i18n="setup_prior_salary_label">Salary already received that covers your first month</label>
+            <input type="number" id="setup-prior-salary" step="any" min="0">
+            <p class="section-note" data-i18n="setup_prior_salary_hint">Paid before the plan starts, so no month holds it. Do not include your starting savings — that already contains it.</p>
+          </div>
           <div class="field">
             <label data-i18n="setup_startmonth_label">Starting month</label>
-            <input type="month" id="setup-start-month">
+            <select id="setup-start-month" class="month-select"></select>
           </div>
           <div class="field">
             <label for="setup-currency" data-i18n="setup_currency_label">Currency</label>
@@ -3328,7 +3450,7 @@ input.month-input,
         </div>
 
         <div class="columns-section">
-          <h3 data-i18n="planning_mode_title">Fixed vs. variable</h3>
+          <h3 data-i18n="planning_mode_title">Which amounts do you already know?</h3><span id="pm-tip"></span>
           <p class="section-note" style="margin:0 0 12px;" data-i18n="planning_mode_note">Mark an entry as fixed to set one amount for the whole period, or variable to enter it month by month.</p>
           <div id="planning-mode-list" class="planning-mode-list"></div>
         </div>
@@ -3561,6 +3683,7 @@ input.month-input,
           <p style="margin-top:8px;"><b>It adds up.</b> Type an amount, press <span class="help-key">Add</span>, and it joins the running total for that category. Three shops at 120, 85 and 240 leave you at 445. The box empties ready for the next one, and pressing Enter does the same as pressing Add.</p>
           <p style="margin-top:8px;">Made a mistake? The <span class="help-key">↺</span> button beside a category clears what you logged there and starts it over.</p>
           <p style="margin-top:8px;">Spent nothing at all on something? Enter <strong>0</strong> and press Add. That records it as genuinely nothing, which is not the same as never logging it — see below.</p>
+          <p style="margin-top:8px;"><b>What is left.</b> Beside each category's total sits what remains of its plan, so you can see the room you have without doing the subtraction. Once you pass the plan it says how far over instead. A category with no plan set shows nothing there — there is no remainder to report.</p>
         </div>
 
         <div class="help-section" data-goto="spent">
@@ -3610,9 +3733,24 @@ input.month-input,
           <p style="margin-top:8px;">It is a starting point, not a lock — change any single month and only that month changes. If your pay goes up, update the figure and press <span class="help-key">Apply to every month</span>; it tells you how many months would change and asks first.</p>
         </div>
 
-        <div class="help-section" data-goto="fixed">
-          <h3>Amounts that never change</h3>
-          <p>Some things are the same every month — rent, a subscription. Others move around — groceries, fuel.</p>
+        <div class="help-section" data-goto="salary">
+          <h3>When your salary lands</h3>
+          <p>Tell the app the day your salary usually arrives, under <span class="help-key">Enter your budget and plan</span>. It matters more than it sounds: a month here runs from one payday to the next, not from the 1st to the 31st.</p>
+          <p style="margin-top:8px;"><b>Paid late in the month?</b> Money arriving on 25 August is what you live on through September. So September shows August's pay against September's spending — which is how you actually experience it.</p>
+          <p style="margin-top:8px;"><b>Paid early?</b> Money arriving on 5 September covers September itself, and nothing shifts.</p>
+          <p style="margin-top:8px;">The changeover is the 16th, and it is not an arbitrary line: a period starting on the 16th or later has most of its days in the following month, so that is the month it belongs to.</p>
+          <p style="margin-top:8px;">Two things follow from a late payday, and the app handles both:</p>
+          <ul class="help-list">
+            <li><b>Your first month</b> is paid for by money you received before the plan existed, which no month here holds. A box appears asking for it. Do not add your starting savings to it — that figure already includes it, and counting it twice would flatter every number after it.</li>
+            <li><b>Your last month's pay</b> covers the month after your plan ends, so it is not in the totals. The plan is not losing it; it simply falls outside the period.</li>
+          </ul>
+          <p style="margin-top:10px;">The salary box on each month card always shows the pay that <i>arrived</i> in that month, and editing it changes only that month. The shifting happens in the totals, not in what you type.</p>
+        </div>
+
+        <div class="help-section" data-goto="fixed" data-topic="knownvsest">
+          <h3>Amounts you know, and amounts you estimate</h3>
+          <p><b>Both are budgets.</b> Whichever you choose, you are writing a number to measure your real spending against — and you still log what you actually spend either way. The only difference is how sure you are when you write it.</p>
+          <p style="margin-top:8px;">Some things you already know — rent, a subscription. Others you do not — groceries, fuel.</p>
           <p style="margin-top:8px;">Under <b>Fixed vs. variable</b>, mark anything steady as <b>fixed</b> and type the amount once. It fills itself in for every month, and those rows appear greyed out while you're entering data so you can't overwrite them by accident. Leave everything else as <b>variable</b> and enter it month by month.</p>
           <p style="margin-top:8px;">A fixed amount runs over a <b>period</b>, and you say where that period stops:</p>
           <ul class="help-list">
@@ -3620,6 +3758,17 @@ input.month-input,
             <li><b>Until a month I choose</b> — it stops after the month you pick.</li>
           </ul>
           <p style="margin-top:10px;">That is how you record a pay rise or a rent increase. End the old period at the month before the change, press <span class="help-key">+ Add period</span>, and give the new one its own amount. Each month uses whichever period covers it.</p>
+        </div>
+
+        <div class="help-section" data-goto="fixed">
+          <h3>When a category should warn you</h3>
+          <p>A category turns amber as you close in on its plan, and red once you pass it. The amber point starts at <b>80%</b>, and you can set it per category with <b>Warn at</b>, beside that category's fixed/variable choice.</p>
+          <p style="margin-top:8px;">One number cannot suit everything you spend on:</p>
+          <ul class="help-list">
+            <li><b>Rent, at 95%</b> — a fixed bill you cannot influence. Warning at 80% tells you nothing you can act on, so let it stay green until it is nearly over.</li>
+            <li><b>Groceries, at 70%</b> — the part of the month you can still change. Warning earlier gives you time to do something about it.</li>
+          </ul>
+          <p style="margin-top:10px;">The smart planner asks for it too, so a plan you generate arrives with the warning points already set. Leave a box empty and that category goes back to 80%.</p>
         </div>
 
         <div class="help-section" data-goto="emergency">
@@ -3824,6 +3973,7 @@ input.month-input,
           <p style="margin-top:8px;"><b>والمبالغ تتراكم.</b> اكتب مبلغًا واضغط <span class="help-key">إضافة</span> لينضم إلى مجموع تلك الفئة. ثلاث مشتريات بـ 120 و85 و240 تصل بك إلى 445. ويفرغ الحقل استعدادًا للتالي، وضغط Enter يعادل ضغط «إضافة».</p>
           <p style="margin-top:8px;">أخطأت؟ زر <span class="help-key">↺</span> بجانب الفئة يمسح ما سجّلته فيها ويبدأ من جديد.</p>
           <p style="margin-top:8px;">لم تنفق شيئًا على بند ما؟ أدخل <strong>0</strong> واضغط «إضافة»، فيُسجَّل ذلك بوصفه «لا شيء» فعلًا، وهو يختلف عن عدم التسجيل إطلاقًا — انظر أدناه.</p>
+          <p style="margin-top:8px;"><b>وما تبقّى.</b> بجوار إجمالي كل فئة يظهر ما تبقّى من خطتها، لترى المتاح أمامك دون أن تطرح بنفسك. ومتى تجاوزت الخطة أخبرك بمقدار التجاوز بدلًا من ذلك. أما الفئة التي بلا خطة فلا يظهر لها شيء هناك — إذ لا بقيّة تُذكر.</p>
         </div>
 
         <div class="help-section" data-goto="spent">
@@ -3873,8 +4023,23 @@ input.month-input,
           <p style="margin-top:8px;">وهو نقطة بداية لا قيد: غيّر أي شهر بمفرده فيتغيّر ذلك الشهر وحده. وإذا زاد راتبك، حدّث الرقم واضغط <span class="help-key">تطبيق على كل الأشهر</span>؛ سيخبرك بعدد الأشهر التي ستتغيّر ويسألك أولًا.</p>
         </div>
 
-        <div class="help-section" data-goto="fixed">
-          <h3>المبالغ الثابتة</h3>
+        <div class="help-section" data-goto="salary">
+          <h3>متى ينزل راتبك</h3>
+          <p>أخبر التطبيق باليوم الذي ينزل فيه راتبك عادةً، من <span class="help-key">أدخل ميزانيتك وخطتك</span>. والأمر أهم مما يبدو: فالشهر هنا يمتد من راتب إلى الراتب الذي يليه، لا من الأول إلى الحادي والثلاثين.</p>
+          <p style="margin-top:8px;"><b>راتبك ينزل في أواخر الشهر؟</b> المال الذي يصل في 25 أغسطس هو ما تعيش عليه طوال سبتمبر. لذلك يعرض سبتمبر راتب أغسطس أمام إنفاق سبتمبر — وهكذا تعيشه فعلًا.</p>
+          <p style="margin-top:8px;"><b>ينزل مبكرًا؟</b> المال الذي يصل في 5 سبتمبر يغطي سبتمبر نفسه، ولا شيء يتزحزح.</p>
+          <p style="margin-top:8px;">ونقطة التحوّل هي اليوم السادس عشر، وليست خطًا اعتباطيًا: فالفترة التي تبدأ في السادس عشر أو بعده يقع معظم أيامها في الشهر التالي، فإليه تنتمي.</p>
+          <p style="margin-top:8px;">ويترتب على نزول الراتب متأخرًا أمران، والتطبيق يتكفّل بهما:</p>
+          <ul class="help-list">
+            <li><b>شهرك الأول</b> يموّله مال استلمته قبل وجود الخطة، ولا يحمله أي شهر هنا. سيظهر لك حقل يسأل عنه. ولا تُضِف إليه رصيد ادخارك الابتدائي — فذلك الرقم يتضمنه أصلًا، واحتسابه مرتين يُجمّل كل رقم بعده.</li>
+            <li><b>راتب شهرك الأخير</b> يغطي الشهر التالي لنهاية خطتك، فلا يدخل في الإجماليات. والخطة لا تفقده؛ هو ببساطة خارج الفترة.</li>
+          </ul>
+          <p style="margin-top:10px;">وحقل الراتب في بطاقة كل شهر يعرض دائمًا الراتب الذي <i>وصل</i> في ذلك الشهر، وتعديله يغيّر ذلك الشهر وحده. فالإزاحة تحدث في الإجماليات، لا فيما تكتبه.</p>
+        </div>
+
+        <div class="help-section" data-goto="fixed" data-topic="knownvsest">
+          <h3>مبالغ تعرفها ومبالغ تقدّرها</h3>
+          <p><b>كلاهما ميزانية.</b> أيًّا اخترت، فأنت تكتب رقمًا تقيس عليه إنفاقك الحقيقي — وتسجّل ما تنفقه فعلًا في الحالتين. والفرق الوحيد هو مدى يقينك حين تكتبه.</p>
           <p>بعض البنود ثابتة كل شهر — الإيجار، أو اشتراك ما. وبعضها يتغيّر — البقالة، الوقود.</p>
           <p style="margin-top:8px;">ضمن <b>ثابت أم متغيّر</b>، اجعل الثابت <b>ثابتًا</b> واكتب المبلغ مرة واحدة. سيملأ نفسه في كل الأشهر، وتظهر تلك الحقول باهتة أثناء الإدخال حتى لا تكتب فوقها بالخطأ. واترك الباقي <b>متغيّرًا</b> وأدخله شهرًا بشهر.</p>
           <p style="margin-top:8px;">ويسري المبلغ الثابت على <b>فترة</b>، وأنت تحدّد أين تنتهي هذه الفترة:</p>
@@ -3883,6 +4048,17 @@ input.month-input,
             <li><b>حتى شهر أختاره</b> — يتوقف بعد الشهر الذي تختاره.</li>
           </ul>
           <p style="margin-top:10px;">وهكذا تسجّل زيادة في الراتب أو ارتفاعًا في الإيجار: أنهِ الفترة القديمة عند الشهر السابق للتغيير، واضغط <span class="help-key">+ إضافة فترة</span>، وامنح الجديدة مبلغها. ويأخذ كل شهر بالفترة التي تغطّيه.</p>
+        </div>
+
+        <div class="help-section" data-goto="fixed">
+          <h3>متى تُنبّهك الفئة</h3>
+          <p>تتحوّل الفئة إلى الكهرماني كلما اقتربت من خطتها، وإلى الأحمر متى تجاوزتها. وتبدأ نقطة التنبيه عند <b>٨٠٪</b>، ويمكنك ضبطها لكل فئة عبر <b>نبّهني عند</b>، بجوار اختيار «ثابت/متغيّر» لتلك الفئة.</p>
+          <p style="margin-top:8px;">فرقم واحد لا يناسب كل ما تنفق عليه:</p>
+          <ul class="help-list">
+            <li><b>الإيجار، عند ٩٥٪</b> — فاتورة ثابتة لا تملك التأثير فيها. والتنبيه عند ٨٠٪ لا يخبرك بشيء تستطيع فعله، فدعها خضراء حتى تشارف على الانتهاء.</li>
+            <li><b>البقالة، عند ٧٠٪</b> — الجزء الذي ما زال بيدك تغييره. والتنبيه المبكر يمنحك وقتًا للتصرّف.</li>
+          </ul>
+          <p style="margin-top:10px;">والمخطِّط الذكي يسألك عنها أيضًا، فتأتيك الخطة المولَّدة ونقاط التنبيه مضبوطة. واترك الحقل فارغًا لتعود تلك الفئة إلى ٨٠٪.</p>
         </div>
 
         <div class="help-section" data-goto="emergency">
@@ -4029,7 +4205,7 @@ input.month-input,
     <div class="qa-grab"></div>
     <h4 id="qa-title" data-i18n="qa_title">Add an expense</h4>
     <p class="qa-amount zero" id="qa-amount"><span class="cur" id="qa-currency">$</span><span id="qa-digits">0</span></p>
-    <p class="qa-month" data-i18n-html="qa_adding_to">Adding to <strong id="qa-month-label"></strong></p>
+    <p class="qa-month"><span data-i18n="qa_adding_to">Adding to</span> <strong id="qa-month-label"></strong></p>
     <div class="qa-chips" id="qa-chips"></div>
     <div class="qa-keypad" id="qa-keypad">
       <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
@@ -4076,6 +4252,14 @@ input.month-input,
       <button type="button" id="planner-skip" class="planner-ghost"></button>
       <button type="button" id="planner-next"></button>
     </div>
+  </div>
+</div>
+
+<div id="help-sheet-overlay" class="modal-overlay help-sheet-overlay" style="display:none;"
+     role="dialog" aria-modal="true" aria-labelledby="help-sheet-title">
+  <div class="modal-card help-sheet-card">
+    <button type="button" id="help-sheet-close" class="help-sheet-close" aria-label="Close">✕</button>
+    <div id="help-sheet-body"></div>
   </div>
 </div>
 
@@ -4356,6 +4540,12 @@ const TRANSLATIONS = {
     entry_h2:'Enter your budget and plan',
     entry_note:'Set what you are saving for, then what you earn and expect to spend. Everything else in the app is worked out from here.',
     entry_done:'Done',
+    entry_delete:'Remove this month',
+    thresh_label:'Warn at',
+    setup_prior_salary_label:'Salary already received that covers your first month',
+    setup_prior_salary_hint:'Your pay lands late in the month, so it covers the month after. The first month is funded by pay you received before this plan began, which no month here holds. Do not add your starting savings — that already includes it. The last month\u2019s pay covers the month after the plan ends, so it is not counted here.',
+    thresh_aria:'Warning threshold',
+    qa_adding_to:'Adding to',
     entry_next:'Save & next month',
     entry_finish:'Save & finish',
     entry_prev_year:'Previous year',
@@ -4495,13 +4685,16 @@ planner_open:'Plan this for me',
     columns_note:"Choose which expense categories to track. Remove ones you don't need, or add your own.",
     new_category_placeholder:'e.g. Subscriptions', btn_add_category:'+ Add column',
     min_category_msg:'Keep at least one expense column.',
-    planning_mode_title:'Fixed vs. variable',
-    planning_mode_note:'Mark an entry as fixed to set an amount for a chosen period — add more periods for a salary raise or a rate change later on. Leave it variable to enter it month by month.',
+    planning_mode_title:'Which amounts do you already know?',
+    planning_mode_note:'Both are budgets — a number to measure your real spending against. The only difference is how sure you are when you write it. Rent you already know, so type it once and it fills every month. Groceries you do not, so set what you intend to spend and find out. Either way you log what you actually spend as the month goes, and the app shows you the gap.',
+    locked_hint:'Comes from your plan.',
+    locked_jump:'Log what you actually paid →',
+    helptip_aria:'What does this mean?',
     btn_add_period:'+ Add period',
     period_end_plan:'To the end of the plan',
     period_end_until:'Until a month I choose',
     period_end_aria:'When this amount stops applying',
-    mode_fixed:'Fixed', mode_variable:'Variable',
+    mode_fixed:'I know it', mode_variable:'I\u2019ll estimate',
     th_month:'Month', th_salary:'Salary', th_sideincome:'Side income', th_rent:'Rent / Housing', th_utilities:'Utilities', th_groceries:'Groceries',
     th_transport:'Transport', th_entertainment:'Entertainment', th_other:'Other expenses', th_emergency:'Emergency',
     th_totalspend:'Total spend', th_monthlysavings:'Monthly savings', th_savingsrate:'Savings rate', th_emergencybalance:'Emergency fund balance',
@@ -4721,6 +4914,12 @@ planner_open:'Plan this for me',
     entry_h2:'أدخل ميزانيتك وخطتك',
     entry_note:'حدّد ما تدّخر من أجله، ثم ما تكسبه وما تتوقع إنفاقه. وكل ما عدا ذلك في التطبيق محسوب من هنا.',
     entry_done:'تم',
+    entry_delete:'احذف هذا الشهر',
+    thresh_label:'نبّهني عند',
+    setup_prior_salary_label:'الراتب المستلم سابقًا الذي يغطي شهرك الأول',
+    setup_prior_salary_hint:'راتبك ينزل في أواخر الشهر، فهو يغطي الشهر التالي. والشهر الأول يُموَّل من راتب استلمته قبل بدء هذه الخطة، ولا يحمله أي شهر هنا. لا تُضِف رصيد ادخارك الابتدائي — فهو يتضمنه أصلًا. وراتب الشهر الأخير يغطي الشهر التالي لنهاية الخطة، لذا لا يُحتسب هنا.',
+    thresh_aria:'حد التنبيه',
+    qa_adding_to:'الإضافة إلى',
     entry_next:'حفظ والشهر التالي',
     entry_finish:'حفظ وإنهاء',
     entry_prev_year:'السنة السابقة',
@@ -4860,13 +5059,16 @@ planner_open:'خطّط لي',
     columns_note:'اختر فئات المصروفات التي تريد تتبعها. احذف ما لا تحتاجه، أو أضف فئتك الخاصة.',
     new_category_placeholder:'مثال: الاشتراكات', btn_add_category:'+ إضافة عمود',
     min_category_msg:'يجب الإبقاء على عمود مصروفات واحد على الأقل.',
-    planning_mode_title:'ثابت أم متغيّر',
-    planning_mode_note:'علّم الإدخال بأنه ثابت لتحديد مبلغ خلال فترة زمنية تحددها — أضف فترات أخرى لتمثيل زيادة راتب أو تغيير لاحق. اتركه متغيّرًا لإدخاله شهرًا بشهر.',
+    planning_mode_title:'أي المبالغ تعرفها مسبقًا؟',
+    planning_mode_note:'كلاهما ميزانية — رقم تقيس عليه إنفاقك الحقيقي. والفرق الوحيد هو مدى يقينك حين تكتبه. الإيجار تعرفه، فاكتبه مرة واحدة ليملأ كل الأشهر. والبقالة لا تعرفها، فحدّد ما تنوي إنفاقه ثم اكتشف. وفي الحالتين تسجّل ما أنفقته فعلًا أولًا بأول، ويعرض لك التطبيق الفارق.',
+    locked_hint:'مأخوذ من خطتك.',
+    locked_jump:'سجّل ما دفعته فعلًا ←',
+    helptip_aria:'ماذا يعني هذا؟',
     btn_add_period:'+ إضافة فترة',
     period_end_plan:'حتى نهاية الخطة',
     period_end_until:'حتى شهر أختاره',
     period_end_aria:'متى يتوقف سريان هذا المبلغ',
-    mode_fixed:'ثابت', mode_variable:'متغيّر',
+    mode_fixed:'أعرفه', mode_variable:'سأقدّره',
     th_month:'الشهر', th_salary:'الراتب', th_sideincome:'دخل إضافي', th_rent:'الإيجار / السكن', th_utilities:'المرافق', th_groceries:'البقالة',
     th_transport:'المواصلات', th_entertainment:'الترفيه', th_other:'مصروفات أخرى', th_emergency:'الطوارئ',
     th_totalspend:'إجمالي الصرف', th_monthlysavings:'الادخار الشهري', th_savingsrate:'معدل الادخار', th_emergencybalance:'رصيد صندوق الطوارئ',
@@ -5166,8 +5368,8 @@ function confirmRemoveGoalMsg(name){
     : ('Remove the goal “' + name + '”?');
 }
 
-function statusText(spent, planned){
-  const st = spendStatus(spent, planned);
+function statusText(spent, planned, key){
+  const st = spendStatus(spent, planned, key);
   if(st === 'none') return lang === 'ar' ? 'لا خطة' : 'No plan set';
   const pct = planned > 0 ? Math.round((spent / planned) * 100) : 0;
   if(st === 'over'){
@@ -5369,9 +5571,50 @@ function fmtMoney(n){
 function fmtPct(n){
   return (Math.round((n||0)*1000)/10) + '%';
 }
+/* Written out rather than taken from toLocaleDateString: 'ar-SA' resolves to
+   the Hijri calendar in some engines, which would name the wrong month
+   entirely, and this keeps the app offline and predictable. These are the
+   Gregorian names used in the Gulf, not the Levantine set. */
+const MONTH_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+                  'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+/* A single month's name in the current language — the chips and the schedule
+   summary, where there is no year to go with it. Arabic uses the full name:
+   it has no conventional three-letter abbreviation, and the chips wrap. */
+/* Options for a month picker, labelled in the current language. Ranges around
+   the plan rather than offering every month that has ever existed, and always
+   contains the value it is given so opening a screen can never drop it. */
+function monthOptionsHtml(selected, allowBlank){
+  const have = state && state.months && state.months.length;
+  const first = have ? state.months[0].ym : currentYm();
+  const last  = have ? state.months[state.months.length - 1].ym : currentYm();
+  let from = addMonths(first, -24);
+  let to   = addMonths(last, 60);
+  if(selected){
+    if(selected < from) from = selected;
+    if(selected > to)   to   = selected;
+  }
+  let html = allowBlank ? '<option value=""></option>' : '';
+  let ym = from;
+  for(let guard = 0; guard < 1200 && ym <= to; guard++){
+    html += '<option value="' + ym + '"' + (ym === selected ? ' selected' : '') + '>'
+          + esc(monthLabel(ym)) + '</option>';
+    ym = addMonths(ym, 1);
+  }
+  return html;
+}
+
+function monthShortLabel(n){
+  if(lang === 'ar' && MONTH_AR[n-1]) return MONTH_AR[n-1];
+  return new Date(2000, n-1, 1).toLocaleDateString('en-US', { month:'short' });
+}
+
 function monthLabel(ym){
   if(!ym) return '';
   const [y,m] = ym.split('-').map(Number);
+  // The year stays in Western digits: they are what Saudi finance uses, what
+  // the importer reads, and what every stored month key is built from.
+  if(lang === 'ar' && MONTH_AR[m-1]) return MONTH_AR[m-1] + ' ' + y;
   const d = new Date(y, m-1, 1);
   return d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
 }
@@ -5476,6 +5719,8 @@ function normalizeState(s){
     if(!s.fieldModes[key]) s.fieldModes[key] = 'variable';
     if(!s.fixedSchedules[key]) s.fixedSchedules[key] = [];
   });
+  if(!s.nearThresholds || typeof s.nearThresholds !== 'object') s.nearThresholds = {};
+  if(s.priorSalary === undefined || s.priorSalary === null) s.priorSalary = 0;
   s.months.forEach(m=>{ if(m.sideIncome===undefined) m.sideIncome = 0; });
   if(s.hasSeenHelp===undefined) s.hasSeenHelp = true;
   if(s.userName===undefined) s.userName = '';
@@ -5509,6 +5754,10 @@ function defaultState(){
     focusGoalId: null,
     currency: DEFAULT_CURRENCY,
     emergencyThreshold: 0,
+    nearThresholds: {},     // per-category %, where green turns amber
+    priorSalary: 0,         // pay received before the plan, funding its first period
+
+
     emergencyStart: 0,
     // Every assumption starts at zero. A pre-filled 3% pay rise and 6% return
     // are guesses presented as facts: the projection looks authoritative
@@ -5628,11 +5877,31 @@ function effectiveValue(m, key){
   return (state.fieldModes[key]==='fixed') ? getFixedAmountForMonth(key, m.ym) : (Number(m[key])||0);
 }
 function effectiveSalary(m){ return effectiveValue(m,'salary'); }
+
+/* A period runs payday to payday and belongs to the month holding most of its
+   days. Starting on the 16th or later leaves most of the period in the NEXT
+   calendar month, so that pay funds the next month rather than this one. */
+function salaryShiftActive(){
+  const d = Number(state.salaryDay);
+  return d >= 16 && d <= 31;
+}
+
+/* The pay that funds this month's period. Identity lookup rather than an index
+   argument, so every caller stays a one-word change and cannot drift out of
+   step with the row it is rendering. */
+function cycleSalary(m){
+  if(!salaryShiftActive()) return effectiveSalary(m);
+  const i = state.months.indexOf(m);
+  if(i > 0) return effectiveSalary(state.months[i-1]);
+  // The first period is funded from before the plan began.
+  if(i === 0) return Number(state.priorSalary) || 0;
+  return effectiveSalary(m);
+}
 function effectiveSideIncome(m){ return effectiveValue(m,'sideIncome'); }
 function effectiveCategoryValue(m, key){ return effectiveValue(m, key); }
 
 function monthCalc(m, prevBalance, threshold){
-  const incomeVal = effectiveSalary(m) + effectiveSideIncome(m);
+  const incomeVal = cycleSalary(m) + effectiveSideIncome(m);
   // Actuals take over here once the month is over — see effectiveSpendValue.
   const expenseSum = state.categories.reduce((s,c)=>s+effectiveSpendValue(m,c),0);
   const surplus = incomeVal - expenseSum;
@@ -5653,10 +5922,10 @@ function computeAll(){
   const rows = state.months.map(m=>{
     const c = monthCalc(m, prevBalance, threshold);
     prevBalance = c.balance;
-    return {m, income:effectiveSalary(m)+effectiveSideIncome(m), spend:c.spend, savings:c.savings, rate:c.rate, emergencyContribution:c.emer, emergencyBalance:c.balance};
+    return {m, income:cycleSalary(m)+effectiveSideIncome(m), spend:c.spend, savings:c.savings, rate:c.rate, emergencyContribution:c.emer, emergencyBalance:c.balance};
   });
   const totals = rows.reduce((acc,r)=>{
-    acc.salary += effectiveSalary(r.m);
+    acc.salary += cycleSalary(r.m);
     acc.sideIncome += effectiveSideIncome(r.m);
     acc.spend += r.spend;
     acc.savings += r.savings;
@@ -5666,7 +5935,7 @@ function computeAll(){
   }, {salary:0, sideIncome:0, spend:0, savings:0, emergency:0});
   totals.income = totals.salary + totals.sideIncome;
   totals.rate = totals.income>0 ? totals.savings/totals.income : 0;
-  const filled = rows.filter(r=> (effectiveSalary(r.m)+effectiveSideIncome(r.m)) > 0);
+  const filled = rows.filter(r=> (cycleSalary(r.m)+effectiveSideIncome(r.m)) > 0);
   totals.avgSavings = filled.length ? filled.reduce((s,r)=>s+r.savings,0)/filled.length : 0;
   return {rows, totals};
 }
@@ -5787,6 +6056,7 @@ function removeCategory(key){
   delete state.customLabels[key];
   delete state.fieldModes[key];
   delete state.fixedSchedules[key];
+  delete state.nearThresholds[key];
   state.months.forEach(m=>{ delete m[key]; });
   renderAll();
   scheduleSave();
@@ -5861,13 +6131,13 @@ function periodRowHtml(key, p){
     ? t('period_end_plan') + ' (' + monthLabel(lastYm) + ')'
     : t('period_end_plan');
   return `<div class="period-row" data-key="${key}" data-pid="${p.id}">
-    <input type="month" class="period-start" value="${p.startYm}">
+    <select class="period-start month-select">${monthOptionsHtml(p.startYm)}</select>
     <span class="period-arrow">→</span>
     <select class="period-end-mode" aria-label="${esc(t('period_end_aria'))}">
       <option value="plan" ${open?'selected':''}>${esc(openLabel)}</option>
       <option value="until" ${open?'':'selected'}>${esc(t('period_end_until'))}</option>
     </select>
-    <input type="month" class="period-end" value="${p.endYm||''}" ${open?'hidden':''}>
+    <select class="period-end month-select" ${open?'hidden':''}>${monthOptionsHtml(p.endYm||'', true)}</select>
     <input type="number" class="period-amount" value="${p.amount||0}">
     <button type="button" class="period-remove" title="${t('row_delete_title')}" aria-label="${t('row_delete_title')}">✕</button>
     ${periodMonthsHtml(p)}
@@ -5878,12 +6148,12 @@ function periodRowHtml(key, p){
    somebody says otherwise, so the common case stays a single line. */
 function periodMonthsHtml(p){
   const some = Array.isArray(p.months) && p.months.length > 0;
-  // Names come from the same place monthLabel gets them, so there is no
-  // second list of month names to fall out of step.
+  // Names come from monthShortLabel, the same table monthLabel uses, so there
+  // is no second list of month names to fall out of step.
   const chips = Array.from({ length: 12 }, (_, i)=>{
     const n = i + 1;
     const on = some && p.months.indexOf(n) !== -1;
-    const name = new Date(2000, i, 1).toLocaleDateString('en-US', { month: 'short' });
+    const name = monthShortLabel(i + 1);
     return '<button type="button" class="pmo-chip' + (on ? ' on' : '') + '" data-mon="' + n + '"' +
       ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(name) + '</button>';
   }).join('');
@@ -5899,13 +6169,24 @@ function periodMonthsHtml(p){
 function fieldRowHtml(key, label){
   const fixed = state.fieldModes[key]==='fixed';
   const periods = state.fixedSchedules[key] || [];
+  // Only a spending category can be overspent, so only one gets a threshold.
+  const isSpend = state.categories.indexOf(key) !== -1;
+  const threshPct = Math.round(nearThresholdFor(key) * 100);
+  const threshHtml = isSpend ? `
+      <label class="pm-thresh">
+        <span class="pm-thresh-k">${esc(t('thresh_label'))}</span>
+        <input type="number" class="pm-thresh-in" min="10" max="100" step="5"
+               inputmode="numeric" value="${threshPct}" data-thresh="${key}"
+               aria-label="${esc(t('thresh_aria'))} — ${esc(label)}">
+        <span class="pm-thresh-u">%</span>
+      </label>` : '';
   let html = `<div class="pm-row-wrap">
     <div class="pm-row">
       <span class="pm-label">${label}</span>
       <div class="pm-toggle" data-row="${key}">
         <button type="button" data-mode="variable" class="${!fixed?'active':''}">${t('mode_variable')}</button>
         <button type="button" data-mode="fixed" class="${fixed?'active':''}">${t('mode_fixed')}</button>
-      </div>
+      </div>${threshHtml}
     </div>`;
   if(fixed){
     html += `<div class="pm-periods">`;
@@ -5917,6 +6198,8 @@ function fieldRowHtml(key, label){
 }
 
 function renderPlanningModes(){
+  const tipHost = document.getElementById('pm-tip');
+  if(tipHost) tipHost.innerHTML = helpTipHtml('knownvsest');
   const list = document.getElementById('planning-mode-list');
   let html = fieldRowHtml('salary', t('th_salary'));
   html += fieldRowHtml('sideIncome', t('th_sideincome'));
@@ -5927,6 +6210,19 @@ function renderPlanningModes(){
     btn.addEventListener('click', ()=>{
       const row = btn.closest('.pm-toggle').dataset.row;
       setFieldMode(row, btn.dataset.mode);
+    });
+  });
+  list.querySelectorAll('.pm-thresh-in').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const key = e.target.dataset.thresh;
+      const raw = Math.round(Number(e.target.value));
+      if(!isFinite(raw) || raw <= 0){                 // blank or nonsense: back to the default
+        delete state.nearThresholds[key];
+      }else{
+        state.nearThresholds[key] = Math.min(100, Math.max(10, raw));
+      }
+      renderAll();
+      scheduleSave();
     });
   });
   list.querySelectorAll('.btn-add-period').forEach(btn=>{
@@ -6013,11 +6309,17 @@ function monthFieldsHtml(m, idx){
   const sideLocked = state.fieldModes.sideIncome === 'fixed';
 
   const rowHtml = ([key, label, value, locked])=> `
-      <label class="mrow">
-        <span class="mrow-lbl"><i class="mdot ${categoryTone(key)}" aria-hidden="true"></i><span class="nm">${label}</span></span>
-        <input class="mrow-field" type="number" inputmode="decimal" step="any" min="0"
-               value="${value}" data-idx="${idx}" data-field="${key}"${locked ? ' disabled' : ''}>
-      </label>`;
+      <div class="mrow-wrap">
+        <label class="mrow">
+          <span class="mrow-lbl"><i class="mdot ${categoryTone(key)}" aria-hidden="true"></i><span class="nm">${label}</span></span>
+          <input class="mrow-field" type="number" inputmode="decimal" step="any" min="0"
+                 value="${value}" data-idx="${idx}" data-field="${key}"${locked ? ' disabled' : ''}>
+        </label>
+        ${locked ? `<p class="mrow-locked">
+          <span>${esc(t('locked_hint'))}</span>${helpTipHtml('knownvsest')}
+          <button type="button" class="mrow-jump" data-gofeature="spent">${esc(t('locked_jump'))}</button>
+        </p>` : ''}
+      </div>`;
 
   const income = [
     ['salary', t('th_salary'), effectiveSalary(m), salaryLocked],
@@ -6172,11 +6474,23 @@ function monthSpendBasis(m){
 /* Colour bands. 80% is the point worth warning at: close enough that the
    remainder matters, far enough that there is still something to do about it. */
 const NEAR_PLAN = 0.8;
-function spendStatus(spent, planned){
+
+/* A category's own warning point, as a fraction. Anything unset, unparseable or
+   out of range falls back to the shared default, so a bad value can never make a
+   category stop warning altogether. */
+function nearThresholdFor(key){
+  const pct = Number((state.nearThresholds || {})[key]);
+  if(!isFinite(pct) || pct <= 0) return NEAR_PLAN;
+  return Math.min(1, Math.max(0.05, pct / 100));
+}
+
+/* key is optional: the month total and the all-category total are not any one
+   category, so they keep the shared default. */
+function spendStatus(spent, planned, key){
   if(planned <= 0) return spent > 0 ? 'over' : 'none';
   const ratio = spent / planned;
   if(ratio > 1) return 'over';
-  if(ratio >= NEAR_PLAN) return 'warn';
+  if(ratio >= (key ? nearThresholdFor(key) : NEAR_PLAN)) return 'warn';
   return 'good';
 }
 /* Bars are capped at 100% width; the number beside them carries the overspend. */
@@ -6631,7 +6945,7 @@ function renderPaydayCheck(){
   }
   const m = state.months[idx];
   const mv = monthMovement(idx);
-  const income = effectiveSalary(m) + effectiveSideIncome(m);
+  const income = cycleSalary(m) + effectiveSideIncome(m);
 
   host.innerHTML =
     '<div class="payday">' +
@@ -6713,7 +7027,7 @@ function renderActualPanel(){
     const p = effectiveCategoryValue(m, key);
     const a = actualOf(m, key);
     const logged = hasLoggedActual(m, key);
-    const st = spendStatus(a, p);
+    const st = spendStatus(a, p, key);
     return `
       <div class="sp-row is-${st}">
         <div class="sp-row-top">
@@ -6724,11 +7038,16 @@ function renderActualPanel(){
         <div class="sp-spent">
           <span class="sp-spent-v">${fmtMoney(a)}</span>
           <span class="sp-spent-k">${logged ? t('sp_so_far') : t('sp_none_yet')}</span>
+          ${p > 0
+            ? `<span class="sp-remain">${a <= p
+                 ? t('pvs_left') + ' ' + fmtMoney(p - a)
+                 : t('pvs_over') + ' ' + fmtMoney(a - p)}</span>`
+            : (a > 0 ? `<span class="sp-remain">${t('pvs_over')} ${fmtMoney(a)}</span>` : '')}
         </div>
         <div class="sp-bar"><span style="width:${barPct(a, p)}%"></span></div>
         <div class="sp-row-foot">
           <span>${t('pvs_planned')} ${fmtMoney(p)}</span>
-          <span class="sp-status">${statusText(a, p)}</span>
+          <span class="sp-status">${statusText(a, p, key)}</span>
         </div>
         ${renderSpendItems(m, key)}
         <div class="sp-add">
@@ -7216,7 +7535,7 @@ function plannedVsSpent(){
       planned += effectiveCategoryValue(m, key);
       spent += actualOf(m, key);
     });
-    return { key, label: categoryLabel(key), planned, spent, status: spendStatus(spent, planned) };
+    return { key, label: categoryLabel(key), planned, spent, status: spendStatus(spent, planned, key) };
   });
   const planned = per.reduce((s, r)=> s + r.planned, 0);
   const spent = per.reduce((s, r)=> s + r.spent, 0);
@@ -7250,7 +7569,7 @@ function renderPlannedVsSpent(){
           <span class="pvs-nums">${fmtMoney(r.spent)} <span class="of">/ ${fmtMoney(r.planned)}</span></span>
         </div>
         <div class="sp-bar"><span style="width:${barPct(r.spent, r.planned)}%"></span></div>
-        <div class="pvs-row-foot"><span class="sp-status">${statusText(r.spent, r.planned)}</span></div>
+        <div class="pvs-row-foot"><span class="sp-status">${statusText(r.spent, r.planned, r.key)}</span></div>
       </div>`).join('')}`;
 }
 
@@ -7778,7 +8097,7 @@ function renderGoalList(){
           </label>
           <label class="goal-due">
             <span>${t('goal_from')}</span>
-            <input type="month" value="${g.startYm || ''}" data-start="${g.id}">
+            <select class="month-select" data-start="${g.id}">${monthOptionsHtml(g.startYm || '', true)}</select>
           </label>
           ${state.goalMode === 'focus'
             ? `<button type="button" class="goal-focus-btn${isFocus ? ' on' : ''}" data-focus="${g.id}">${isFocus ? t('goal_focused') : t('goal_focus_this')}</button>`
@@ -7792,7 +8111,7 @@ function renderGoalList(){
           </div>
           ${g.dueYm
             ? `<label class="goal-due gdm-when"><span>${t('goal_by')}</span>
-                 <input type="month" value="${g.dueYm}" data-due="${g.id}"></label>`
+                 <select class="month-select" data-due="${g.id}">${monthOptionsHtml(g.dueYm)}</select></label>`
             : `<span class="gdm-auto-when">${when ? t('goal_lands').replace('{date}', when) : t('goal_not_yet')}</span>`}
         </div>
         ${goalDeadlineNote(g, i, sim)}
@@ -7996,10 +8315,10 @@ function wireGoals(){
 
   list.addEventListener('change', e=>{
     const share = e.target.closest('input[data-share]');
-    const due = e.target.closest('input[data-due]');
+    const due = e.target.closest('[data-due]');
     const gname = e.target.closest('input[data-gname]');
     const gtarget = e.target.closest('input[data-gtarget]');
-    const gstart = e.target.closest('input[data-start]');
+    const gstart = e.target.closest('[data-start]');
 
     if(gname){
       const g = goalById(gname.dataset.gname);
@@ -8042,7 +8361,7 @@ function wireGoals(){
      rather than blur because this is a delegated listener and blur does not
      bubble. */
   list.addEventListener('focusout', e=>{
-    if(e.target.closest('input[data-due]') || e.target.closest('input[data-start]')) applyGoalsAndRender();
+    if(e.target.closest('[data-due]') || e.target.closest('[data-start]')) applyGoalsAndRender();
   });
 }
 
@@ -8234,7 +8553,7 @@ function renderBudget(){
     const sideLocked = state.fieldModes.sideIncome==='fixed';
     let html = `
       <td>${monthLabel(m.ym)}${monthUnsettled(m) ? ' <span class="unsettled-tag">' + esc(t('unsettled_tag')) + '</span>' : ''}</td>
-      <td><span class="ro-val">${fmtMoney(effectiveSalary(m))}</span></td>
+      <td><span class="ro-val">${fmtMoney(cycleSalary(m))}</span></td>
       <td><span class="ro-val">${fmtMoney(effectiveSideIncome(m))}</span></td>`;
     state.categories.forEach(key=>{
       html += `<td><span class="ro-val">${fmtMoney(effectiveSpendValue(m,key))}</span></td>`;
@@ -8258,6 +8577,12 @@ function renderBudget(){
 
   const sd = document.getElementById('setup-salary-day');
   if(sd) sd.value = state.salaryDay || '';
+  // Only asked for when the pay actually lands in the month before the one it
+  // funds; with an early payday there is no gap to fill.
+  const pf = document.getElementById('prior-salary-field');
+  const pi = document.getElementById('setup-prior-salary');
+  if(pf) pf.hidden = !salaryShiftActive();
+  if(pi) pi.value = Number(state.priorSalary) || 0;
   document.getElementById('emergency-threshold').value = state.emergencyThreshold;
   document.getElementById('emergency-start').value = state.emergencyStart;
 
@@ -8270,7 +8595,11 @@ function renderBudget(){
   applyCurrencyLabels();
   if(state.months.length){
     document.getElementById('setup-years').value = Math.max(1, Math.round(state.months.length/12));
-    document.getElementById('setup-start-month').value = state.months[0].ym;
+    const sm = document.getElementById('setup-start-month');
+    if(sm){
+      sm.innerHTML = monthOptionsHtml(state.months[0].ym);
+      sm.value = state.months[0].ym;
+    }
   }
 
   renderCategoryManager();
@@ -8742,13 +9071,13 @@ function renderDashboard(){
   const catData = state.categories.map(c=> totals[c]||0 );
   const catLabels = state.categories.map(c=> categoryLabel(c));
   const months = rows.map(r=> monthLabel(r.m.ym));
-  const salarySeries = rows.map(r=> effectiveSalary(r.m));
+  const salarySeries = rows.map(r=> cycleSalary(r.m));
   const sideIncomeSeries = rows.map(r=> effectiveSideIncome(r.m));
   const spendSeries = rows.map(r=> r.spend);
   const savingsSeries = rows.map(r=> r.savings);
   const rateSeries = rows.map(r=> Math.round(r.rate*1000)/10);
 
-  const palette = ['#1F6F54','#B0472F','#E7A93D','#5a6478','#3C3489','#0C447C'];
+  const palette = chartPalette();
 
   if(document.getElementById('panel-dashboard').classList.contains('active')){
     renderChartsNotice('charts-unavailable-dashboard');
@@ -8792,18 +9121,23 @@ function renderDashboard(){
       data:{ labels:months, datasets:[
         // Stacked, so a month carrying extra income still shows where it came
         // from without spending a fourth bar on it.
+        // order is drawn back to front: Chart.js walks the sorted datasets in
+        // reverse, so the LOWEST order is painted last and lands on top. The
+        // bars sit at 1 and the savings line at 0 so nothing covers it.
         { type:'bar', label:t('series_salary'), data:salarySeries, backgroundColor:chartSalary(),
-          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false },
+          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false, order:1 },
         { type:'bar', label:t('th_sideincome'), data:sideIncomeSeries, backgroundColor:chartSide(),
-          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false },
-        { type:'bar', label:t('series_expenses'), data:spendSeries, backgroundColor:chartSpend(), stack:'out' },
+          stack:'in', borderColor:chartCard(), borderWidth:1.5, borderSkipped:false, order:1 },
+        { type:'bar', label:t('series_expenses'), data:spendSeries, backgroundColor:chartSpend(), stack:'out', order:1 },
         // Its own stack, so a stacked y scale cannot add it onto the bars.
-        { type:'line', label:t('series_savings'), data:savingsSeries, stack:'net',
+        { type:'line', label:t('series_savings'), data:savingsSeries, stack:'net', order:0,
           borderColor:chartSave(), backgroundColor:chartSave(),
-          tension:0.3, borderWidth:2, pointRadius:2.5 }
+          tension:0.3, borderWidth:2.5, pointRadius:2.5, $casing:true }
       ]},
       options:{ maintainAspectRatio:false,
-        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12 } },
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12,
+            // order changes the legend too; put it back the way it reads.
+            sort:(a, b)=> a.datasetIndex - b.datasetIndex } },
           tooltip:{ callbacks:{
             label:c=> ' ' + c.dataset.label + ': ' + fmtMoney(c.parsed.y),
             // The column is two segments; give the figure it adds up to rather
@@ -8815,7 +9149,8 @@ function renderDashboard(){
               return t('series_income') + ': ' + fmtMoney(tot);
             } } } },
         scales:{ x:{ stacked:true, grid:{display:false} },
-                 y:{ stacked:true, ticks:{ callback:v=>fmtMoney(v) } } } }
+                 y:{ stacked:true, ticks:{ callback:v=>fmtMoney(v) } } } },
+      plugins:[lineCasing]
     });
 
     if(chartWaterfall) chartWaterfall.destroy();
@@ -8825,7 +9160,7 @@ function renderDashboard(){
       .sort((a, b)=> b[1] - a[1]);
     let running = totals.income;
     const wData = [[0, totals.income]];
-    const wCols = ['#1F6F54'];
+    const wCols = [chartSave()];
     wRows.forEach((r, i)=>{
       const next = running - r[1];
       wData.push([next, running]);
@@ -8833,7 +9168,7 @@ function renderDashboard(){
       wCols.push(palette[(i + 1) % palette.length]);
     });
     wData.push([0, running]);
-    wCols.push('#0C447C');
+    wCols.push(chartSalary());
     chartWaterfall = new Chart(document.getElementById('chart-waterfall'), {
       type:'bar',
       data:{ labels:[t('series_income')].concat(wRows.map(r=>r[0])).concat([t('series_savings')]),
@@ -8923,6 +9258,29 @@ function donutBoxIsWide(){
   return !!box && box.clientWidth >= 620;
 }
 
+/* The savings line is drawn in front of the bars already, but over a bar its
+   contrast falls to between 1.09 and 2.14 — in front and still invisible. No
+   single colour clears 3:1 against every bar fill and both cards, so the stroke
+   gets a halo in the card colour and floats over whatever is beneath it. */
+const lineCasing = {
+  id:'lineCasing',
+  beforeDatasetDraw(chart, args){
+    const ds = chart.data.datasets[args.index];
+    if(!ds || !ds.$casing) return;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.shadowColor = chartCard();
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  },
+  afterDatasetDraw(chart, args){
+    const ds = chart.data.datasets[args.index];
+    if(!ds || !ds.$casing) return;
+    chart.ctx.restore();
+  }
+};
+
 /* Total in the middle of the ring. */
 const donutCentre = {
   id:'donutCentre',
@@ -8959,7 +9317,7 @@ const donutLabels = {
       const a = (arc.startAngle + arc.endAngle) / 2;
       const r = arc.innerRadius + (arc.outerRadius - arc.innerRadius) / 2;
       ctx.save();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = labelInkOn(arc.options && arc.options.backgroundColor);
       ctx.font = '700 12px ' + chartFont();
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(Math.round(pct * 100) + '%', arc.x + Math.cos(a) * r, arc.y + Math.sin(a) * r);
@@ -9081,6 +9439,28 @@ function chartSave(){   return chartCss('--chart-save',   '#1F6F54'); }
    drawn boundary instead of relying on their fills differing. */
 function chartCard(){ return chartCss('--paper-raised', '#FFFFFF'); }
 
+/* Category slice colours, per theme. */
+function chartPalette(){
+  const fallback = ['#1F6F54','#B0472F','#9A6B12','#5a6478','#3C3489','#0C447C'];
+  return fallback.map((f, i)=> chartCss('--chart-c' + (i + 1), f));
+}
+
+/* White is not always the readable choice on a slice: on the light theme's gold
+   it manages 4.68, on the dark theme's mint only 1.6. Pick whichever of white
+   or ink has the better contrast against the fill it sits on. */
+function labelInkOn(fill){
+  const n = String(fill).trim().replace('#', '');
+  if(n.length !== 6) return '#FFFFFF';
+  const ch = n.match(/../g).map(x=>{
+    const v = parseInt(x, 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  const L = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  const onWhite = 1.05 / (L + 0.05);
+  const onInk   = (L + 0.05) / (0.0286 + 0.05);   // 0.0286 = luminance of #2C2A26
+  return onWhite >= onInk ? '#FFFFFF' : '#2C2A26';
+}
+
 /* Categories worth their own slice, with the rest gathered into one.
    Built from the live totals, never from a fixed list. */
 /* Name, amount and share under the chart. Carries what the outside labels
@@ -9090,7 +9470,7 @@ function renderDonutLegend(rows, wide){
   if(!el) return;
   if(wide || !rows.length){ el.hidden = true; el.innerHTML = ''; return; }
   const total = rows.reduce((a, r)=> a + r[1], 0) || 1;
-  const palette = ['#1F6F54','#B0472F','#E7A93D','#5a6478','#3C3489','#0C447C'];
+  const palette = chartPalette();
   el.hidden = false;
   el.innerHTML = rows.map((r, i)=>
     '<li><span class="dl-dot" style="background:' + palette[i % palette.length] + '"></span>' +
@@ -9214,10 +9594,18 @@ function parseMonthLabel(label){
   if(label===undefined || label===null) return null;
   const s = String(label).trim();
   const m = s.match(/^([A-Za-z]{3})[a-z]*\s+(\d{4})$/);
-  if(!m) return null;
-  const idx = MONTH_ABBR.findIndex(a=> a.toLowerCase()===m[1].toLowerCase());
-  if(idx<0) return null;
-  return m[2]+'-'+String(idx+1).padStart(2,'0');
+  if(m){
+    const idx = MONTH_ABBR.findIndex(a=> a.toLowerCase()===m[1].toLowerCase());
+    return idx < 0 ? null : m[2]+'-'+String(idx+1).padStart(2,'0');
+  }
+  // A sheet exported while the app was in Arabic carries Arabic month names,
+  // and has to read back in either language.
+  const ar = s.match(/^(\S+)\s+(\d{4})$/);
+  if(ar){
+    const idx = MONTH_AR.indexOf(ar[1]);
+    if(idx >= 0) return ar[2]+'-'+String(idx+1).padStart(2,'0');
+  }
+  return null;
 }
 
 function findBudgetSheet(wb){
@@ -9316,7 +9704,7 @@ function buildWorkbook(){
 
   const aoa = [headerRow];
   rows.forEach(r=>{
-    const row = [monthLabel(r.m.ym), effectiveSalary(r.m), effectiveSideIncome(r.m)];
+    const row = [monthLabel(r.m.ym), cycleSalary(r.m), effectiveSideIncome(r.m)];
     state.categories.forEach(c=> row.push(effectiveSpendValue(r.m,c)));
     row.push(r.emergencyContribution, r.spend, r.savings, Math.round(r.rate*1000)/10, r.emergencyBalance);
     aoa.push(row);
@@ -9715,6 +10103,17 @@ function updateDateTime(){
   el.textContent = now.toLocaleString(locale, {weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
 }
 
+function wirePriorSalary(){
+  const el = document.getElementById('setup-prior-salary');
+  if(!el || el.dataset.wired) return;
+  el.dataset.wired = '1';
+  el.addEventListener('change', e=>{
+    state.priorSalary = Math.max(0, Number(e.target.value) || 0);
+    renderAll();
+    scheduleSave();
+  });
+}
+
 function syncUserNameInput(){
   const el = document.getElementById('user-name-input');
   if(!el) return;
@@ -9723,6 +10122,7 @@ function syncUserNameInput(){
 }
 
 function applyLanguage(l){
+  wirePriorSalary();
   lang = l;
   state.lang = l;
   document.documentElement.lang = l;
@@ -9817,6 +10217,38 @@ function nearestHelpTopic(){
 }
 
 let helpReturn = null;
+
+/* A (!) that opens one help topic where the reader already is. */
+function helpTipHtml(topic){
+  return '<button type="button" class="help-tip" data-helptip="' + topic + '"'
+       + ' aria-label="' + esc(t('helptip_aria')) + '">!</button>';
+}
+
+/* The sheet shows the live help section rather than a copy of it, so the page
+   and the sheet can never drift apart, in either language. */
+function openHelpSheet(topic){
+  const host = document.getElementById('help-content-' + lang)
+            || document.getElementById('help-content-en');
+  const sec = host && host.querySelector('.help-section[data-topic="' + topic + '"]');
+  const body = document.getElementById('help-sheet-body');
+  const overlay = document.getElementById('help-sheet-overlay');
+  if(!sec || !body || !overlay) return;
+  const copy = sec.cloneNode(true);
+  // the in-page jump button belongs to the help page, not to this sheet
+  copy.querySelectorAll('.help-goto').forEach(b=> b.remove());
+  const h = copy.querySelector('h3');
+  if(h) h.id = 'help-sheet-title';
+  body.innerHTML = '';
+  body.appendChild(copy);
+  overlay.style.display = 'flex';
+  const close = document.getElementById('help-sheet-close');
+  if(close) close.focus();
+}
+
+function closeHelpSheet(){
+  const overlay = document.getElementById('help-sheet-overlay');
+  if(overlay) overlay.style.display = 'none';
+}
 
 function gotoHelpTopic(topic){
   switchTab('help');
@@ -10109,6 +10541,15 @@ function plannerCatalogue(){
 /* A key added in this wizard has no entry in state.customLabels yet, because
    nothing is committed until the plan is applied. */
 /* Whatever the app already thinks, unless this run has said otherwise. */
+/* The draft's answer if it has one, otherwise whatever the category already
+   uses, so re-running the wizard shows the setting rather than resetting it. */
+function plannerThreshFor(d, k){
+  const v = d && d.thresh && d.thresh[k];
+  const n = Number(v);
+  if(isFinite(n) && n > 0) return Math.min(100, Math.max(10, Math.round(n)));
+  return Math.round(nearThresholdFor(k) * 100);
+}
+
 function plannerModeFor(d, k){
   if(d && d.modes && d.modes[k]) return d.modes[k];
   return state.fieldModes[k] === 'fixed' ? 'fixed' : 'variable';
@@ -10141,7 +10582,7 @@ function plannerFixedAmount(k){
 function plannerScheduleSummary(k){
   return (state.fixedSchedules[k] || []).map(p=>{
     const when = (Array.isArray(p.months) && p.months.length)
-      ? p.months.map(n=> new Date(2000, n - 1, 1).toLocaleDateString('en-US', { month:'short' })).join('/')
+      ? p.months.map(n=> monthShortLabel(n)).join('/')
       : t('period_every');
     return when + ' ' + fmtMoney(Number(p.amount) || 0);
   }).join('  ·  ');
@@ -10163,7 +10604,7 @@ function plannerMonthsHtml(d, k){
   const some = chosen.length > 0;
   const chips = Array.from({ length: 12 }, (_, i)=>{
     const n = i + 1;
-    const name = new Date(2000, i, 1).toLocaleDateString('en-US', { month: 'short' });
+    const name = monthShortLabel(i + 1);
     return '<button type="button" class="pmo-chip' + (chosen.indexOf(n) !== -1 ? ' on' : '') + '"' +
       ' data-plmon="' + n + '" data-plk="' + esc(k) + '"' +
       ' aria-pressed="' + (chosen.indexOf(n) !== -1 ? 'true' : 'false') + '">' + esc(name) + '</button>';
@@ -10481,7 +10922,7 @@ function planNowFigures(){
        || state.months[state.months.length - 1]
        || null;
   if(!m) return null;
-  const income = effectiveSalary(m) + effectiveValue(m, 'sideIncome');
+  const income = cycleSalary(m) + effectiveValue(m, 'sideIncome');
   const spend = state.categories.reduce((sum, k)=> sum + effectiveCategoryValue(m, k), 0);
   return { income, spend, save: income - spend };
 }
@@ -10620,13 +11061,13 @@ function renderPlanner(){
       '<input type="number" id="pl-salday" inputmode="numeric" min="1" max="31" step="1" placeholder="25" value="' + (d.salaryDay || '') + '">' +
       '<p class="planner-sub">' + esc(t('planner_salday_note')) + '</p></div>' +
       '<div class="planner-field"><label for="pl-start">' + esc(t('planner_start')) + '</label>' +
-      '<input type="month" id="pl-start" value="' + esc(d.startYm || currentYm()) + '">' +
+      '<select id="pl-start" class="month-select">' + monthOptionsHtml(d.startYm || currentYm()) + '</select>' +
       '<p class="planner-sub">' + esc(t('planner_start_note')) + '</p></div>' +
       // Asked only of students, and only because the answer changes what the
       // app is willing to claim further out than this date.
       (d.work === 'student'
         ? '<div class="planner-field"><label for="pl-grad">' + esc(t('planner_grad')) + '</label>' +
-          '<input type="month" id="pl-grad" value="' + esc(d.gradYm || '') + '">' +
+          '<select id="pl-grad" class="month-select">' + monthOptionsHtml(d.gradYm || '', true) + '</select>' +
           '<p class="planner-sub">' + esc(t('planner_grad_note')) + '</p></div>'
         : '');
 
@@ -10671,7 +11112,15 @@ function renderPlanner(){
         '<span class="pl-mode">' +
           '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'variable' ? ' on' : '') + '" data-pmode="variable" data-pk="' + esc(k) + '">' + esc(t('planner_varies')) + '</button>' +
           '<button type="button" class="plm-btn' + (plannerModeFor(d, k) === 'fixed' ? ' on' : '') + '" data-pmode="fixed" data-pk="' + esc(k) + '">' + esc(t('planner_fixed')) + '</button>' +
-        '</span>' + plannerMonthsHtml(d, k) + '</div>').join('') +
+        '</span>' +
+        '<label class="pl-thresh">' +
+          '<span class="pl-thresh-k">' + esc(t('thresh_label')) + '</span>' +
+          '<input type="number" class="pl-thresh-in" min="10" max="100" step="5" inputmode="numeric" ' +
+                 'value="' + plannerThreshFor(d, k) + '" data-cthresh="' + esc(k) + '" ' +
+                 'aria-label="' + esc(t('thresh_aria')) + ' — ' + esc(plannerCatLabel(d, k)) + '">' +
+          '<span class="pl-thresh-u">%</span>' +
+        '</label>' +
+        plannerMonthsHtml(d, k) + '</div>').join('') +
       '<p class="planner-note pl-mode-note">' + esc(t('planner_mode_note')) + '</p>' +
       '</div><p class="planner-left" id="pl-left"></p>';
     updatePlannerLeft();
@@ -10835,6 +11284,12 @@ function plannerCapture(){
     document.querySelectorAll('#planner-body input[data-camount]').forEach(el=>{
       d.cats[el.dataset.camount] = plannerNum(el.value);
     });
+    if(!d.thresh) d.thresh = {};
+    document.querySelectorAll('#planner-body input[data-cthresh]').forEach(el=>{
+      const n = Math.round(Number(el.value));
+      if(isFinite(n) && n > 0) d.thresh[el.dataset.cthresh] = Math.min(100, Math.max(10, n));
+      else delete d.thresh[el.dataset.cthresh];
+    });
   }
 }
 
@@ -10873,6 +11328,8 @@ function applyPlannerPlan(){
     state.categories.forEach(k=>{
       const mode = plannerModeFor(d, k);
       state.fieldModes[k] = mode;
+      if(!state.nearThresholds) state.nearThresholds = {};
+      if(d.thresh && d.thresh[k]) state.nearThresholds[k] = d.thresh[k];
       if(!state.fixedSchedules[k]) state.fixedSchedules[k] = [];
       // Only ever creates a schedule, never replaces one: existing periods are
       // more specific than a single figure from a wizard.
@@ -11296,6 +11753,8 @@ function wireEvents(){
   document.getElementById('setup-salary-day').addEventListener('change', e=>{
     const v = Math.round(Number(e.target.value));
     state.salaryDay = (v >= 1 && v <= 31) ? v : null;
+    const pf2 = document.getElementById('prior-salary-field');
+    if(pf2) pf2.hidden = !salaryShiftActive();
     renderAll();
     scheduleSave();
   });
@@ -11405,6 +11864,17 @@ function wireEvents(){
   });
 
   document.getElementById('announcement-modal-ok').addEventListener('click', dismissAnnouncementPopup);
+  document.addEventListener('click', e=>{
+    const tip = e.target.closest('[data-helptip]');
+    if(tip){ openHelpSheet(tip.dataset.helptip); return; }
+    const jump = e.target.closest('[data-gofeature]');
+    if(jump){ closeHelpSheet(); gotoAppFeature(jump.dataset.gofeature); return; }
+    if(e.target.id === 'help-sheet-close' || e.target.id === 'help-sheet-overlay') closeHelpSheet();
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape') closeHelpSheet();
+  });
+
   document.getElementById('announcement-modal-overlay').addEventListener('click', e=>{
     if(e.target.id==='announcement-modal-overlay') dismissAnnouncementPopup();
   });
