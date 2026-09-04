@@ -11798,6 +11798,9 @@ function applyPlannerPlan(){
   if(d.chosen.length){
     state.categories = d.chosen.slice();
     const planStart = d.startYm || (state.months[0] && state.months[0].ym) || currentYm();
+    // Where the plan began before this run. Read here because the months are
+    // not restructured until further down, so this is still the old first one.
+    const prevFirstYm = state.months.length ? state.months[0].ym : null;
     state.categories.forEach(k=>{
       const mode = plannerModeFor(d, k);
       state.fieldModes[k] = mode;
@@ -11811,9 +11814,18 @@ function applyPlannerPlan(){
       if(mode === 'fixed' && !plannerDetailed(d, k)){
         const months = plannerMonthsFor(d, k);
         const existing = (state.fixedSchedules[k] || [])[0];
+        // A schedule that begins exactly where the plan used to begin was
+        // following the plan, not a date anyone chose — so it moves when the
+        // plan moves. One that begins anywhere else was set deliberately (a
+        // lease starting in March) and is left alone. Without this, moving a
+        // plan earlier left the new months with no rent at all: the period had
+        // not started yet, so they correctly reported zero.
+        const followedThePlan = !existing
+          || !existing.startYm
+          || existing.startYm === prevFirstYm;
         const period = {
           id: (existing && existing.id) || ('pl' + Date.now() + '-' + Math.random().toString(36).slice(2, 5)),
-          startYm: (existing && existing.startYm) || planStart,
+          startYm: followedThePlan ? planStart : existing.startYm,
           endYm: existing ? existing.endYm : null,
           amount: plannerNum(d.cats[k]),
         };
