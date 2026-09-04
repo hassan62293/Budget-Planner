@@ -1982,6 +1982,20 @@ nav.tabs button{ color:var(--ink); }
 .spd-amt{ font-variant-numeric:tabular-nums; font-weight:600; flex:0 0 auto; }
 .sp-day-empty{ color:var(--ink-soft); font-size:12.5px; padding:14px 2px; }
 
+/* Says which of the two situations the open month is in. */
+.sp-future{
+  margin:10px 0 0; padding:9px 12px; border-radius:var(--radius-sm);
+  background:var(--warn-tint); color:var(--ink);
+  font-size:12px; line-height:1.55;
+}
+.sp-future.is-blocked{ background:var(--bad-tint); }
+.qa-future{
+  margin:6px 0 0; font-size:11.5px; line-height:1.5;
+  color:var(--warn-ink, var(--ink-soft));
+}
+/* A disabled add row should look unavailable, not broken. */
+.sp-add input:disabled, .sp-add button:disabled{ opacity:.45; cursor:not-allowed; }
+
 /* Small enough to sit in a row, large enough to tap. */
 .spi-date{
   flex:0 0 auto; font-family:var(--font-mono); font-size:11px; direction:ltr;
@@ -3588,6 +3602,7 @@ input.month-input,
 
       <p class="sp-basis" id="sp-basis"></p>
       <div class="sp-total" id="sp-total"></div>
+      <p class="sp-future" id="sp-future" hidden></p>
       <div class="sp-viewtoggle" id="sp-viewtoggle"></div>
       <div class="sp-rows" id="sp-rows"></div>
       <div id="sp-check"></div>
@@ -4318,6 +4333,7 @@ input.month-input,
     <h4 id="qa-title" data-i18n="qa_title">Add an expense</h4>
     <p class="qa-amount zero" id="qa-amount"><span class="cur" id="qa-currency">$</span><span id="qa-digits">0</span></p>
     <p class="qa-month"><span data-i18n="qa_adding_to">Adding to</span> <strong id="qa-month-label"></strong></p>
+    <p class="qa-future" id="qa-future" hidden></p>
     <div class="qa-chips" id="qa-chips"></div>
     <div class="qa-keypad" id="qa-keypad">
       <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
@@ -4655,6 +4671,8 @@ const TRANSLATIONS = {
     entry_delete:'Remove this month',
     thresh_label:'Warn at',
     spview_cat:'By category', spview_day:'By day',
+    sp_future_note:'{month} has not started yet — anything you add is recorded against it.',
+    sp_future_blocked:'{month} has not happened yet, so there is nothing to record. Move back to {current} or earlier to log spending.',
     sp_no_date:'No date yet',
     sp_settlement:'settlement',
     sp_date_aria:'Date this was spent',
@@ -5037,6 +5055,8 @@ planner_open:'Plan this for me',
     entry_delete:'احذف هذا الشهر',
     thresh_label:'نبّهني عند',
     spview_cat:'حسب الفئة', spview_day:'حسب اليوم',
+    sp_future_note:'لم يبدأ {month} بعد — وما تضيفه يُسجَّل عليه.',
+    sp_future_blocked:'لم يأتِ {month} بعد، فلا شيء يُسجَّل. ارجع إلى {current} أو ما قبله لتسجيل الإنفاق.',
     sp_no_date:'بلا تاريخ بعد',
     sp_settlement:'تسوية',
     sp_date_aria:'تاريخ الإنفاق',
@@ -6936,11 +6956,10 @@ let actualMonthIdx = -1;
 let briefAll = false;      // answer every waiting month, not just this one
 
 function actualTargetIndex(){
+  // A month chosen with the arrows wins, future or not: looking is allowed,
+  // only logging is restricted.
   if(actualMonthIdx >= 0 && actualMonthIdx < state.months.length) return actualMonthIdx;
-  const now = currentYm();
-  const exact = state.months.findIndex(m=> m.ym === now);
-  if(exact !== -1) return exact;
-  return state.months.length ? state.months.length - 1 : -1;
+  return quickAddTargetIndex();
 }
 
 /* What answering "nothing spent" everywhere would add to savings. Stated
@@ -7178,6 +7197,27 @@ function renderActualPanel(){
       <span class="sp-left">${left >= 0 ? t('pvs_left') + ' ' + fmtMoney(left) : t('pvs_over') + ' ' + fmtMoney(-left)}</span>
     </div>`;
 
+  // Declared before the note that reads it: the day view returns early, so
+  // this cannot live down with the category rows.
+  const canLog = monthAcceptsLogging(m);
+
+  const fut = document.getElementById('sp-future');
+  if(fut){
+    if(!canLog){
+      fut.hidden = false;
+      fut.className = 'sp-future is-blocked';
+      fut.textContent = t('sp_future_blocked')
+        .replace('{month}', monthLabel(m.ym))
+        .replace('{current}', monthLabel(loggableLimitYm()));
+    }else if(monthNotStartedYet(m)){
+      fut.hidden = false;
+      fut.className = 'sp-future';
+      fut.textContent = t('sp_future_note').replace('{month}', monthLabel(m.ym));
+    }else{
+      fut.hidden = true;
+    }
+  }
+
   const vt = document.getElementById('sp-viewtoggle');
   if(vt) vt.innerHTML =
       '<button type="button" data-spview="cat"' + (spendView === 'cat' ? ' class="on"' : '') + '>'
@@ -7220,12 +7260,12 @@ function renderActualPanel(){
         ${renderSpendItems(m, key)}
         <div class="sp-add">
           <input class="sp-note" type="text" maxlength="${NOTE_MAX}"
-                 placeholder="${esc(t('sp_note_ph'))}" data-note="${key}"
+                 placeholder="${esc(t('sp_note_ph'))}" data-note="${key}"${canLog ? '' : ' disabled'}
                  aria-label="${esc(t('sp_note_aria'))} — ${esc(categoryLabel(key))}">
           <input class="sp-field" type="number" inputmode="decimal" step="any" min="0"
-                 placeholder="0" data-add="${key}"
+                 placeholder="0" data-add="${key}"${canLog ? '' : ' disabled'}
                  aria-label="${esc(t('sp_add_aria'))} — ${esc(categoryLabel(key))}">
-          <button type="button" class="sp-add-btn" data-addbtn="${key}">${esc(t('sp_add'))}</button>
+          <button type="button" class="sp-add-btn" data-addbtn="${key}"${canLog ? '' : ' disabled'}>${esc(t('sp_add'))}</button>
         </div>
       </div>`;
   }).join('');
@@ -8991,11 +9031,44 @@ function wireBudgetDelegation(){
 let qaDigits = '';
 let qaCategory = null;
 
-function quickAddTargetIndex(){
+/* The month whose period contains today. With a late payday that is next
+   month once payday has passed — on the 26th with a salary on the 25th you are
+   already spending September's money. */
+function currentPeriodYm(){
   const now = currentYm();
-  const exact = state.months.findIndex(m=> m.ym === now);
-  if(exact !== -1) return exact;
-  return state.months.length ? state.months.length - 1 : -1;
+  if(!salaryShiftActive()) return now;
+  const day = Number(state.salaryDay);
+  return (new Date()).getDate() >= day ? addMonths(now, 1) : now;
+}
+
+/* The furthest month that may be logged against. Normally the period you are
+   in; but if the whole plan is still ahead, its first month is allowed so a
+   new table is not read-only on the day it is made. */
+function loggableLimitYm(){
+  const period = currentPeriodYm();
+  const first = state.months.length ? state.months[0].ym : period;
+  return first > period ? first : period;
+}
+
+function monthAcceptsLogging(m){
+  return !!m && m.ym <= loggableLimitYm();
+}
+
+/* True when the month may be logged against but has not actually arrived —
+   the one case that earns a note rather than a refusal. */
+function monthNotStartedYet(m){
+  return !!m && monthAcceptsLogging(m) && m.ym > currentPeriodYm();
+}
+
+/* The latest month that is not in the future. Replaces a fallback that reached
+   for the last month in the table whichever side of it today fell. */
+function quickAddTargetIndex(){
+  if(!state.months.length) return -1;
+  const limit = loggableLimitYm();
+  for(let i = state.months.length - 1; i >= 0; i--){
+    if(state.months[i].ym <= limit) return i;
+  }
+  return 0;
 }
 
 function qaSelectableCategories(){
@@ -9010,6 +9083,19 @@ function renderQuickAdd(){
   if(el) el.textContent = t('qa_title');
   const label = document.getElementById('qa-month-label');
   if(label) label.textContent = idx === -1 ? '—' : monthLabel(state.months[idx].ym);
+
+  // Says so when the month it is about to write to has not arrived, rather
+  // than filing it against a date the reader has to go and find.
+  const fut = document.getElementById('qa-future');
+  if(fut){
+    const m = idx === -1 ? null : state.months[idx];
+    if(m && monthNotStartedYet(m)){
+      fut.hidden = false;
+      fut.textContent = t('sp_future_note').replace('{month}', monthLabel(m.ym));
+    }else{
+      fut.hidden = true;
+    }
+  }
 
   const chips = document.getElementById('qa-chips');
   chips.innerHTML = '';
@@ -9069,6 +9155,9 @@ function qaCommit(){
   const amount = Number(qaDigits);
   if(idx === -1 || !qaCategory || !(amount > 0)) return;
   const m = state.months[idx];
+  // Belt and braces: the target is already clamped, but nothing should be able
+  // to record spending against a month that has not happened.
+  if(!monthAcceptsLogging(m)) return;
   // The + button is the as-you-go logger, so it records real spending rather
   // than editing the plan. Editing the plan is a deliberate act on its own tab.
   const noteEl = document.getElementById('qa-note');
