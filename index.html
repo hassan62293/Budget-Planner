@@ -1983,6 +1983,16 @@ nav.tabs button{ color:var(--ink); }
 .sp-day-empty{ color:var(--ink-soft); font-size:12.5px; padding:14px 2px; }
 
 /* Says which of the two situations the open month is in. */
+/* A quiet way out of a step that does not apply to you. */
+.planner-skip{
+  display:block; margin:14px auto 0; padding:9px 16px; min-height:var(--tap);
+  border:1px solid var(--rule); border-radius:20px; background:transparent;
+  font-family:var(--font-body); font-size:12.5px; font-weight:600;
+  color:var(--ink-soft); cursor:pointer;
+}
+.planner-skip:hover{ border-color:var(--ink); color:var(--ink); }
+.planner-skip:focus-visible{ outline:2px solid var(--emerald); outline-offset:2px; }
+
 .sp-future{
   margin:10px 0 0; padding:9px 12px; border-radius:var(--radius-sm);
   background:var(--warn-tint); color:var(--ink);
@@ -4763,6 +4773,10 @@ planner_open:'Plan this for me',
     planner_manual:"I'll do it myself",
     planner_q_goal:'What are you saving for?',
     planner_q_goal_note:'One thing to aim at. You can add more later.',
+    planner_no_goal:'I do not have one yet',
+    planner_no_goal_note:'Nothing wrong with that. The app still works out what you can put aside and where that leaves you — add a goal whenever one turns up.',
+    planner_nogoal_forecast:'At that rate you would have about {year1} after a year, and {year2} after two — before any interest.',
+    planner_nogoal_see:'See the full forecast →',
     planner_goal_name:'What is it?',
     planner_goal_ph:'A car, a laptop, a trip…',
     planner_goal_amount:'How much does it cost?',
@@ -5147,6 +5161,10 @@ planner_open:'خطّط لي',
     planner_manual:'سأفعلها بنفسي',
     planner_q_goal:'ما الذي تدّخر من أجله؟',
     planner_q_goal_note:'هدف واحد تستهدفه، ويمكنك إضافة غيره لاحقًا.',
+    planner_no_goal:'ليس لديّ هدف بعد',
+    planner_no_goal_note:'ولا حرج في ذلك. سيظل التطبيق يحسب ما تستطيع ادّخاره وأين يضعك ذلك — وأضف هدفًا متى ظهر لك.',
+    planner_nogoal_forecast:'وبهذا المعدل سيكون لديك نحو {year1} بعد سنة، و{year2} بعد سنتين — قبل أي عائد.',
+    planner_nogoal_see:'اطّلع على التوقعات كاملة ←',
     planner_goal_name:'ما هو؟',
     planner_goal_ph:'سيارة، حاسوب، رحلة…',
     planner_goal_amount:'كم يكلّف؟',
@@ -11468,7 +11486,19 @@ function renderPlanner(){
             : '<span class="planner-goal-spacer"></span>') +
         '</div>').join('') + '</div>' +
       '<button type="button" id="pl-goal-add" class="planner-add">' + esc(t('planner_goal_add')) + '</button>' +
-      (d.goals.length > 1 ? '<p class="planner-sub">' + esc(t('planner_goal_order')) + '</p>' : '');
+      (d.goals.length > 1 ? '<p class="planner-sub">' + esc(t('planner_goal_order')) + '</p>' : '') +
+      // Not everyone is saving toward a thing. Some just want to know where
+      // they land, and the app answers that without a goal — but nothing said
+      // so, and this is an early step to lose someone on.
+      '<button type="button" id="pl-no-goal" class="planner-skip">' + esc(t('planner_no_goal')) + '</button>' +
+      '<p class="planner-sub">' + esc(t('planner_no_goal_note')) + '</p>';
+
+    const noGoalBtn = document.getElementById('pl-no-goal');
+    if(noGoalBtn) noGoalBtn.addEventListener('click', ()=>{
+      d.goals = [{ name:'', target:0 }];   // blank rows are ignored on apply
+      plannerStep++;
+      renderPlanner();
+    });
 
   } else if(plannerStep === 2){
     title.textContent = t('planner_q_work');
@@ -11602,8 +11632,20 @@ function plannerResultHtml(d, o){
     '</div>';
 
   if(o.kind === 'nogoal'){
+    // The question this person actually has — where does this leave me in a
+    // year, in two — is already answered on the forecast tab. Saying so beats
+    // leaving them to find it fifth along the row.
+    const yearOne = o.save * 12;
     return rows + '<p class="planner-headline is-good">' +
-      esc(t('planner_nogoal').replace('{amount}', fmtMoney(o.save))) + '</p>';
+      esc(t('planner_nogoal').replace('{amount}', fmtMoney(o.save))) + '</p>' +
+      (o.save > 0
+        ? '<p class="planner-note">' +
+            esc(t('planner_nogoal_forecast')
+              .replace('{year1}', fmtMoney(yearOne))
+              .replace('{year2}', fmtMoney(yearOne * 2))) + '</p>' +
+          '<button type="button" class="help-goto" data-goto-key="forecast">' +
+            esc(t('planner_nogoal_see')) + '</button>'
+        : '');
   }
 
   // Straight through the amounts step without typing anything. Reporting a
@@ -11813,25 +11855,34 @@ function applyPlannerPlan(){
     || (m.actual && Object.keys(m.actual).length > 0);
 
   if(state.months.length){
-    const firstIdx = ymIndex(state.months[0].ym);
-    const startIdx = ymIndex(startYm);
-    if(startIdx < firstIdx){
-      // Starting earlier than the table: reach back. generateMonths matches on
-      // ym and reuses what it already has, so existing months come through
-      // untouched.
-      state.months = generateMonths(startYm, state.months.length + (firstIdx - startIdx));
-    } else if(startIdx > firstIdx){
-      // Starting later: drop the months in front, but stop at the first one
-      // holding anything of the user's. Trimming past that would delete a
-      // record to tidy up a date.
-      let cut = 0;
-      while(cut < state.months.length
-            && ymIndex(state.months[cut].ym) < startIdx
-            && !userBudgeted(state.months[cut])){
-        cut++;
-      }
-      if(cut > 0) state.months = state.months.slice(cut);
-    }
+    // The plan is as long as it was asked for, counted from the month chosen —
+    // whichever direction the start moved. baseMonths is what the setup screen
+    // recorded; without it, the table's own length is the best answer.
+    const want = Math.max(1, Number(state.baseMonths) || state.months.length);
+
+    const wanted = [];
+    for(let i = 0; i < want; i++) wanted.push(addMonths(startYm, i));
+    const keepSet = new Set(wanted);
+
+    // A month holding a RECORD is never dropped to tidy up a date. Planned
+    // figures are not a record — re-running the planner is a deliberate ask to
+    // rebuild the plan, and userBudgeted() cannot tell a figure the person
+    // typed from one the last run wrote, so using it here kept every month the
+    // previous plan touched and the length was never what was asked for.
+    const hasRecord = m =>
+      (m.actual && Object.keys(m.actual).length > 0) || isMonthClosed(m);
+    state.months.forEach(m=>{ if(hasRecord(m)) keepSet.add(m.ym); });
+
+    const byYm = {};
+    state.months.forEach(m=>{ byYm[m.ym] = m; });
+    state.months = [...keepSet].sort().map(ym=>
+      // Blank, not seeded: seededMonth pre-fills from state.plan, which at this
+      // point is still the PREVIOUS answers. A month arriving with those looks
+      // already budgeted and the fill below skips it — which is how re-planning
+      // from a later month to an earlier one used to keep the old figures.
+      byYm[ym] || blankMonth(ym)
+    );
+    state.baseMonths = want;
   }
 
   let filled = 0, skipped = 0;
