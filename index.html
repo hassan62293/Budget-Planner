@@ -4890,11 +4890,24 @@ planner_open:'Plan this for me',
     welcome_continue:'Continue',
     welcome_skip:'Skip this',
     choose_demo:'Show me an example',
-    choose_demo_sub:'A filled-in year to look around. Nothing is yours until you clear it and start over.',
+    choose_demo_sub:'A full year with months already logged, notes, charts and goals. Nothing is yours until you clear it and start over.',
     demo_banner:'This is an example, not your data. Every number here was made up to show how the app works.',
     demo_clear:'Clear this and start mine',
     demo_clear_confirm:'Clear the example and start with an empty plan?',
     demo_goal_name:'Example: a trip',
+    demo_goal_name_2:'Example: a car',
+    demo_cat_insurance:'Insurance',
+    demo_note_shop:'Weekly shop',
+    demo_note_market:'Market',
+    demo_note_electric:'Electricity bill',
+    demo_note_water:'Water bill',
+    demo_note_fuel:'Petrol',
+    demo_note_taxi:'Taxi',
+    demo_note_cinema:'Cinema',
+    demo_note_coffee:'Coffee',
+    demo_note_dinner:'Dinner with friends',
+    demo_note_pharmacy:'Pharmacy',
+    demo_note_rent:'Rent',
     choose_title:'How would you like to start?',
     choose_smart:'Smart budget planner',
     choose_smart_sub:'Answer five short questions and the app builds the whole plan — your months, your categories and your goal.',
@@ -5298,11 +5311,24 @@ planner_open:'خطّط لي',
     welcome_continue:'متابعة',
     welcome_skip:'تخطّي',
     choose_demo:'أرني مثالًا',
-    choose_demo_sub:'سنة كاملة جاهزة لتتصفّحها. لا شيء منها لك حتى تمسحها وتبدأ من جديد.',
+    choose_demo_sub:'سنة كاملة بأشهر مسجّلة وملاحظات ورسوم وأهداف. لا شيء منها لك حتى تمسحها وتبدأ من جديد.',
     demo_banner:'هذا مثال، وليس بياناتك. كل رقم هنا موضوع لتوضيح طريقة عمل التطبيق.',
     demo_clear:'امسح هذا وابدأ بخطتي',
     demo_clear_confirm:'هل تريد مسح المثال والبدء بخطة فارغة؟',
     demo_goal_name:'مثال: رحلة',
+    demo_goal_name_2:'مثال: سيارة',
+    demo_cat_insurance:'التأمين',
+    demo_note_shop:'مقاضي البيت',
+    demo_note_market:'السوق',
+    demo_note_electric:'فاتورة الكهرباء',
+    demo_note_water:'فاتورة الماء',
+    demo_note_fuel:'بنزين',
+    demo_note_taxi:'أجرة',
+    demo_note_cinema:'سينما',
+    demo_note_coffee:'قهوة',
+    demo_note_dinner:'عزيمة مع الأصدقاء',
+    demo_note_pharmacy:'صيدلية',
+    demo_note_rent:'الإيجار',
     choose_title:'كيف تودّ أن تبدأ؟',
     choose_smart:'المخطّط الذكي',
     choose_smart_sub:'أجب عن خمسة أسئلة قصيرة ليبني التطبيق الخطة كاملة: أشهرك وفئاتك وهدفك.',
@@ -11536,60 +11562,171 @@ function applyLearning(key, amount){
    special case. Round numbers throughout: this must never read as real. */
 function buildDemoState(){
   const d = defaultState();
-  const start = currentYm();
+
+  // Five months back, twelve long: five closed months, this one in progress,
+  // six ahead. isMonthClosed is "earlier than this month", so the closed ones
+  // need no flag — starting in the past is what makes them closed.
+  const BACK = 5, LEN = 12;
+  const start = addMonths(currentYm(), -BACK);
+  const CURRENT_I = BACK;
 
   d.isDemo = true;
   d.welcomed = true;
   d.startChoice = 'demo';
   d.defaultSalary = 20000;
-  d.baseMonths = 12;
+  d.baseMonths = LEN;
   d.emergencyThreshold = 1000;
-  d.emergencyStart = 0;
+  d.emergencyStart = 5000;
+  d.salaryDay = 25;
 
-  // 21,000 in, 16,000 out, 5,000 saved — about 24%. Good but reachable; an
-  // example nobody recognises is an example about somebody else.
-  const SPEND = { rent:7000, utilities:1000, groceries:4000,
-                  transport:1500, entertainment:1500, other:1000 };
+  // A twice-yearly bill needs a category of its own. Fixed key, not the usual
+  // timestamped one, so the example is identical on every machine.
+  const INS = 'custom_demo_insurance';
+  d.categories = [...d.categories, INS];
+  d.customLabels = { ...(d.customLabels || {}), [INS]: t('demo_cat_insurance') };
 
-  // Rent does not move. The four that genuinely vary do, so the charts have
-  // shape and the "same every month" distinction is visible rather than stated.
-  // Fixed patterns, not random: the example must be the same for everyone, and
-  // each row sums to zero so the yearly totals stay round.
-  const WOBBLE = {
-    utilities:     [ 200,  150,   50,  -50, -150, -200, -200, -150,  -50,   50,  150,  200],
-    groceries:     [-300,  200,  100, -200,  300, -100,  200, -300,  100,  200, -300,  100],
-    transport:     [-100,  100,  200, -200,  100, -100,  200, -200, -100,  100,  100, -100],
-    entertainment: [ 300, -200,  100,  200, -300,  100, -100,  300, -200, -100,  200, -300],
-  };
+  const PLAN = { rent:7000, utilities:1000, groceries:4000,
+                 transport:1500, entertainment:1500, other:1000 };
+
+  // One figure per category, the same every month — which is what a plan is.
+  // The month-to-month movement lives in what was actually spent (OUTTURN
+  // below), not here: a budget that changes on its own teaches nothing, and it
+  // would make the learning card compare against a moving target.
+  const plannedFor = (c) => (c === INS) ? 0 : (PLAN[c] || 0);   // INS: its schedule decides
 
   d.months = [];
-  for(let i = 0; i < 12; i++){
-    const m = { id:'demo' + i, ym: addMonths(start, i), salary:20000, sideIncome:1000,
+  for(let i = 0; i < LEN; i++){
+    const ym = addMonths(start, i);
+    const m = { id:'demo' + i, ym, salary: i < 4 ? 20000 : 21000, sideIncome:1000,
                 emergency:0, actual:{}, log:{} };
-    d.categories.forEach(c=>{
-      const base = SPEND[c] || 0;
-      const w = WOBBLE[c] ? WOBBLE[c][i] : 0;
-      m[c] = Math.max(0, base + w);
-    });
+    d.categories.forEach(c=> m[c] = plannedFor(c));
     d.months.push(m);
   }
 
-  // Fixed amounts for the three that solution 7 defaults to "I know it", so the
-  // example also shows what that looks like once it is in use.
+  // Fixed income and rent. Salary in two periods: the raise landed four months
+  // in, which is what more than one period on a category is for.
   d.fixedSchedules = d.fixedSchedules || {};
-  d.fixedSchedules.salary     = [{ id:'demo-s',  startYm:start, endYm:null, amount:20000 }];
-  d.fixedSchedules.sideIncome = [{ id:'demo-si', startYm:start, endYm:null, amount:1000  }];
-  d.fixedSchedules.rent       = [{ id:'demo-r',  startYm:start, endYm:null, amount:7000  }];
+  d.fixedSchedules.salary = [
+    { id:'demo-sal-1', startYm:start, endYm:addMonths(start, 3), amount:20000 },
+    { id:'demo-sal-2', startYm:addMonths(start, 4), endYm:null,  amount:21000 },
+  ];
+  d.fixedSchedules.sideIncome = [{ id:'demo-si', startYm:start, endYm:null, amount:1000 }];
+  d.fixedSchedules.rent       = [{ id:'demo-rent', startYm:start, endYm:null, amount:7000 }];
+  // Charged in January and July only. p.months is what "only certain months" writes.
+  d.fixedSchedules[INS] = [{ id:'demo-ins', startYm:start, endYm:null, amount:3600, months:[1, 7] }];
 
-  d.goals = [{ id:'demo-goal', name: t('demo_goal_name'), target:24000,
-               dueYm:null, pct:null, startYm:start }];
-  d.focusGoalId = 'demo-goal';
+  d.fieldModes = { ...d.fieldModes, salary:'fixed', sideIncome:'fixed', rent:'fixed', [INS]:'fixed' };
+
+  // Different on purpose: one threshold everywhere makes the setting look
+  // decorative rather than something worth choosing.
+  d.nearThresholds = { rent:95, utilities:85, groceries:70,
+                       transport:80, entertainment:60, other:80, [INS]:95 };
+
+  /* ---- what actually happened, for the months that have happened -------- */
+  const NOTES = {
+    groceries:     ['demo_note_shop', 'demo_note_market'],
+    utilities:     ['demo_note_electric', 'demo_note_water'],
+    transport:     ['demo_note_fuel', 'demo_note_taxi'],
+    entertainment: ['demo_note_cinema', 'demo_note_coffee'],
+    other:         ['demo_note_dinner', 'demo_note_pharmacy'],
+    rent:          ['demo_note_rent'],
+  };
+  // How each closed month landed against its plan. Mostly close, one month over
+  // on groceries and one under, so both the amber and the red state appear.
+  // Groceries run over every month and entertainment under, far enough and
+  // often enough for the learning card to have something worth saying. The
+  // other three stay near plan: six suggestions at once looks like a fault.
+  const OUTTURN = [
+    { groceries:1.15, utilities:0.96, transport:1.10, entertainment:0.55, other:1.05 },
+    { groceries:1.20, utilities:1.05, transport:0.92, entertainment:0.60, other:0.90 },
+    { groceries:1.18, utilities:0.98, transport:1.05, entertainment:0.50, other:1.08 },
+    { groceries:1.22, utilities:1.10, transport:0.98, entertainment:0.65, other:0.95 },
+    { groceries:1.16, utilities:0.94, transport:1.15, entertainment:0.55, other:1.00 },
+  ];
+  const DAYS = [[4, 17], [6, 21], [3, 19], [8, 23], [5, 16]];
+
+  const push = (m, key, amount, noteKey, day) => {
+    const ymd = m.ym + '-' + String(day).padStart(2, '0');
+    if(!m.log[key]) m.log[key] = [];
+    m.log[key].push({ a: Math.round(amount), n: t(noteKey), t: ymdToStamp(ymd) });
+    m.actual[key] = (m.actual[key] || 0) + Math.round(amount);
+  };
+
+  for(let i = 0; i < CURRENT_I; i++){
+    const m = d.months[i];
+    const out = OUTTURN[i] || {};
+    const [d1, d2] = DAYS[i] || [5, 18];
+
+    // Rent: one payment, the day it is due.
+    push(m, 'rent', 7000, NOTES.rent[0], 2);
+
+    ['utilities','groceries','transport','entertainment','other'].forEach(c=>{
+      const total = Math.round(plannedFor(c) * (out[c] || 1));
+      const first = Math.round(total * 0.6);
+      push(m, c, first,         NOTES[c][0], d1);
+      push(m, c, total - first, NOTES[c][1], d2);
+    });
+  }
+
+  // This month, part-way through: a handful of entries, most of the budget
+  // still untouched. That is what a month in progress looks like.
+  const cur = d.months[CURRENT_I];
+  if(cur){
+    push(cur, 'groceries',     230, NOTES.groceries[0],     5);
+    push(cur, 'utilities',     300, NOTES.utilities[0],     5);
+    push(cur, 'utilities',      70, NOTES.utilities[1],     5);
+    push(cur, 'transport',     105, NOTES.transport[0],     5);
+    push(cur, 'entertainment',  95, NOTES.entertainment[0], 5);
+    push(cur, 'other',         150, NOTES.other[0],         5);
+  }
+
+  /* ---- recorded balances, so the payday check has something to compare ---
+     Computed from what the example logged, not invented: income in, logged
+     spending out, the emergency contribution moved across, and a small float
+     left in the spending account. They reconcile cleanly, except one month
+     left 300 short so the "spending you did not log" answer is visible.
+
+     The LAST closed month is deliberately left blank — that is what puts the
+     "a finished month is waiting" prompt on the current month, which is the
+     part of this flow worth seeing. */
+  let saveBal = 0;
+  let emgBal  = Number(d.emergencyStart) || 0;
+  const SPEND_FLOAT = 500;
+  const SHORT_MONTH = 2;          // one month that will not reconcile
+
+  for(let i = 0; i < CURRENT_I - 1; i++){
+    const m = d.months[i];
+    const income = (i < 4 ? 20000 : 21000) + 1000;
+    const spent  = d.categories.reduce((sum, c)=> sum + (Number(m.actual[c]) || 0), 0);
+    const toEmg  = Number(d.emergencyThreshold) || 0;
+
+    emgBal  += toEmg;
+    saveBal += Math.max(0, income - spent - toEmg);
+
+    m.heldParts = {
+      spend: SPEND_FLOAT,
+      save:  Math.round(saveBal) - (i === SHORT_MONTH ? 300 : 0),
+      emg:   Math.round(emgBal),
+    };
+    m.held = m.heldParts.spend + m.heldParts.save + m.heldParts.emg;
+  }
+
+  // One goal comfortably reachable, one that is not, so both answers are shown.
+  d.goals = [
+    { id:'demo-goal-1', name: t('demo_goal_name'),  target:24000, dueYm:null, pct:null, startYm:start },
+    { id:'demo-goal-2', name: t('demo_goal_name_2'), target:120000,
+      dueYm: addMonths(currentYm(), 8), pct:null, startYm:start },
+  ];
+  d.focusGoalId = 'demo-goal-1';
 
   return d;
 }
 
 function loadDemo(){
   state = buildDemoState();
+  // Module-level and not part of state, so it would otherwise still point at a
+  // month index from whatever was loaded before.
+  actualMonthIdx = -1;
   scheduleSave();
   renderAll();
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -11601,6 +11738,7 @@ function clearDemo(){
   if(!confirm(t('demo_clear_confirm'))) return;
   const lang = state.lang, currency = state.currency;
   state = defaultState();
+  actualMonthIdx = -1;
   state.lang = lang;
   state.currency = currency;
   state.hasSeenHelp = true;   // they have been in the app; do not restart the tour
