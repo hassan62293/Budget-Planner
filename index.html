@@ -3385,6 +3385,29 @@ input.month-input,
   font-size:13.5px; font-weight:700; font-family:inherit; white-space:nowrap;
 }
 
+/* The occupation choice moved onto the income step (planner steps 2+3 merged).
+   A compact row rather than the three tall cards it used to be, so the step it
+   joined does not become a wall. */
+.planner-works{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 6px; }
+.planner-work{
+  flex:1 1 auto; min-height:38px; padding:8px 12px; cursor:pointer;
+  border:1px solid var(--rule); border-radius:var(--radius-sm);
+  background:var(--paper); color:var(--ink);
+  font-family:inherit; font-size:13px; font-weight:600; line-height:1.3;
+}
+.planner-work.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+:root[data-theme="dark"] .planner-work.on{ color:#1A1815; }
+.pl-work-sub{ margin:0 0 12px; }
+
+/* The notice that replaces the old finish-the-planner alert. Reads as an answer
+   rather than a warning: the plan worked, and the point is that it is editable. */
+.plan-done{
+  margin:14px 0 0; padding:12px 15px; cursor:pointer;
+  border-radius:var(--radius-sm); background:var(--good-tint);
+  border:1px solid var(--good-ink);
+  font-size:13.5px; font-weight:600; line-height:1.6; color:var(--good-ink);
+}
+
 </style>
 </head>
 <body>
@@ -3515,6 +3538,8 @@ input.month-input,
       <h2 class="section-title" data-i18n="entry_h2">My plan</h2>
       <p class="section-note" data-i18n="entry_note">Set what you are saving for, then what you earn and expect to spend. Everything else in the app is worked out from here.</p>
 
+      <p id="plan-done" class="plan-done" style="display:none;"></p>
+
       <div id="demo-banner" class="demo-banner" style="display:none;">
         <p data-i18n="demo_banner">This is an example, not your data. Every number here was made up to show how the app works.</p>
         <button type="button" id="demo-clear" data-i18n="demo_clear">Clear this and start mine</button>
@@ -3542,12 +3567,12 @@ input.month-input,
         <h3 data-i18n="choose_title">How would you like to start?</h3>
         <div class="choose-cards">
           <button type="button" id="choose-smart" class="choose-card is-primary">
-            <span class="ch-t" data-i18n="choose_smart">Smart budget planner</span>
-            <span class="ch-s" data-i18n="choose_smart_sub">Answer five short questions and the app builds the whole plan — your months, your categories and your goal.</span>
+            <span class="ch-t" data-i18n="choose_smart">Answer a few questions and I will fill it in</span>
+            <span class="ch-s" data-i18n="choose_smart_sub">The quickest way in: your months, categories, amounts and goals, built from a few short questions. Everything stays editable afterwards — most people change a few things once they see it.</span>
           </button>
           <button type="button" id="choose-manual" class="choose-card">
-            <span class="ch-t" data-i18n="choose_manual">Set it up myself</span>
-            <span class="ch-s" data-i18n="choose_manual_sub">Choose your own categories and amounts, month by month.</span>
+            <span class="ch-t" data-i18n="choose_manual">Start with an empty table</span>
+            <span class="ch-s" data-i18n="choose_manual_sub">Nothing filled in. You choose every category and amount yourself.</span>
           </button>
           <button type="button" id="choose-demo" class="choose-card">
             <span class="ch-t" data-i18n="choose_demo">Show me an example</span>
@@ -3866,7 +3891,8 @@ input.month-input,
 
         <div class="help-section" data-goto="planner">
           <h3>Or let the app plan it for you</h3>
-          <p>If you would rather not work any of that out yourself, press <span class="help-key">Plan this for me</span> at the top of the plan tab. It asks five short questions — what you are saving for, what you do, what comes in and when you want to start, what you spend on, and roughly how much — and does the rest.</p>
+          <p>If you would rather not work any of that out yourself, press <span class="help-key">Plan this for me</span> at the top of the plan tab. It asks four questions — what you are saving for; what comes in, when your pay lands, when to start and how long to run; what you spend on; and roughly how much — then shows you the answer before anything is written.</p>
+          <p style="margin-top:8px;"><b>It is not a separate kind of plan.</b> It sets up exactly what you would have set up by hand — your months, categories, which amounts you know, the warning thresholds, your goals — and fills in the figures as well. Everything it writes stays editable, and most people change a few things once they can see it. Setting up by hand is the same destination with none of the boxes answered for you.</p>
           <p style="margin-top:8px;">The answer comes back in plain words: <i>"Putting aside 1,980 a month, you reach 50,000 in 26 months — around October 2028."</i> Accept it and every empty month is filled in for you. Months you have already filled are left exactly as they are.</p>
           <p style="margin-top:8px;">Saying whether you are a student, on a fixed salary, or paid a different amount each month changes what it asks and what it sets up for you. A fixed salary gets filled into every month by itself. If your pay varies it asks for a <b>normal</b> month rather than your best one, so the plan still holds in a quiet month.</p>
           <p class="help-tip">If the goal is out of reach, it says so — and says what would change it, using your own numbers. Sometimes the honest answer is that a smaller goal first is the better place to start.</p>
@@ -4176,7 +4202,8 @@ input.month-input,
 
         <div class="help-section" data-goto="planner">
           <h3>أو دع التطبيق يخطّط لك</h3>
-          <p>إن آثرت ألاّ تحسب ذلك بنفسك، فاضغط <span class="help-key">خطّط لي</span> أعلى تبويب الخطة. يسألك خمسة أسئلة قصيرة — ما تدّخر من أجله، وما عملك، وما يدخل عليك ومتى تريد البدء، وعلام تنفق، وكم تقريبًا — ثم يتولّى الباقي.</p>
+          <p>إن آثرت ألاّ تحسب ذلك بنفسك، فاضغط <span class="help-key">خطّط لي</span> أعلى تبويب الخطة. يسألك أربعة أسئلة — ما تدّخر من أجله؛ وما يدخل عليك ومتى ينزل راتبك ومتى تبدأ وكم مدة الخطة؛ وعلامَ تنفق؛ وكم تقريبًا — ثم يعرض عليك الجواب قبل أن يكتب أي شيء.</p>
+          <p style="margin-top:8px;"><b>وهو ليس نوعًا آخر من الخطط.</b> فهو يُعِدّ تمامًا ما كنت ستعدّه بيدك — أشهرك وفئاتك وأي المبالغ تعرفها وحدود التنبيه وأهدافك — ويملأ الأرقام كذلك. وكل ما يكتبه يبقى قابلًا للتعديل، وأغلب الناس يغيّرون أشياء قليلة حين يرونها أمامهم. أما الإعداد اليدوي فهو الوجهة نفسها دون أن يُجاب عن أي خانة نيابةً عنك.</p>
           <p style="margin-top:8px;">ويأتيك الجواب بكلام واضح: <i>«بادّخار ١٬٩٨٠ شهريًا تبلغ ٥٠٬٠٠٠ خلال ٢٦ شهرًا — قرابة أكتوبر ٢٠٢٨.»</i> اعتمدها ليُملأ كل شهر فارغ، وتُترك الأشهر التي ملأتها كما هي تمامًا.</p>
           <p style="margin-top:8px;">وقولك إن كنت طالبًا أو موظّفًا براتب ثابت أو بدخل متغيّر يغيّر ما يسألك عنه وما يُعدّه لك. فالراتب الثابت يُملأ في كل شهر تلقائيًا، وإن كان دخلك متغيّرًا سألك عن شهر <b>عادي</b> لا أفضل شهر، لتصمد الخطة في شهر هادئ.</p>
           <p class="help-tip">وإن كان الهدف بعيد المنال قال ذلك صراحة، وذكر ما يغيّره بأرقامك أنت. وقد يكون الجواب الصريح أن البدء بهدف أصغر أولى.</p>
@@ -4879,6 +4906,10 @@ planner_open:'Plan this for me',
     planner_goal_order:'The order is the priority. The app funds the top one hardest, and passes its share on once it is paid off.',
     planner_ok_multi:'Putting aside {amount} a month, all {count} are paid for by {date}. Here is when each one lands:',
     planner_start:'When does this plan start?',
+    planner_years:'How long should the plan run?',
+    planner_years_one:'1 year',
+    planner_years_n:'{n} years',
+    planner_years_note:'You can add or remove months later.',
     planner_start_note:'Months before this are left exactly as they are.',
     welcome_title:'Let us start with one sum',
     welcome_income:'What do you earn in a month?',
@@ -4909,10 +4940,10 @@ planner_open:'Plan this for me',
     demo_note_pharmacy:'Pharmacy',
     demo_note_rent:'Rent',
     choose_title:'How would you like to start?',
-    choose_smart:'Smart budget planner',
-    choose_smart_sub:'Answer five short questions and the app builds the whole plan — your months, your categories and your goal.',
-    choose_manual:'Set it up myself',
-    choose_manual_sub:'Choose your own categories and amounts, month by month.',
+    choose_smart:'Answer a few questions and I will fill it in',
+    choose_smart_sub:'The quickest way in: your months, categories, amounts and goals, built from a few short questions. Everything stays editable afterwards — most people change a few things once they see it.',
+    choose_manual:'Start with an empty table',
+    choose_manual_sub:'Nothing filled in. You choose every category and amount yourself.',
     learn_head:'Your plan and your spending disagree',
     learn_over:'{cat}: you planned {planned}, and have averaged {actual} over {months} months.',
     learn_under:'{cat}: you planned {planned}, but have only averaged {actual} over {months} months.',
@@ -4932,6 +4963,8 @@ planner_open:'Plan this for me',
     planner_step_of:'Step {n} of {total}',
     planner_back:'Back',
     planner_next:'Next',
+    plan_done:'Your plan is in. Change anything below — nothing here is fixed.',
+    plan_done_kept:'Months you had already filled in were left as they were ({n}).',
     planner_apply:'Use this plan',
     planner_manual:"I'll do it myself",
     planner_q_goal:'What are you saving for?',
@@ -5300,6 +5333,10 @@ planner_open:'خطّط لي',
     planner_goal_order:'والترتيب هو الأولوية. يموّل التطبيق الأعلى أولًا، ثم يمرّر حصته إلى غيره متى اكتمل.',
     planner_ok_multi:'بادّخار {amount} شهريًا تكتمل الأهداف الـ{count} جميعها بحلول {date}. وهذه مواعيد كل منها:',
     planner_start:'من أي شهر تبدأ هذه الخطة؟',
+    planner_years:'كم مدة الخطة؟',
+    planner_years_one:'سنة واحدة',
+    planner_years_n:'{n} سنوات',
+    planner_years_note:'يمكنك إضافة أشهر أو حذفها لاحقًا.',
     planner_start_note:'وتبقى الأشهر السابقة له كما هي تمامًا.',
     welcome_title:'لنبدأ بعملية حسابية واحدة',
     welcome_income:'كم تكسب في الشهر؟',
@@ -5330,10 +5367,10 @@ planner_open:'خطّط لي',
     demo_note_pharmacy:'صيدلية',
     demo_note_rent:'الإيجار',
     choose_title:'كيف تودّ أن تبدأ؟',
-    choose_smart:'المخطّط الذكي',
-    choose_smart_sub:'أجب عن خمسة أسئلة قصيرة ليبني التطبيق الخطة كاملة: أشهرك وفئاتك وهدفك.',
-    choose_manual:'سأعدّه بنفسي',
-    choose_manual_sub:'اختر فئاتك ومبالغك بنفسك، شهرًا بشهر.',
+    choose_smart:'أجب عن أسئلة قصيرة وسأملؤها لك',
+    choose_smart_sub:'أسرع طريقة للبدء: أشهرك وفئاتك ومبالغك وأهدافك، مبنية من أسئلة قصيرة. ويبقى كل شيء قابلًا للتعديل بعدها — وأغلب الناس يغيّرون أشياء قليلة حين يرونها.',
+    choose_manual:'ابدأ بجدول فارغ',
+    choose_manual_sub:'لا شيء مملوء. تختار كل فئة وكل مبلغ بنفسك.',
     learn_head:'خطتك وإنفاقك مختلفان',
     learn_over:'{cat}: خطّطت لـ {planned}، ومتوسطك الفعلي {actual} خلال {months} أشهر.',
     learn_under:'{cat}: خطّطت لـ {planned}، ولم يتجاوز متوسطك {actual} خلال {months} أشهر.',
@@ -5353,6 +5390,8 @@ planner_open:'خطّط لي',
     planner_step_of:'الخطوة {n} من {total}',
     planner_back:'رجوع',
     planner_next:'التالي',
+    plan_done:'خطتك جاهزة. غيّر ما تشاء أدناه — لا شيء هنا نهائي.',
+    plan_done_kept:'وتُركت الأشهر التي ملأتها من قبل كما هي ({n}).',
     planner_apply:'اعتمد هذه الخطة',
     planner_manual:'سأفعلها بنفسي',
     planner_q_goal:'ما الذي تدّخر من أجله؟',
@@ -6266,7 +6305,17 @@ function getFixedAmountForMonth(key, ym){
   return Number(best.amount) || 0;
 }
 function effectiveValue(m, key){
-  return (state.fieldModes[key]==='fixed') ? getFixedAmountForMonth(key, m.ym) : (Number(m[key])||0);
+  if(state.fieldModes[key] !== 'fixed') return Number(m[key]) || 0;
+
+  // A fixed category with NO periods at all has not been given its amount yet.
+  // That is not the same as a schedule that deliberately skips this month, so
+  // the fallback is conditioned on the schedule being empty rather than on the
+  // amount coming back zero — otherwise a bill set to January and July would
+  // start reading the month's own figure for the other ten.
+  const periods = state.fixedSchedules[key];
+  if(!Array.isArray(periods) || !periods.length) return Number(m[key]) || 0;
+
+  return getFixedAmountForMonth(key, m.ym);
 }
 function effectiveSalary(m){ return effectiveValue(m,'salary'); }
 
@@ -11201,10 +11250,20 @@ const PLANNER_WORK_CATS = {
   variable: ['rent','utilities','groceries','transport','entertainment','other'],
 };
 const PLANNER_WORKS = ['student','fixed','variable'];
-const PLANNER_STEPS = 6;
+const PLANNER_STEPS = 5;
 
 let plannerStep = 1;
 let plannerDraft = null;
+
+/* The plan's length in whole years. Taken from the draft once the person has
+   answered, and otherwise from whatever the table is already set to, so
+   re-running the planner never quietly resizes a plan that was deliberate. */
+function plannerYearsOf(d){
+  const asked = Number(d && d.years);
+  if(isFinite(asked) && asked >= 1) return asked;
+  const months = Number(state.baseMonths) || (state.months && state.months.length) || 12;
+  return Math.max(1, Math.round(months / 12));
+}
 
 function plannerNum(v){ const n = Number(v); return Number.isFinite(n) && n > 0 ? n : 0; }
 
@@ -11747,6 +11806,32 @@ function clearDemo(){
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
+/* Said once, above the plan, with the table in view behind it. Cleared by the
+   next render so it cannot turn into furniture. */
+function showPlanDone(res, mode){
+  const el = document.getElementById('plan-done');
+  if(!el) return;
+  const kept = (res && res.skipped) || 0;
+  el.textContent = t('plan_done')
+    + (kept ? ' ' + t('plan_done_kept').replace('{n}', kept) : '');
+  el.style.display = 'block';
+  const fold = document.getElementById('setup-fold');
+  if(fold) fold.open = false;      // the plan is written; the setup box is not the point
+  requestAnimationFrame(()=>{
+    el.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+}
+
+function clearPlanDone(){
+  const el = document.getElementById('plan-done');
+  if(el){ el.style.display = 'none'; el.textContent = ''; }
+}
+
+function wirePlanDone(){
+  const el = document.getElementById('plan-done');
+  if(el) el.addEventListener('click', clearPlanDone);
+}
+
 function renderDemoBanner(){
   const el = document.getElementById('demo-banner');
   if(el) el.style.display = state.isDemo ? 'flex' : 'none';
@@ -11864,6 +11949,7 @@ function wirePlanChoose(){
   const smart = document.getElementById('choose-smart');
   const manual = document.getElementById('choose-manual');
   wireWelcome();
+  wirePlanDone();
   const demo = document.getElementById('choose-demo');
   if(demo) demo.addEventListener('click', ()=> loadDemo());
   const demoClear = document.getElementById('demo-clear');
@@ -12096,18 +12182,17 @@ function renderPlanner(){
     });
 
   } else if(plannerStep === 2){
-    title.textContent = t('planner_q_work');
-    body.innerHTML =
-      '<p class="planner-note">' + esc(t('planner_q_work_note')) + '</p>' +
-      '<div class="planner-picks">' + PLANNER_WORKS.map(w=>
-        '<button type="button" class="planner-pick' + (d.work === w ? ' on' : '') + '" data-work="' + w + '">' +
-          '<span class="pk-t">' + esc(t('planner_work_' + w)) + '</span>' +
-          '<span class="pk-s">' + esc(t('planner_work_' + w + '_sub')) + '</span>' +
-        '</button>').join('') + '</div>';
-
-  } else if(plannerStep === 3){
     title.textContent = t('planner_q_income');
+    // The occupation picks live here now: their only job was ever to shape the
+    // questions below them, and a compact row keeps this step from becoming a
+    // wall. The explanation shows for the chosen option, which is the one it
+    // is about.
     body.innerHTML =
+      '<div class="planner-works">' + PLANNER_WORKS.map(w=>
+        '<button type="button" class="planner-work' + (d.work === w ? ' on' : '') + '" data-work="' + w + '">' +
+          esc(t('planner_work_' + w)) +
+        '</button>').join('') + '</div>' +
+      '<p class="planner-sub pl-work-sub">' + esc(t('planner_work_' + d.work + '_sub')) + '</p>' +
       '<p class="planner-note">' + esc(t('planner_q_income_' + d.work)) + '</p>' +
       '<div class="planner-field"><label for="pl-income">' + esc(t('planner_income_' + d.work)) + '</label>' +
       '<input type="number" id="pl-income" inputmode="decimal" min="0" value="' + (d.income || '') + '"></div>' +
@@ -12119,6 +12204,16 @@ function renderPlanner(){
       '<div class="planner-field"><label for="pl-start">' + esc(t('planner_start')) + '</label>' +
       '<select id="pl-start" class="month-select">' + monthOptionsHtml(d.startYm || currentYm()) + '</select>' +
       '<p class="planner-sub">' + esc(t('planner_start_note')) + '</p></div>' +
+      // Previously only the manual setup screen could set this, so anyone who
+      // wanted more than the default had to go there first and come back.
+      '<div class="planner-field"><label for="pl-years">' + esc(t('planner_years')) + '</label>' +
+      '<select id="pl-years" class="month-select">' +
+        [1,2,3,4,5,10].map(y=>
+          '<option value="' + y + '"' + (plannerYearsOf(d) === y ? ' selected' : '') + '>' +
+            esc(t(y === 1 ? 'planner_years_one' : 'planner_years_n').replace('{n}', y)) +
+          '</option>').join('') +
+      '</select>' +
+      '<p class="planner-sub">' + esc(t('planner_years_note')) + '</p></div>' +
       // Asked only of students, and only because the answer changes what the
       // app is willing to claim further out than this date.
       (d.work === 'student'
@@ -12127,7 +12222,7 @@ function renderPlanner(){
           '<p class="planner-sub">' + esc(t('planner_grad_note')) + '</p></div>'
         : '');
 
-  } else if(plannerStep === 4){
+  } else if(plannerStep === 3){
     if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
     title.textContent = t('planner_q_which');
     body.innerHTML =
@@ -12140,7 +12235,7 @@ function renderPlanner(){
         '<button type="button" id="pl-addcat">' + esc(t('planner_add_cat')) + '</button>' +
       '</div>';
 
-  } else if(plannerStep === 5){
+  } else if(plannerStep === 4){
     if(!d.chosen) d.chosen = plannerDefaultChosen(d.work);
     title.textContent = t('planner_q_amounts');
     // Real spending beats a remembered plan, and both beat a blank — but only
@@ -12334,7 +12429,7 @@ function plannerCapture(){
       const i = Number(el.dataset.gtarget);
       if(d.goals[i]) d.goals[i].target = plannerNum(el.value);
     });
-  } else if(plannerStep === 3){
+  } else if(plannerStep === 2){
     const i = document.getElementById('pl-income');
     const sd = document.getElementById('pl-side');
     const g = document.getElementById('pl-grad');
@@ -12348,7 +12443,9 @@ function plannerCapture(){
     }
     if(g) d.gradYm = g.value || null;
     if(st && st.value) d.startYm = st.value;
-  } else if(plannerStep === 5){
+    const yr = document.getElementById('pl-years');
+    if(yr) d.years = Math.max(1, Math.min(20, Number(yr.value) || 1));
+  } else if(plannerStep === 4){
     document.querySelectorAll('#planner-body input[data-camount]').forEach(el=>{
       d.cats[el.dataset.camount] = plannerNum(el.value);
     });
@@ -12465,7 +12562,10 @@ function applyPlannerPlan(){
     // The plan is as long as it was asked for, counted from the month chosen —
     // whichever direction the start moved. baseMonths is what the setup screen
     // recorded; without it, the table's own length is the best answer.
-    const want = Math.max(1, Number(state.baseMonths) || state.months.length);
+    // The planner now asks for this directly. Falling back to whatever the
+    // table already was keeps an untouched length untouched.
+    const want = Math.max(1, (Number(plannerDraft && plannerDraft.years) || 0) * 12
+                             || Number(state.baseMonths) || state.months.length);
 
     const wanted = [];
     for(let i = 0; i < want; i++) wanted.push(addMonths(startYm, i));
@@ -12577,8 +12677,10 @@ function wirePlanner(){
     const res = applyPlannerPlan();
     closePlanner();
     switchTab('entry');
-    alert((mode === 'all' ? t('planner_done_all') : t('planner_done'))
-      .replace('{filled}', res.filled).replace('{skipped}', res.skipped));
+    // Was an alert reporting two counts. A dialog you must dismiss before you
+    // can look at your own plan is a poor reward for finishing the questions,
+    // and it said nothing about the thing people do next.
+    showPlanDone(res, mode);
   });
 
   document.getElementById('planner-back').addEventListener('click', ()=>{
@@ -12609,8 +12711,11 @@ function wirePlanner(){
       renderPlanner();
       return;
     }
-    const pick = e.target.closest('.planner-pick');
+    const pick = e.target.closest('.planner-pick, .planner-work');
     if(pick){
+      // The income boxes now share this step, and renderPlanner rebuilds them
+      // from the draft — so read what has been typed before changing anything.
+      plannerCapture();
       plannerDraft.work = pick.dataset.work;
       plannerDraft.chosen = null;   // occupation changes what is pre-selected
       renderPlanner();
@@ -12705,6 +12810,9 @@ function wirePlanner(){
 }
 
 function switchTab(tabName){
+  // Leaving the plan tab means the "your plan is in" notice has served its
+  // purpose. showPlanDone runs after its own switchTab, so it is unaffected.
+  if(tabName !== 'entry' && typeof clearPlanDone === 'function') clearPlanDone();
   // Cheap no-op unless the layout mode actually changed. This is the guarantee
   // that the budget panel can never be left empty: even if every resize
   // mechanism failed to fire, the next navigation puts it right.

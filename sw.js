@@ -26,7 +26,7 @@
  * string: it is compared for equality and shown in the footer, so the only
  * rule that matters is that it CHANGES on every build.
  */
-const CACHE_VERSION = 'v1.1.1.1';
+const CACHE_VERSION = 'v1.1.1.3';
 const CACHE = `budget-planner-${CACHE_VERSION}`;
 
 /* Everything the app needs to run offline. Excel support (SheetJS, 930 KB) is
